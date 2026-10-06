@@ -1,5 +1,6 @@
 package lat.occlus.shared.web;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,6 +23,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ConflictException.class)
     ProblemDetail conflict(ConflictException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    ProblemDetail badRequest(BadRequestException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /** Respaldo para carreras que la validación previa no alcanza a ver (p. ej. índices únicos). */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ProblemDetail dataIntegrity() {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "El registro entra en conflicto con uno existente");
     }
 
     @ExceptionHandler(BadCredentialsException.class)

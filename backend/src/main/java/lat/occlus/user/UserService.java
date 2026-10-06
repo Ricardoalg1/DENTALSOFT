@@ -2,6 +2,7 @@ package lat.occlus.user;
 
 import java.util.List;
 import java.util.UUID;
+import lat.occlus.shared.tenant.TenantContext;
 import lat.occlus.shared.web.ConflictException;
 import lat.occlus.shared.web.NotFoundException;
 import lat.occlus.user.UserDtos.CreateUserRequest;
@@ -24,24 +25,35 @@ public class UserService {
         return users.findByClinicIdOrderByFullName(clinicId).stream().map(UserResponse::from).toList();
     }
 
-    @Transactional
+    /**
+     * Sin @Transactional a propósito: la verificación de correo corre en su propia transacción
+     * en modo sistema (el correo es único entre TODAS las clínicas) y luego se guarda el usuario.
+     */
     public AppUser create(UUID clinicId, CreateUserRequest req) {
-        String email = AppUser.normalizeEmail(req.email());
-        if (users.existsByEmail(email)) {
+        ensureEmailAvailable(req.email());
+        return users.save(newUser(clinicId, req));
+    }
+
+    public void ensureEmailAvailable(String email) {
+        String normalized = AppUser.normalizeEmail(email);
+        if (TenantContext.callAsSystem(() -> users.existsByEmail(normalized))) {
             throw new ConflictException("Ya existe un usuario con ese correo");
         }
+    }
+
+    public AppUser newUser(UUID clinicId, CreateUserRequest req) {
         var user = new AppUser();
         user.setClinicId(clinicId);
-        user.setEmail(email);
+        user.setEmail(AppUser.normalizeEmail(req.email()));
         user.setFullName(req.fullName().trim());
         user.setRole(req.role());
         user.setPasswordHash(passwordEncoder.encode(req.password()));
-        return users.save(user);
+        return user;
     }
 
     @Transactional
     public UserResponse update(UUID clinicId, UUID userId, UUID actingUserId, UpdateUserRequest req) {
-        // Buscar por id Y clinicId evita que una clínica toque usuarios de otra.
+        // Buscar por id Y clinicId evita que una clínica toque usuarios de otra (RLS lo refuerza en la BD).
         var user = users.findByIdAndClinicId(userId, clinicId)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
         boolean self = user.getId().equals(actingUserId);

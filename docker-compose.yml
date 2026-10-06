@@ -13,6 +13,8 @@ services:
       - "5433:5432"   # 5432 del host ya está en uso
     volumes:
       - occlus-pgdata:/var/lib/postgresql/data
+      # Solo se ejecuta al crear el volumen por primera vez.
+      - ./docker/postgres:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U occlus -d occlus"]
       interval: 5s

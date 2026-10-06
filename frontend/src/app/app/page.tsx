@@ -5,7 +5,6 @@ import { getMe } from "@/lib/api";
 export const metadata: Metadata = { title: "Inicio" };
 
 const NEXT_STEPS = [
-  { title: "Pacientes", text: "Registro de pacientes con datos demográficos y aseguradora." },
   { title: "Agenda", text: "Citas por odontólogo y sede, con estados y recordatorios." },
   { title: "Historia clínica", text: "Anamnesis, odontograma, evoluciones y consentimientos." },
   { title: "Facturación electrónica", text: "Facturas DIAN y generación de RIPS (Res. 2275 de 2023)." },

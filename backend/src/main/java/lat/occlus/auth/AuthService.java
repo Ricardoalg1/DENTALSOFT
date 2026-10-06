@@ -8,6 +8,7 @@ import lat.occlus.auth.AuthDtos.TokenResponse;
 import lat.occlus.clinic.Clinic;
 import lat.occlus.clinic.ClinicRepository;
 import lat.occlus.shared.security.TokenService;
+import lat.occlus.shared.tenant.TenantContext;
 import lat.occlus.shared.web.NotFoundException;
 import lat.occlus.site.Site;
 import lat.occlus.site.SiteRepository;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -32,25 +34,33 @@ public class AuthService {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final TransactionTemplate tx;
 
-    /** Crea clínica + sede principal + administrador en una sola transacción. */
-    @Transactional
+    /**
+     * Crea clínica + sede principal + administrador. El id de la clínica se genera aquí para
+     * abrir la transacción YA dentro del contexto de esa clínica (RLS exige que coincida).
+     */
     public TokenResponse register(RegisterRequest req) {
-        var clinic = clinics.save(new Clinic(req.clinicName().trim(), blankToNull(req.nit())));
+        userService.ensureEmailAvailable(req.email());
+        UUID clinicId = UUID.randomUUID();
 
-        var site = new Site();
-        site.setClinicId(clinic.getId());
-        site.setName("Sede principal");
-        sites.save(site);
+        AppUser admin = TenantContext.callAs(clinicId, () -> tx.execute(status -> {
+            clinics.save(new Clinic(clinicId, req.clinicName().trim(), blankToNull(req.nit())));
 
-        AppUser admin = userService.create(clinic.getId(),
-                new CreateUserRequest(req.email(), req.fullName(), Role.ADMIN, req.password()));
+            var site = new Site();
+            site.setClinicId(clinicId);
+            site.setName("Sede principal");
+            sites.save(site);
+
+            return users.save(userService.newUser(clinicId,
+                    new CreateUserRequest(req.email(), req.fullName(), Role.ADMIN, req.password())));
+        }));
         return toResponse(admin);
     }
 
-    @Transactional(readOnly = true)
+    /** El login busca por correo entre todas las clínicas: única consulta en modo sistema. */
     public TokenResponse login(LoginRequest req) {
-        var user = users.findByEmail(AppUser.normalizeEmail(req.email()))
+        var user = TenantContext.callAsSystem(() -> users.findByEmail(AppUser.normalizeEmail(req.email())))
                 .filter(AppUser::isActive)
                 .filter(u -> passwordEncoder.matches(req.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new BadCredentialsException("invalid credentials"));

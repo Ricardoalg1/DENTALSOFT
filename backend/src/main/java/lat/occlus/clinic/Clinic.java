@@ -1,8 +1,6 @@
 package lat.occlus.clinic;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.Instant;
 import java.util.UUID;
@@ -17,8 +15,8 @@ import org.hibernate.annotations.CreationTimestamp;
 @NoArgsConstructor
 public class Clinic {
 
+    /** Asignado en Java (no por Hibernate) para poder fijar el contexto de clínica antes de insertarla. */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String name;
@@ -28,7 +26,8 @@ public class Clinic {
     @CreationTimestamp
     private Instant createdAt;
 
-    public Clinic(String name, String nit) {
+    public Clinic(UUID id, String name, String nit) {
+        this.id = id;
         this.name = name;
         this.nit = nit;
     }
