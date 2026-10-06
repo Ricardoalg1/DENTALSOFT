@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: occlus-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/occlus}
+    username: ${DB_USER:occlus}
+    password: ${DB_PASSWORD:occlus}
+  jpa:
+    # Flyway es dueño del esquema; Hibernate solo valida que las entidades coincidan.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+occlus:
+  jwt:
+    # En producción SIEMPRE definir JWT_SECRET (mínimo 32 caracteres).
+    secret: ${JWT_SECRET:dev-only-secret-cambiar-en-produccion-0123456789}
+    ttl: 8h
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
