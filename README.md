@@ -39,13 +39,16 @@ cd backend && ./mvnw test
   crearlo a mano y definir `DB_USER`/`DB_PASSWORD` y `DB_MIGRATION_USER`/`DB_MIGRATION_PASSWORD`.
 - **Auditoría** con Hibernate Envers: cada cambio a un paciente guarda la versión completa, quién y cuándo
   (`audit_revision`, `patient_aud`). La app no tiene permiso para editar ni borrar ese historial.
+- **Agenda**: Postgres impide que un profesional tenga dos citas activas que se crucen (restricción de
+  exclusión `ex_appointment_dentist_overlap`), así que ni dos recepcionistas al mismo tiempo pueden crear un cruce.
+  Las horas se manejan en hora de Colombia (UTC-5, sin horario de verano).
 - Flyway es dueño del esquema (`backend/src/main/resources/db/migration`); Hibernate solo valida.
 
 ## Roadmap
 
 1. ✅ Base: clínicas, sedes, usuarios, roles, login
 2. ✅ Pacientes + RLS + auditoría
-3. Agenda
+3. ✅ Agenda (citas, horarios, reprogramación con arrastrar y soltar)
 4. Historia clínica + odontograma
 5. Tratamientos, presupuestos y caja
 6. Facturación electrónica DIAN + RIPS (Res. 2275/2023)

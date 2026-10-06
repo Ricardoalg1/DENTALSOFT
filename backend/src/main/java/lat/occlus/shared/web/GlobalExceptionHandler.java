@@ -1,5 +1,6 @@
 package lat.occlus.shared.web;
 
+import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -30,10 +31,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    /** Respaldo para carreras que la validación previa no alcanza a ver (p. ej. índices únicos). */
+    /** Mensajes para restricciones de la BD que el usuario puede provocar en una carrera. */
+    private static final Map<String, String> CONSTRAINT_MESSAGES = Map.of(
+            "ex_appointment_dentist_overlap", "El profesional ya tiene una cita en ese horario",
+            "uq_patient_document", "Ya existe un paciente con ese documento",
+            "ux_app_user_email", "Ya existe un usuario con ese correo");
+
+    /** Respaldo para carreras que la validación previa no alcanza a ver (índices únicos, exclusiones). */
     @ExceptionHandler(DataIntegrityViolationException.class)
-    ProblemDetail dataIntegrity() {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "El registro entra en conflicto con uno existente");
+    ProblemDetail dataIntegrity(DataIntegrityViolationException ex) {
+        String cause = String.valueOf(ex.getMostSpecificCause().getMessage());
+        String detail = CONSTRAINT_MESSAGES.entrySet().stream()
+                .filter(e -> cause.contains(e.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse("El registro entra en conflicto con uno existente");
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

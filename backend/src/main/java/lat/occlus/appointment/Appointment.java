@@ -1,4 +1,4 @@
-package lat.occlus.user;
+package lat.occlus.appointment;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,38 +12,44 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 @Entity
+@Audited
 @Getter
 @Setter
 @NoArgsConstructor
-public class AppUser {
+public class Appointment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private UUID clinicId;
+    private UUID siteId;
+    private UUID dentistId;
+    private UUID patientId;
 
-    /** Siempre en minúsculas; ver {@link #normalizeEmail(String)}. */
-    private String email;
-
-    private String passwordHash;
-
-    private String fullName;
+    private Instant startsAt;
+    private Instant endsAt;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private AppointmentStatus status = AppointmentStatus.SCHEDULED;
 
-    private boolean active = true;
+    private String reason;
+    private String notes;
+    private String cancellationReason;
 
-    /** Atiende pacientes: aparece como profesional en la agenda. */
-    private boolean professional;
+    @NotAudited
+    private UUID createdBy;
 
+    @NotAudited
     @CreationTimestamp
     private Instant createdAt;
 
-    public static String normalizeEmail(String email) {
-        return email.trim().toLowerCase();
-    }
+    @NotAudited
+    @UpdateTimestamp
+    private Instant updatedAt;
 }

@@ -128,3 +128,43 @@
     @apply font-sans;
   }
 }
+/* ---------- FullCalendar con los colores del tema ---------- */
+.fc {
+  --fc-border-color: var(--border);
+  --fc-page-bg-color: var(--background);
+  --fc-neutral-bg-color: var(--muted);
+  --fc-today-bg-color: color-mix(in oklch, var(--primary) 6%, transparent);
+  --fc-non-business-color: color-mix(in oklch, var(--muted-foreground) 9%, transparent);
+  --fc-now-indicator-color: var(--destructive);
+  --fc-highlight-color: color-mix(in oklch, var(--primary) 18%, transparent);
+  --fc-button-bg-color: var(--background);
+  --fc-button-border-color: var(--border);
+  --fc-button-text-color: var(--foreground);
+  --fc-button-hover-bg-color: var(--muted);
+  --fc-button-hover-border-color: var(--border);
+  --fc-button-active-bg-color: var(--primary);
+  --fc-button-active-border-color: var(--primary);
+  font-size: 0.8125rem;
+}
+.fc .fc-button {
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  padding: 0.3rem 0.65rem;
+  text-transform: capitalize;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  color: var(--primary-foreground);
+}
+.fc .fc-toolbar-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number {
+  color: inherit;
+  text-transform: capitalize;
+}
+.fc .fc-timegrid-event {
+  border-radius: 6px;
+}

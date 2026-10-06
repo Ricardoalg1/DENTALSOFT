@@ -21,7 +21,7 @@ type Item = { href: string; label: string; icon: LucideIcon; soon?: boolean; adm
 const ITEMS: Item[] = [
   { href: "/app", label: "Inicio", icon: LayoutDashboard },
   { href: "/app/pacientes", label: "Pacientes", icon: UserRound },
-  { href: "/app/agenda", label: "Agenda", icon: CalendarDays, soon: true },
+  { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/app/historias", label: "Historias clínicas", icon: ClipboardList, soon: true },
   { href: "/app/facturacion", label: "Facturación y RIPS", icon: FileText, soon: true },
   { href: "/app/inventario", label: "Inventario", icon: Package, soon: true },

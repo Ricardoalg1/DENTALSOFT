@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getToken } from "./session";
 import type { Me } from "./types";
 
-const API_URL = process.env.API_URL ?? "http://localhost:8080";
+export const API_URL = process.env.API_URL ?? "http://localhost:8080";
 
 export class ApiError extends Error {
   constructor(

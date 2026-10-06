@@ -6,6 +6,7 @@ import lat.occlus.shared.tenant.TenantContext;
 import lat.occlus.shared.web.ConflictException;
 import lat.occlus.shared.web.NotFoundException;
 import lat.occlus.user.UserDtos.CreateUserRequest;
+import lat.occlus.user.UserDtos.ProfessionalResponse;
 import lat.occlus.user.UserDtos.UpdateUserRequest;
 import lat.occlus.user.UserDtos.UserResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,13 @@ public class UserService {
 
     private final AppUserRepository users;
     private final PasswordEncoder passwordEncoder;
+
+    @Transactional(readOnly = true)
+    public List<ProfessionalResponse> professionals(UUID clinicId) {
+        return users.findByClinicIdAndProfessionalTrueAndActiveTrueOrderByFullName(clinicId).stream()
+                .map(u -> new ProfessionalResponse(u.getId(), u.getFullName()))
+                .toList();
+    }
 
     @Transactional(readOnly = true)
     public List<UserResponse> list(UUID clinicId) {
@@ -48,6 +56,9 @@ public class UserService {
         user.setFullName(req.fullName().trim());
         user.setRole(req.role());
         user.setPasswordHash(passwordEncoder.encode(req.password()));
+        user.setProfessional(req.professional() != null
+                ? req.professional()
+                : req.role() == Role.DENTIST || req.role() == Role.ADMIN);
         return user;
     }
 
@@ -63,6 +74,7 @@ public class UserService {
         if (req.fullName() != null && !req.fullName().isBlank()) user.setFullName(req.fullName().trim());
         if (req.role() != null) user.setRole(req.role());
         if (req.active() != null) user.setActive(req.active());
+        if (req.professional() != null) user.setProfessional(req.professional());
         return UserResponse.from(user);
     }
 }

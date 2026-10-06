@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, CalendarPlus, Pencil } from "lucide-react";
+import { AppointmentList } from "@/app/app/agenda/appointment-list";
+import { splitByNow } from "@/lib/agenda-time";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api, getMe } from "@/lib/api";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { DOCUMENT_TYPES, REGIMES, SEXES, ZONES, type PatientRevision } from "@/lib/types";
+import { DOCUMENT_TYPES, REGIMES, SEXES, ZONES, type Appointment, type PatientRevision } from "@/lib/types";
 import { loadPatient } from "./load-patient";
 
 export const metadata: Metadata = { title: "Paciente" };
@@ -20,6 +22,9 @@ const REVISION_LABELS: Record<PatientRevision["type"], string> = {
 export default async function PatientPage({ params }: PageProps<"/app/pacientes/[id]">) {
   const { id } = await params;
   const [patient, me] = await Promise.all([loadPatient(id), getMe()]);
+  const appointments = await api<Appointment[]>(`/api/patients/${id}/appointments`);
+  const { upcoming, past: allPast } = splitByNow(appointments);
+  const past = allPast.slice(0, 10);
   const history = me.role === "ADMIN" ? await api<PatientRevision[]>(`/api/patients/${id}/history`) : null;
   const isMinor = patient.age < 18;
 
@@ -40,9 +45,16 @@ export default async function PatientPage({ params }: PageProps<"/app/pacientes/
             {patient.documentType} {patient.documentNumber} · {patient.age} años
           </p>
         </div>
-        <Link href={`/app/pacientes/${id}/editar`} className={buttonVariants({ variant: "outline" })}>
-          <Pencil /> Editar
-        </Link>
+        <div className="flex gap-2">
+          {patient.active && (
+            <Link href={`/app/agenda?patientId=${id}`} className={buttonVariants()}>
+              <CalendarPlus /> Agendar cita
+            </Link>
+          )}
+          <Link href={`/app/pacientes/${id}/editar`} className={buttonVariants({ variant: "outline" })}>
+            <Pencil /> Editar
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -81,6 +93,24 @@ export default async function PatientPage({ params }: PageProps<"/app/pacientes/
           ]}
         />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Citas</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-5">
+          <section className="grid gap-2">
+            <h3 className="text-sm font-medium text-muted-foreground">Próximas</h3>
+            <AppointmentList appointments={upcoming} show="dentist" empty="No tiene citas próximas." />
+          </section>
+          {past.length > 0 && (
+            <section className="grid gap-2">
+              <h3 className="text-sm font-medium text-muted-foreground">Anteriores</h3>
+              <AppointmentList appointments={past} show="dentist" empty="" />
+            </section>
+          )}
+        </CardContent>
+      </Card>
 
       {patient.notes && (
         <Card>

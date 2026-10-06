@@ -30,3 +30,8 @@ export async function setUserActive(userId: string, active: boolean) {
   await api(`/api/users/${userId}`, { method: "PATCH", body: JSON.stringify({ active }) });
   revalidatePath("/app/equipo");
 }
+
+export async function setUserProfessional(userId: string, professional: boolean) {
+  await api(`/api/users/${userId}`, { method: "PATCH", body: JSON.stringify({ professional }) });
+  revalidatePath("/app/equipo");
+}

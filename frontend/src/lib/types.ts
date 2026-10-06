@@ -18,7 +18,7 @@ export type Me = {
   clinicName: string;
 };
 
-export type User = { id: string; email: string; fullName: string; role: Role; active: boolean };
+export type User = { id: string; email: string; fullName: string; role: Role; active: boolean; professional: boolean };
 
 export type Site = {
   id: string;
@@ -111,4 +111,50 @@ export type PatientRevision = {
   userName: string | null;
   type: "CREATED" | "UPDATED" | "DELETED";
   changes: { field: string; before: string | null; after: string | null }[];
+};
+
+// ---------- Agenda ----------
+export const APPOINTMENT_STATUS = {
+  SCHEDULED: "Programada",
+  CONFIRMED: "Confirmada",
+  ATTENDED: "Atendida",
+  NO_SHOW: "No asistió",
+  CANCELLED: "Cancelada",
+} as const;
+export type AppointmentStatus = keyof typeof APPOINTMENT_STATUS;
+
+export type Professional = { id: string; fullName: string };
+
+export type Appointment = {
+  id: string;
+  /** ISO con offset de Colombia, p. ej. 2026-10-12T09:00:00-05:00 */
+  startsAt: string;
+  endsAt: string;
+  status: AppointmentStatus;
+  reason: string | null;
+  notes: string | null;
+  cancellationReason: string | null;
+  patient: { id: string; fullName: string; documentType: DocumentType; documentNumber: string; phone: string | null };
+  dentist: { id: string; name: string };
+  site: { id: string; name: string };
+};
+
+export type ScheduleBlock = {
+  dentistId: string;
+  siteId: string;
+  /** 1 = lunes … 7 = domingo */
+  dayOfWeek: number;
+  /** "08:00:00" */
+  startTime: string;
+  endTime: string;
+};
+
+export const WEEKDAYS: Record<number, string> = {
+  1: "Lunes",
+  2: "Martes",
+  3: "Miércoles",
+  4: "Jueves",
+  5: "Viernes",
+  6: "Sábado",
+  7: "Domingo",
 };
