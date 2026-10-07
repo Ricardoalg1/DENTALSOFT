@@ -16,6 +16,12 @@ spring:
     multipart:
       max-file-size: 15MB
       max-request-size: 16MB
+  devtools:
+    restart:
+      # Esperar a que javac termine de escribir todas las clases antes de reiniciar en desarrollo
+      # (con el valor por defecto, 400 ms, a veces carga una clase a medio escribir: ClassFormatError).
+      poll-interval: 3s
+      quiet-period: 2s
   jpa:
     # Flyway es dueño del esquema; Hibernate solo valida que las entidades coincidan.
     hibernate:

@@ -21,6 +21,7 @@ export function PatientTabs({ patientId, clinical }: { patientId: string; clinic
           },
         ]
       : []),
+    { href: `${base}/tratamientos`, label: "Tratamientos y pagos", active: pathname.startsWith(`${base}/tratamientos`) },
   ];
   return (
     <nav aria-label="Secciones del paciente" className="-mb-2 flex gap-1 overflow-x-auto border-b">

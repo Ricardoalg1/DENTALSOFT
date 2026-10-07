@@ -11,13 +11,15 @@ type Props = Omit<React.ComponentProps<"select">, "children"> & {
 };
 
 /** <select> nativo con el estilo de los inputs: accesible y sin JavaScript extra. */
-export function NativeSelect({ name, label, options, placeholder, errors, className, ...props }: Props) {
+export function NativeSelect({ name, label, options, placeholder, errors, className, id, ...props }: Props) {
+  // id propio cuando hay varios formularios iguales en la página; si no, el name.
+  const selectId = id ?? name;
   return (
     <div className="grid gap-1.5">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={selectId}>{label}</Label>
       <select
         key={String(props.defaultValue ?? "")}
-        id={name}
+        id={selectId}
         name={name}
         aria-invalid={errors ? true : undefined}
         className={cn(

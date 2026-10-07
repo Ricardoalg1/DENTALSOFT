@@ -364,3 +364,150 @@ export type Consent = {
 
 /** Marcadores que se reemplazan al firmar un consentimiento. */
 export const CONSENT_PLACEHOLDERS = ["declarante", "paciente", "documento", "profesional", "clinica", "fecha", "procedimiento"] as const;
+
+// ---------- Tratamientos, pagos y caja ----------
+export const PROCEDURE_CATEGORIES = {
+  DIAGNOSIS: "Diagnóstico",
+  PREVENTION: "Prevención",
+  RESTORATIVE: "Operatoria",
+  ENDODONTICS: "Endodoncia",
+  PERIODONTICS: "Periodoncia",
+  SURGERY: "Cirugía",
+  PROSTHODONTICS: "Prótesis",
+  ORTHODONTICS: "Ortodoncia",
+  OTHER: "Otros",
+} as const;
+export type ProcedureCategory = keyof typeof PROCEDURE_CATEGORIES;
+
+export type Procedure = {
+  id: string;
+  code: string | null;
+  name: string;
+  category: ProcedureCategory;
+  cupsCode: string | null;
+  price: number;
+  perTooth: boolean;
+  treatsCondition: OdontogramCondition | null;
+  active: boolean;
+};
+
+export const PLAN_STATUS = {
+  DRAFT: "Borrador",
+  ACCEPTED: "Aceptado",
+  COMPLETED: "Completado",
+  REJECTED: "Rechazado",
+  CANCELLED: "Cancelado",
+} as const;
+export type PlanStatus = keyof typeof PLAN_STATUS;
+
+export const ITEM_STATUS = { PENDING: "Pendiente", DONE: "Realizado", CANCELLED: "Cancelado" } as const;
+export type ItemStatus = keyof typeof ITEM_STATUS;
+
+export type PlanTotals = { total: number; done: number; pending: number };
+
+export type TreatmentItem = {
+  id: string;
+  procedure: Ref;
+  description: string;
+  cupsCode: string | null;
+  tooth: number | null;
+  surfaces: string | null;
+  quantity: number;
+  unitPrice: number;
+  discount: number;
+  total: number;
+  status: ItemStatus;
+  doneAt: string | null;
+  doneBy: Ref | null;
+};
+
+export type TreatmentPlan = {
+  id: string;
+  patient: Ref;
+  dentist: Ref | null;
+  title: string;
+  status: PlanStatus;
+  notes: string | null;
+  validUntil: string | null;
+  acceptedAt: string | null;
+  acceptedBy: Ref | null;
+  closedAt: string | null;
+  createdAt: string;
+  items: TreatmentItem[];
+  totals: PlanTotals;
+};
+
+export type PlanSummary = {
+  id: string;
+  title: string;
+  status: PlanStatus;
+  dentist: Ref | null;
+  createdAt: string;
+  itemCount: number;
+  totals: PlanTotals;
+};
+
+export type TreatmentSuggestion = {
+  tooth: number;
+  surfaces: string | null;
+  condition: OdontogramCondition;
+  procedureId: string;
+  procedureName: string;
+  price: number;
+};
+
+export const PAYMENT_METHODS = {
+  CASH: "Efectivo",
+  DEBIT_CARD: "Tarjeta débito",
+  CREDIT_CARD: "Tarjeta crédito",
+  TRANSFER: "Transferencia",
+  OTHER: "Otro",
+} as const;
+export type PaymentMethod = keyof typeof PAYMENT_METHODS;
+
+export type Payment = {
+  id: string;
+  receiptNumber: number;
+  patient: Ref;
+  patientDocument: string;
+  plan: Ref | null;
+  site: Ref;
+  cashSessionId: string;
+  amount: number;
+  method: PaymentMethod;
+  reference: string | null;
+  notes: string | null;
+  receivedBy: Ref | null;
+  receivedAt: string;
+  voidedAt: string | null;
+  voidedBy: Ref | null;
+  voidReason: string | null;
+  clinicName: string;
+  clinicNit: string | null;
+};
+
+export type CashSession = {
+  id: string;
+  site: Ref;
+  openedBy: Ref | null;
+  openedAt: string;
+  openingAmount: number;
+  closedBy: Ref | null;
+  closedAt: string | null;
+  expectedCash: number;
+  countedCash: number | null;
+  difference: number | null;
+  notes: string | null;
+  totals: { method: PaymentMethod; count: number; total: number }[];
+  collected: number;
+  voidedCount: number;
+  payments: Payment[] | null;
+};
+
+/** Saldo = realizado − pagado. Negativo: anticipo a favor del paciente. */
+export type Account = { budgeted: number; done: number; pendingToDo: number; paid: number; balance: number };
+
+/** Quién puede cobrar y ver pagos (el auxiliar no). */
+export const canCollect = (me: Me) => me.role !== "ASSISTANT";
+/** Quién abre y cierra caja. */
+export const canManageCash = (me: Me) => me.role === "ADMIN" || me.role === "RECEPTION";

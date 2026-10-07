@@ -44,6 +44,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             "ux_clinical_note_appointment", "Esa cita ya tiene una evolución",
             "ux_odontogram_surface", "Otra persona acaba de modificar ese diente. Recarga el odontograma.",
             "ux_odontogram_tooth", "Otra persona acaba de modificar ese diente. Recarga el odontograma.",
+            "ux_cash_session_open", "Ya hay una caja abierta en esa sede",
+            "uq_service_catalog_name", "Ya existe un procedimiento con ese nombre",
             // Lo lanza el trigger tg_clinical_note_immutable.
             "está firmada y no se puede modificar", "La evolución está firmada y no se puede modificar");
 
