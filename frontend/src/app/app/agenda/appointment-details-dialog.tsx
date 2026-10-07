@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { CalendarClock, MapPin, Stethoscope } from "lucide-react";
+import { CalendarClock, FilePlus2, MapPin, Stethoscope } from "lucide-react";
 import { FormError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,12 +16,13 @@ import { StatusBadge } from "./status-badge";
 
 type Props = {
   appointment: Appointment;
+  canWriteClinical: boolean;
   onClose: () => void;
   onEdit: () => void;
   onChanged: (appointment: Appointment) => void;
 };
 
-export function AppointmentDetailsDialog({ appointment: a, onClose, onEdit, onChanged }: Props) {
+export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onClose, onEdit, onChanged }: Props) {
   const [error, setError] = useState<string>();
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState("");
@@ -72,9 +73,19 @@ export function AppointmentDetailsDialog({ appointment: a, onClose, onEdit, onCh
               <span className="text-muted-foreground">Motivo de cancelación:</span> {a.cancellationReason}
             </p>
           )}
-          <Link href={`/app/pacientes/${a.patient.id}`} className="w-fit text-primary hover:underline">
-            Ver ficha del paciente
-          </Link>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <Link href={`/app/pacientes/${a.patient.id}`} className="w-fit text-primary hover:underline">
+              Ver ficha del paciente
+            </Link>
+            {canWriteClinical && started && (a.status === "ATTENDED" || open) && (
+              <Link
+                href={`/app/pacientes/${a.patient.id}/historia/nueva?appointmentId=${a.id}`}
+                className="inline-flex w-fit items-center gap-1 text-primary hover:underline"
+              >
+                <FilePlus2 className="size-4" /> Registrar evolución
+              </Link>
+            )}
+          </div>
         </div>
 
         <FormError message={error} />

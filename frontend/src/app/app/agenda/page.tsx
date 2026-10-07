@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Clock } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { api, ApiError, getMe } from "@/lib/api";
-import type { Patient, Professional, ScheduleBlock, Site } from "@/lib/types";
+import { canWriteClinical, type Patient, type Professional, type ScheduleBlock, type Site } from "@/lib/types";
 import { Agenda } from "./agenda";
 
 export const metadata: Metadata = { title: "Agenda" };
@@ -50,6 +50,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/app/agend
         schedules={schedules}
         presetPatient={presetPatient}
         defaultDentistId={ownAgenda ? me.id : undefined}
+        canWriteClinical={canWriteClinical(me)}
       />
     </div>
   );

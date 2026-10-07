@@ -71,7 +71,7 @@ public class AuthService {
     public MeResponse me(UUID userId) {
         var user = users.findById(userId).orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
         var clinic = clinics.findById(user.getClinicId()).orElseThrow();
-        return new MeResponse(user.getId(), user.getEmail(), user.getFullName(), user.getRole(),
+        return new MeResponse(user.getId(), user.getEmail(), user.getFullName(), user.getRole(), user.isProfessional(),
                 clinic.getId(), clinic.getName());
     }
 

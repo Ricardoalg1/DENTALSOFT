@@ -26,6 +26,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(ForbiddenException.class)
+    ProblemDetail forbidden(ForbiddenException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(BadRequestException.class)
     ProblemDetail badRequest(BadRequestException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
@@ -35,7 +40,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Map<String, String> CONSTRAINT_MESSAGES = Map.of(
             "ex_appointment_dentist_overlap", "El profesional ya tiene una cita en ese horario",
             "uq_patient_document", "Ya existe un paciente con ese documento",
-            "ux_app_user_email", "Ya existe un usuario con ese correo");
+            "ux_app_user_email", "Ya existe un usuario con ese correo",
+            "ux_clinical_note_appointment", "Esa cita ya tiene una evolución",
+            "ux_odontogram_surface", "Otra persona acaba de modificar ese diente. Recarga el odontograma.",
+            "ux_odontogram_tooth", "Otra persona acaba de modificar ese diente. Recarga el odontograma.",
+            // Lo lanza el trigger tg_clinical_note_immutable.
+            "está firmada y no se puede modificar", "La evolución está firmada y no se puede modificar");
 
     /** Respaldo para carreras que la validación previa no alcanza a ver (índices únicos, exclusiones). */
     @ExceptionHandler(DataIntegrityViolationException.class)

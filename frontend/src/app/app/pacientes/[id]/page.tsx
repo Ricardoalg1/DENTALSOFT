@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, CalendarPlus, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { AppointmentList } from "@/app/app/agenda/appointment-list";
 import { splitByNow } from "@/lib/agenda-time";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api, getMe } from "@/lib/api";
@@ -26,35 +25,13 @@ export default async function PatientPage({ params }: PageProps<"/app/pacientes/
   const { upcoming, past: allPast } = splitByNow(appointments);
   const past = allPast.slice(0, 10);
   const history = me.role === "ADMIN" ? await api<PatientRevision[]>(`/api/patients/${id}/history`) : null;
-  const isMinor = patient.age < 18;
 
   return (
-    <div className="grid max-w-5xl gap-6">
-      <Link href="/app/pacientes" className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" /> Pacientes
-      </Link>
-
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight">
-            {patient.fullName}
-            {!patient.active && <Badge variant="outline">Inactivo</Badge>}
-            {isMinor && <Badge variant="secondary">Menor de edad</Badge>}
-          </h1>
-          <p className="text-muted-foreground tabular-nums">
-            {patient.documentType} {patient.documentNumber} · {patient.age} años
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {patient.active && (
-            <Link href={`/app/agenda?patientId=${id}`} className={buttonVariants()}>
-              <CalendarPlus /> Agendar cita
-            </Link>
-          )}
-          <Link href={`/app/pacientes/${id}/editar`} className={buttonVariants({ variant: "outline" })}>
-            <Pencil /> Editar
-          </Link>
-        </div>
+    <div className="grid gap-6">
+      <div className="flex justify-end">
+        <Link href={`/app/pacientes/${id}/editar`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+          <Pencil /> Editar datos
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

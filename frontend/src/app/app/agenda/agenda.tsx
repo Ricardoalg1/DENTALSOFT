@@ -34,9 +34,11 @@ type Props = {
   schedules: ScheduleBlock[];
   presetPatient: PickedPatient | null;
   defaultDentistId?: string;
+  /** Profesional con acceso a la historia clínica: puede registrar la evolución desde la cita. */
+  canWriteClinical: boolean;
 };
 
-export function Agenda({ professionals, sites, schedules, presetPatient, defaultDentistId }: Props) {
+export function Agenda({ professionals, sites, schedules, presetPatient, defaultDentistId, canWriteClinical }: Props) {
   const calendarRef = useRef<FullCalendar>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [dentistId, setDentistId] = useState(defaultDentistId ?? "");
@@ -263,6 +265,7 @@ export function Agenda({ professionals, sites, schedules, presetPatient, default
         <AppointmentDetailsDialog
           key={selected.id + selected.status}
           appointment={selected}
+          canWriteClinical={canWriteClinical}
           onClose={() => setSelected(null)}
           onEdit={() => {
             setDraft({ mode: "edit", appointment: selected });

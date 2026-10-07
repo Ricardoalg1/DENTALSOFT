@@ -23,6 +23,24 @@ public final class ApiClient {
         return JsonPath.read(json, "$.accessToken");
     }
 
+    /** Crea un usuario con el rol indicado (como administrador) y devuelve su token. */
+    public static String createUserAndLogin(MockMvc mvc, String adminToken, String role, boolean professional)
+            throws Exception {
+        String email = uniqueEmail(role.toLowerCase());
+        mvc.perform(post("/api/users").header("Authorization", bearer(adminToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"%s","fullName":"Usuario %s","role":"%s","password":"secreto123","professional":%s}"""
+                                .formatted(email, role, role, professional)))
+                .andExpect(status().isCreated());
+        String json = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email":"%s","password":"secreto123"}""".formatted(email)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(json, "$.accessToken");
+    }
+
     public static String uniqueEmail(String prefix) {
         return prefix + "-" + UUID.randomUUID().toString().substring(0, 8) + "@test.co";
     }

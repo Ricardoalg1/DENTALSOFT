@@ -4,7 +4,7 @@ import { Nav } from "@/components/app/nav";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { getMe } from "@/lib/api";
-import { ROLE_LABELS } from "@/lib/types";
+import { ROLE_LABELS, canReadClinical } from "@/lib/types";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const me = await getMe();
@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           <Logo />
           <p className="mt-1 truncate text-xs text-muted-foreground">{me.clinicName}</p>
         </div>
-        <Nav isAdmin={me.role === "ADMIN"} />
+        <Nav isAdmin={me.role === "ADMIN"} clinical={canReadClinical(me)} />
         <div className="mt-auto grid gap-2 border-t pt-4">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{me.fullName}</p>

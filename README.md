@@ -42,6 +42,12 @@ cd backend && ./mvnw test
 - **Agenda**: Postgres impide que un profesional tenga dos citas activas que se crucen (restricción de
   exclusión `ex_appointment_dentist_overlap`), así que ni dos recepcionistas al mismo tiempo pueden crear un cruce.
   Las horas se manejan en hora de Colombia (UTC-5, sin horario de verano).
+- **Historia clínica** (Res. 1995 de 1999): solo el equipo de salud la ve (recepción no) y solo los profesionales
+  escriben. Las evoluciones se firman y desde ahí son inmutables: el trigger `tg_clinical_note_immutable`
+  bloquea cualquier `UPDATE`/`DELETE`, y un hash SHA-256 guardado al firmar permite detectar alteraciones.
+  Se corrigen con notas aclaratorias (solo-agregar). Diagnósticos CIE-10 con la estructura de RIPS.
+- **Odontograma** (notación FDI): las marcas nunca se borran (`removed_at`), así que se puede ver el
+  odontograma de cualquier fecha; calcula COP-D y ceo-d.
 - Flyway es dueño del esquema (`backend/src/main/resources/db/migration`); Hibernate solo valida.
 
 ## Roadmap
@@ -49,7 +55,7 @@ cd backend && ./mvnw test
 1. ✅ Base: clínicas, sedes, usuarios, roles, login
 2. ✅ Pacientes + RLS + auditoría
 3. ✅ Agenda (citas, horarios, reprogramación con arrastrar y soltar)
-4. Historia clínica + odontograma
+4. ✅ Historia clínica + odontograma
 5. Tratamientos, presupuestos y caja
 6. Facturación electrónica DIAN + RIPS (Res. 2275/2023)
 7. Inventario

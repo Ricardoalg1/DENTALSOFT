@@ -10,10 +10,7 @@ export default async function EditPatientPage({ params }: PageProps<"/app/pacien
   const patient = await loadPatient(id);
   return (
     <div className="grid max-w-3xl gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Editar paciente</h1>
-        <p className="text-muted-foreground">{patient.fullName}</p>
-      </div>
+      <h2 className="text-lg font-semibold">Editar datos del paciente</h2>
       <PatientForm action={updatePatient.bind(null, id)} patient={patient} cancelHref={`/app/pacientes/${id}`} />
     </div>
   );

@@ -23,5 +23,6 @@ public final class AuthDtos {
 
     public record TokenResponse(String accessToken, Instant expiresAt) {}
 
-    public record MeResponse(UUID id, String email, String fullName, Role role, UUID clinicId, String clinicName) {}
+    public record MeResponse(UUID id, String email, String fullName, Role role, boolean professional,
+                             UUID clinicId, String clinicName) {}
 }

@@ -14,6 +14,8 @@ export type Me = {
   email: string;
   fullName: string;
   role: Role;
+  /** Atiende pacientes: puede escribir en la historia clínica. */
+  professional: boolean;
   clinicId: string;
   clinicName: string;
 };
@@ -157,4 +159,164 @@ export const WEEKDAYS: Record<number, string> = {
   5: "Viernes",
   6: "Sábado",
   7: "Domingo",
+};
+
+// ---------- Historia clínica ----------
+/** Recepción no ve la historia clínica (reserva del equipo de salud). */
+export const canReadClinical = (me: Me) => me.role !== "RECEPTION";
+/** Escribir en la historia clínica: solo profesionales. */
+export const canWriteClinical = (me: Me) => canReadClinical(me) && me.professional;
+
+export const MEDICAL_CONDITIONS = {
+  HYPERTENSION: "Hipertensión arterial",
+  DIABETES: "Diabetes",
+  HEART_DISEASE: "Enfermedad cardiaca",
+  BLEEDING_DISORDER: "Trastorno de coagulación",
+  ANTICOAGULANTS: "Toma anticoagulantes",
+  HEPATITIS: "Hepatitis",
+  HIV: "VIH",
+  ASTHMA: "Asma u otra enfermedad respiratoria",
+  EPILEPSY: "Epilepsia",
+  KIDNEY_DISEASE: "Enfermedad renal",
+  THYROID_DISEASE: "Enfermedad de tiroides",
+  CANCER_TREATMENT: "Tratamiento oncológico (quimio/radioterapia)",
+  BISPHOSPHONATES: "Toma bifosfonatos",
+  PREGNANCY: "Embarazo",
+  ANESTHESIA_ALLERGY: "Alergia a anestésicos locales",
+} as const;
+export type MedicalCondition = keyof typeof MEDICAL_CONDITIONS;
+
+/** Se muestran como alerta en la ficha del paciente: cambian cómo se le atiende. */
+export const ALERT_CONDITIONS: MedicalCondition[] = [
+  "HEART_DISEASE",
+  "BLEEDING_DISORDER",
+  "ANTICOAGULANTS",
+  "CANCER_TREATMENT",
+  "BISPHOSPHONATES",
+  "PREGNANCY",
+  "ANESTHESIA_ALLERGY",
+];
+
+export const HABITS = {
+  BRUXISM: "Bruxismo",
+  SMOKING: "Tabaquismo",
+  ALCOHOL: "Consumo de alcohol",
+  ONYCHOPHAGIA: "Onicofagia (morderse las uñas)",
+  MOUTH_BREATHING: "Respiración bucal",
+  THUMB_SUCKING: "Succión digital",
+  LIP_BITING: "Morderse el labio",
+  OBJECT_BITING: "Morder objetos",
+} as const;
+export type Habit = keyof typeof HABITS;
+
+export type Ref = { id: string; name: string };
+
+export type ClinicalBackground = {
+  conditions: MedicalCondition[];
+  habits: Habit[];
+  allergies: string | null;
+  medications: string | null;
+  surgicalHistory: string | null;
+  familyHistory: string | null;
+  observations: string | null;
+  /** null = aún no se han registrado antecedentes */
+  updatedAt: string | null;
+  updatedBy: Ref | null;
+};
+
+export const DIAGNOSIS_TYPES = {
+  IMPRESSION: "Impresión diagnóstica",
+  CONFIRMED_NEW: "Confirmado nuevo",
+  CONFIRMED_REPEAT: "Confirmado repetido",
+} as const;
+export type DiagnosisType = keyof typeof DIAGNOSIS_TYPES;
+
+/** CIE-10: code como lo pide RIPS ("K021"), display para mostrar ("K02.1"). */
+export type Diagnosis = { code: string; display: string; description: string };
+
+export type ClinicalNote = {
+  id: string;
+  patient: Ref;
+  dentist: Ref;
+  appointmentId: string | null;
+  attendedAt: string;
+  status: "DRAFT" | "SIGNED";
+  reason: string | null;
+  currentIllness: string | null;
+  examination: string | null;
+  diagnosisMain: Diagnosis | null;
+  diagnosisType: DiagnosisType | null;
+  diagnosisRelated: Diagnosis[];
+  procedures: string | null;
+  plan: string | null;
+  signedAt: string | null;
+  contentHash: string | null;
+  integrityOk: boolean | null;
+  addenda: { id: string; author: Ref; text: string; createdAt: string }[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ClinicalNoteSummary = {
+  id: string;
+  patient: Ref;
+  dentist: Ref;
+  attendedAt: string;
+  status: "DRAFT" | "SIGNED";
+  reason: string | null;
+  diagnosisMain: Diagnosis | null;
+  signedAt: string | null;
+};
+
+// ---------- Odontograma ----------
+/** O oclusal/incisal, M mesial, D distal, V vestibular, L lingual/palatino */
+export type ToothSurface = "O" | "M" | "D" | "V" | "L";
+
+export const SURFACES: Record<ToothSurface, string> = {
+  O: "Oclusal / incisal",
+  M: "Mesial",
+  D: "Distal",
+  V: "Vestibular",
+  L: "Lingual / palatino",
+};
+
+type ConditionInfo = {
+  label: string;
+  /** true: se marca en una superficie; false: diente completo */
+  surface: boolean;
+  /** rojo = hallazgo por tratar; azul = tratamiento existente o realizado */
+  kind: "finding" | "done" | "other";
+  /** Abreviatura que se dibuja junto al diente (marcas de diente completo) */
+  short?: string;
+};
+
+export const ODONTOGRAM_CONDITIONS = {
+  CARIES: { label: "Caries", surface: true, kind: "finding" },
+  RESIN: { label: "Resina", surface: true, kind: "done" },
+  AMALGAM: { label: "Amalgama", surface: true, kind: "done" },
+  SEALANT: { label: "Sellante", surface: true, kind: "done" },
+  TEMPORARY_FILLING: { label: "Obturación temporal", surface: true, kind: "other" },
+  FRACTURE: { label: "Fractura", surface: false, kind: "finding", short: "FX" },
+  CROWN: { label: "Corona", surface: false, kind: "done" },
+  ROOT_CANAL: { label: "Endodoncia realizada", surface: false, kind: "done", short: "TC" },
+  ROOT_CANAL_INDICATED: { label: "Endodoncia indicada", surface: false, kind: "finding", short: "TC" },
+  EXTRACTION_INDICATED: { label: "Exodoncia indicada", surface: false, kind: "finding" },
+  REMNANT_ROOT: { label: "Resto radicular", surface: false, kind: "finding", short: "RR" },
+  MISSING: { label: "Ausente", surface: false, kind: "done" },
+  IMPLANT: { label: "Implante", surface: false, kind: "done", short: "IMP" },
+  UNERUPTED: { label: "Sin erupcionar", surface: false, kind: "other", short: "SE" },
+} as const satisfies Record<string, ConditionInfo>;
+export type OdontogramCondition = keyof typeof ODONTOGRAM_CONDITIONS;
+
+export type OdontogramEntry = {
+  id: string;
+  tooth: number;
+  /** null = diente completo */
+  surface: ToothSurface | null;
+  condition: OdontogramCondition;
+  note: string | null;
+  createdAt: string;
+  createdBy: Ref | null;
+  removedAt: string | null;
+  removedBy: Ref | null;
 };
