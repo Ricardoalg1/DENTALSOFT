@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { errorMessage } from "@/lib/forms";
@@ -22,6 +23,8 @@ export async function addMark(patientId: string, input: z.input<typeof markSchem
       method: "POST",
       body: JSON.stringify(parsed.data),
     });
+    // Refresca la parte del servidor (historial de cambios); el dibujo ya se actualizó en el cliente.
+    revalidatePath(`/app/pacientes/${patientId}/odontograma`);
     return { ok: true, data };
   } catch (e) {
     return { ok: false, error: errorMessage(e) };
@@ -33,6 +36,7 @@ export async function removeMark(patientId: string, entryId: string): Promise<Ac
   if (!z.uuid().safeParse(entryId).success) return { ok: false, error: "Marca inválida" };
   try {
     const data = await api<OdontogramEntry[]>(`/api/patients/${patientId}/odontogram/${entryId}`, { method: "DELETE" });
+    revalidatePath(`/app/pacientes/${patientId}/odontograma`);
     return { ok: true, data };
   } catch (e) {
     return { ok: false, error: errorMessage(e) };

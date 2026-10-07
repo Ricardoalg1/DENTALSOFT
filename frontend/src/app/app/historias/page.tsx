@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, getMe } from "@/lib/api";
@@ -20,11 +21,18 @@ export default async function ClinicalNotesPage() {
 
   return (
     <div className="grid max-w-5xl gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Historias clínicas</h1>
-        <p className="text-muted-foreground">
-          Para registrar una atención, abre la ficha del paciente o la cita en la agenda.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Historias clínicas</h1>
+          <p className="text-muted-foreground">
+            Para registrar una atención, abre la ficha del paciente o la cita en la agenda.
+          </p>
+        </div>
+        {me.role === "ADMIN" && (
+          <Link href="/app/historias/plantillas" className={buttonVariants({ variant: "outline" })}>
+            Plantillas de consentimiento
+          </Link>
+        )}
       </div>
 
       {me.professional && (

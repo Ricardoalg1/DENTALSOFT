@@ -84,13 +84,20 @@ export function AppointmentFormDialog({ draft, professionals, sites, presetPatie
     });
   }
 
+  // onSubmit (y no <form action>): React 19 resetea el formulario tras cada acción, incluso si falla,
+  // y el usuario perdería lo que escribió.
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    submit(new FormData(e.currentTarget));
+  }
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{editing ? "Editar cita" : "Nueva cita"}</DialogTitle>
         </DialogHeader>
-        <form action={submit} className="grid gap-4">
+        <form onSubmit={onSubmit} className="grid gap-4">
           <FormError message={error} />
           <div className="grid gap-1.5">
             <Label>Paciente</Label>

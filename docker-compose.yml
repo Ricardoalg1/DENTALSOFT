@@ -21,5 +21,18 @@ services:
       timeout: 3s
       retries: 10
 
+  # Almacenamiento compatible con S3 para radiografías, fotos y firmas (en producción: AWS S3).
+  # MinIO dejó de publicar imágenes gratuitas; SeaweedFS implementa la misma API de S3.
+  storage:
+    image: chrislusf/seaweedfs:latest
+    container_name: occlus-storage
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -master.volumeSizeLimitMB=256
+    ports:
+      - "8333:8333"
+    volumes:
+      - occlus-storage:/data
+      - ./docker/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+
 volumes:
   occlus-pgdata:
+  occlus-storage:

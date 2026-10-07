@@ -320,3 +320,47 @@ export type OdontogramEntry = {
   removedAt: string | null;
   removedBy: Ref | null;
 };
+
+// ---------- Archivos y consentimientos ----------
+export const FILE_CATEGORIES = {
+  RADIOGRAPH: "Radiografía",
+  PHOTO: "Fotografía",
+  DOCUMENT: "Documento",
+  OTHER: "Otro",
+} as const;
+export type FileCategory = keyof typeof FILE_CATEGORIES;
+
+export type PatientFile = {
+  id: string;
+  category: FileCategory;
+  title: string;
+  originalFilename: string | null;
+  contentType: string;
+  sizeBytes: number;
+  createdAt: string;
+  uploadedBy: Ref | null;
+};
+
+export type ConsentTemplate = { id: string; title: string; body: string; active: boolean; updatedAt: string };
+
+export type Consent = {
+  id: string;
+  patient: Ref;
+  title: string;
+  body: string;
+  procedureDetail: string | null;
+  signerName: string;
+  signerDocument: string;
+  signerRelationship: string;
+  signatureFileId: string;
+  professional: Ref | null;
+  signedAt: string;
+  contentHash: string;
+  integrityOk: boolean;
+  revokedAt: string | null;
+  revokedBy: Ref | null;
+  revocationReason: string | null;
+};
+
+/** Marcadores que se reemplazan al firmar un consentimiento. */
+export const CONSENT_PLACEHOLDERS = ["declarante", "paciente", "documento", "profesional", "clinica", "fecha", "procedimiento"] as const;

@@ -14,3 +14,8 @@ export function formatDateTime(iso: string) {
     new Date(iso),
   );
 }
+
+/** "2026-10-07" → "7 de octubre de 2026" */
+export function formatLongDate(isoDate: string) {
+  return new Intl.DateTimeFormat("es-CO", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${isoDate}T00:00:00Z`));
+}

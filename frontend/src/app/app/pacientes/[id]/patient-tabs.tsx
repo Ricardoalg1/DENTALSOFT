@@ -13,6 +13,12 @@ export function PatientTabs({ patientId, clinical }: { patientId: string; clinic
       ? [
           { href: `${base}/historia`, label: "Historia clínica", active: pathname.startsWith(`${base}/historia`) },
           { href: `${base}/odontograma`, label: "Odontograma", active: pathname.startsWith(`${base}/odontograma`) },
+          { href: `${base}/archivos`, label: "Archivos", active: pathname.startsWith(`${base}/archivos`) },
+          {
+            href: `${base}/consentimientos`,
+            label: "Consentimientos",
+            active: pathname.startsWith(`${base}/consentimientos`),
+          },
         ]
       : []),
   ];

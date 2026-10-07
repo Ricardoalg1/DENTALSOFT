@@ -12,6 +12,10 @@ spring:
     password: ${DB_MIGRATION_PASSWORD:occlus}
     placeholders:
       app_role: ${DB_USER:occlus_app}
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 16MB
   jpa:
     # Flyway es dueño del esquema; Hibernate solo valida que las entidades coincidan.
     hibernate:
@@ -26,6 +30,14 @@ spring:
         store_data_at_delete: true
 
 occlus:
+  storage:
+    # Local: SeaweedFS (docker compose). Producción en AWS: dejar endpoint vacío y usar el rol IAM.
+    endpoint: ${STORAGE_ENDPOINT:http://localhost:8333}
+    region: ${STORAGE_REGION:us-east-1}
+    bucket: ${STORAGE_BUCKET:occlus-files}
+    access-key: ${STORAGE_ACCESS_KEY:occlus}
+    secret-key: ${STORAGE_SECRET_KEY:occlus-dev-secret}
+    path-style: ${STORAGE_PATH_STYLE:true}
   jwt:
     # En producción SIEMPRE definir JWT_SECRET (mínimo 32 caracteres).
     secret: ${JWT_SECRET:dev-only-secret-cambiar-en-produccion-0123456789}

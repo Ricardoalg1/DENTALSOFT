@@ -10,7 +10,7 @@ Software en la nube para clínicas odontológicas en Colombia — [occlus.lat](h
 ## Desarrollo local
 
 ```bash
-# 1. Base de datos (Postgres en el puerto 5433)
+# 1. Base de datos (Postgres, puerto 5433) y almacenamiento S3 (SeaweedFS, puerto 8333)
 docker compose up -d
 
 # 2. Backend → http://localhost:8080  (Swagger: /swagger-ui.html)
@@ -20,11 +20,14 @@ cd backend && ./mvnw spring-boot:run
 cd frontend && pnpm install && pnpm dev
 ```
 
-Pruebas del backend (levantan su propio Postgres con Testcontainers, requiere Docker):
+Pruebas del backend (levantan su propio Postgres y S3 con Testcontainers, requiere Docker):
 
 ```bash
 cd backend && ./mvnw test
 ```
+
+> Detén `spring-boot:run` antes de correr `./mvnw clean …`: DevTools recarga las clases mientras Maven
+> las reescribe y el servidor queda caído con `ClassFormatError`.
 
 ## Arquitectura
 
@@ -48,6 +51,12 @@ cd backend && ./mvnw test
   Se corrigen con notas aclaratorias (solo-agregar). Diagnósticos CIE-10 con la estructura de RIPS.
 - **Odontograma** (notación FDI): las marcas nunca se borran (`removed_at`), así que se puede ver el
   odontograma de cualquier fecha; calcula COP-D y ceo-d.
+- **Historia clínica** (Res. 1995 de 1999): las evoluciones firmadas y los consentimientos son inmutables
+  (triggers de Postgres) y llevan una huella SHA-256 para detectar alteraciones; se corrigen con notas
+  aclaratorias o se revocan, nunca se editan ni se borran. Los archivos tampoco se borran: se ocultan con motivo.
+- **Archivos** (radiografías, fotos, firmas) en S3. En local, SeaweedFS (MinIO dejó de publicar imágenes
+  gratuitas); en producción, AWS S3 con `STORAGE_ENDPOINT` vacío. El tipo de archivo se detecta por su
+  contenido, no por la extensión. El navegador los ve a través de `/bff/files/{id}`, nunca con una URL pública.
 - Flyway es dueño del esquema (`backend/src/main/resources/db/migration`); Hibernate solo valida.
 
 ## Roadmap

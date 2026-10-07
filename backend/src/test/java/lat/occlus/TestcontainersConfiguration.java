@@ -3,6 +3,7 @@ package lat.occlus;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistrar;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -21,9 +22,20 @@ public class TestcontainersConfiguration {
 						"/docker-entrypoint-initdb.d/01-app-role.sql");
 	}
 
+	/** S3 de pruebas (adobe/s3mock): acepta cualquier credencial. */
 	@Bean
-	DynamicPropertyRegistrar postgresProperties(PostgreSQLContainer postgres) {
+	GenericContainer<?> s3Container() {
+		return new GenericContainer<>(DockerImageName.parse("adobe/s3mock:latest"))
+				.withEnv("COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS", "occlus-test")
+				.withExposedPorts(9090);
+	}
+
+	@Bean
+	DynamicPropertyRegistrar postgresProperties(PostgreSQLContainer postgres, GenericContainer<?> s3Container) {
 		return registry -> {
+			registry.add("occlus.storage.endpoint",
+					() -> "http://" + s3Container.getHost() + ":" + s3Container.getMappedPort(9090));
+			registry.add("occlus.storage.bucket", () -> "occlus-test");
 			registry.add("spring.datasource.url", postgres::getJdbcUrl);
 			registry.add("spring.datasource.username", () -> "occlus_app");
 			registry.add("spring.datasource.password", () -> "occlus_app");

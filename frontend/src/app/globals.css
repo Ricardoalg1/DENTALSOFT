@@ -168,3 +168,19 @@
 .fc .fc-timegrid-event {
   border-radius: 6px;
 }
+
+/* ---------- Impresión (consentimientos y documentos) ---------- */
+@media print {
+  aside,
+  nav[aria-label="Secciones del paciente"],
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}
