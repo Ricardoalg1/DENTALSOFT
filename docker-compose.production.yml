@@ -1,0 +1,114 @@
+# Requiere .env.production completado. No expone backend ni bases de datos.
+x-logging: &bounded-logs
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  backend:
+    build: {context: ., dockerfile: backend/Dockerfile}
+    restart: unless-stopped
+    logging: *bounded-logs
+    environment:
+      DB_URL: ${DB_URL:?Configura la base de datos PostgreSQL}
+      DB_USER: ${DB_USER:?Configura el rol restringido de aplicación}
+      DB_PASSWORD: ${DB_PASSWORD:?Configura su contraseña}
+      DB_MIGRATION_USER: ${DB_MIGRATION_USER:?Configura el propietario de migraciones}
+      DB_MIGRATION_PASSWORD: ${DB_MIGRATION_PASSWORD:?Configura su contraseña}
+      JWT_SECRET: ${JWT_SECRET:?Configura un secreto JWT privado}
+      SITE_PUBLIC_API_KEY: ${SITE_PUBLIC_API_KEY:?Configura la clave compartida del sitio}
+      OCCLUS_PLATFORM_ADMIN_IDS: ${OCCLUS_PLATFORM_ADMIN_IDS:?Configura el usuario comercial autorizado}
+      SITE_ANALYTICS_ENABLED: ${SITE_ANALYTICS_ENABLED:-false}
+      SITE_RETENTION_ENABLED: ${SITE_RETENTION_ENABLED:-false}
+      SITE_RETENTION_DAYS: ${SITE_RETENTION_DAYS:-0}
+      STORAGE_ENDPOINT: ""
+      STORAGE_ACCESS_KEY: ""
+      STORAGE_SECRET_KEY: ""
+      STORAGE_PATH_STYLE: "false"
+      STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
+      STORAGE_BUCKET: ${STORAGE_BUCKET:?Configura el bucket privado de archivos}
+      # Credenciales temporales AWS mediante el rol IAM de la instancia.
+      MESSAGING_SCHEDULER: "false"
+      WHATSAPP_LIVE_ENABLED: "false"
+      MESSAGING_AI_ENABLED: "false"
+      SPRINGDOC_API_DOCS_ENABLED: "false"
+      SPRINGDOC_SWAGGER_UI_ENABLED: "false"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    stop_grace_period: 40s
+    volumes: ["./deploy/certs/global-bundle.pem:/app/certs/global-bundle.pem:ro"]
+    networks: [internal]
+  frontend:
+    build: {context: ., dockerfile: frontend/Dockerfile}
+    restart: unless-stopped
+    logging: *bounded-logs
+    environment:
+      API_URL: http://backend:8080
+      PUBLIC_SITE_URL: https://${PUBLIC_DOMAIN:?Configura el dominio}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/bff/health',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      backend: {condition: service_healthy}
+    networks: [internal]
+  site:
+    build:
+      context: .
+      dockerfile: site/Dockerfile
+      args:
+        SITE_URL: https://${PUBLIC_DOMAIN:?Configura el dominio}
+        PUBLIC_APP_URL: https://${PUBLIC_DOMAIN}
+    restart: unless-stopped
+    logging: *bounded-logs
+    environment:
+      API_URL: http://backend:8080
+      SITE_URL: https://${PUBLIC_DOMAIN}
+      SITE_PUBLIC_API_KEY: ${SITE_PUBLIC_API_KEY}
+      SITE_OWNER_NAME: ${SITE_OWNER_NAME:-SINE SAS}
+      SITE_CONTACT_NAME: ${SITE_CONTACT_NAME:-Ricardo Algarin}
+      SITE_CONTACT_EMAIL: ${SITE_CONTACT_EMAIL:?Configura el correo público de privacidad}
+      SITE_RETENTION_DAYS: ${SITE_RETENTION_PUBLIC_DAYS:-}
+      SITE_ANALYTICS_ENABLED: ${SITE_ANALYTICS_ENABLED:-false}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4321/site-api/health',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks: [internal]
+  edge:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    logging: *bounded-logs
+    volumes: ["./deploy/nginx.conf:/etc/nginx/nginx.conf:ro"]
+    depends_on:
+      frontend: {condition: service_healthy}
+      site: {condition: service_healthy}
+    networks: [internal]
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    logging: *bounded-logs
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN}
+      TLS_EMAIL: ${TLS_EMAIL:?Configura el correo para TLS}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [edge]
+    networks: [internal]
+networks:
+  internal:
+volumes:
+  caddy-data:
+  caddy-config:

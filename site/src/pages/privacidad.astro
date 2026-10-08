@@ -1,0 +1,80 @@
+---
+import Layout from "../layouts/PublicLayout.astro";
+import { env } from "../lib/server";
+export const prerender = false;
+const owner = env("SITE_OWNER_NAME") || "SINE SAS";
+const name = env("SITE_CONTACT_NAME") || "Ricardo Algarin";
+const email = env("SITE_CONTACT_EMAIL");
+const days = env("SITE_RETENTION_DAYS");
+---
+
+<Layout title="Privacidad"
+  ><article class="mx-auto max-w-3xl space-y-6 px-6 py-16">
+    <p class="eyebrow">Información de contacto comercial</p><h1
+      class="text-4xl font-semibold tracking-tight"
+    >
+      Privacidad de tu solicitud
+    </h1><p class="text-sm text-slate-400">
+      Versión de preparación · 8 de octubre de 2026
+    </p><h2 class="text-xl font-semibold">Responsable</h2><p>
+      {owner}, a través de Occlus. Contacto: {name}.
+    </p><h2 class="text-xl font-semibold">Datos y finalidad</h2><p
+      class="leading-8 text-slate-600"
+    >
+      Recopilamos nombre, correo, clínica, tamaño de equipo, plan de interés y,
+      si los proporcionas, teléfono y mensaje. Registramos la fecha de
+      autorización para responder la consulta, coordinar una demo y documentar
+      el seguimiento comercial. No incluyas datos clínicos ni información de
+      pacientes.
+    </p><h2 class="text-xl font-semibold">Acceso y conservación</h2><p
+      class="leading-8 text-slate-600"
+    >
+      El equipo comercial autorizado accede a estas solicitudes. Las notas de
+      seguimiento se eliminan junto con la solicitud cuando se atiende una
+      petición de eliminación verificada.
+    </p>{
+      days ? (
+        <p>
+          El plazo operativo configurado es de {days} días desde la última
+          actualización comercial. Debe coincidir con la configuración de
+          conservación del servidor.
+        </p>
+      ) : (
+        <p class="text-slate-600">
+          El plazo de conservación está pendiente de definición por el
+          responsable antes de la publicación.
+        </p>
+      )
+    }<h2 class="text-xl font-semibold">Métricas del sitio</h2><p
+      class="leading-8 text-slate-600"
+    >
+      Si se habilitan, se cuentan vistas por página y día. No usamos cookies de
+      analítica ni guardamos identificadores de visitantes, IP o consultas de
+      URL en estas métricas. La infraestructura puede procesar datos técnicos
+      necesarios para atender y proteger las solicitudes.
+    </p><h2 class="text-xl font-semibold">Contacto y solicitudes</h2>{
+      email ? (
+        <p>
+          Para consultar, corregir o solicitar la eliminación de tu información
+          y retirar la autorización, escribe a{" "}
+          <a class="underline text-teal-800" href={`mailto:${email}`}>
+            {email}
+          </a>
+          . Verificaremos la identidad del solicitante antes de modificar o
+          eliminar información.
+        </p>
+      ) : (
+        <p>
+          El correo público de privacidad está pendiente de configuración. El
+          formulario no recibirá solicitudes en producción hasta que este canal
+          esté configurado.
+        </p>
+      )
+    }<p class="border-t pt-6 text-sm leading-7 text-slate-500">
+      Este aviso cubre el formulario comercial del sitio. El tratamiento de
+      datos clínicos dentro de la aplicación requiere los acuerdos y políticas
+      de cada clínica. El responsable debe completar y revisar esta versión
+      antes de su publicación.
+    </p>
+  </article></Layout
+>

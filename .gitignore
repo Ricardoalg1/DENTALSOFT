@@ -10,6 +10,7 @@
 !.env.example
 backend/dataico.properties
 backend/messaging.properties
+backend/site.properties
 
 # Backend
 backend/target/
@@ -20,3 +21,14 @@ frontend/.next/
 frontend/out/
 frontend/next-env.d.ts
 *.tsbuildinfo
+
+# Plantilla de despliegue sin secretos
+!.env.production.example
+
+# Respaldo y credenciales de recuperación
+/backups/
+*.dump
+*.dump.age
+*.dump.age.sha256
+*.agekey
+.pgpass

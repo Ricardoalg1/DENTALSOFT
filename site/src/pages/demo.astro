@@ -1,0 +1,101 @@
+---
+import Layout from "../layouts/PublicLayout.astro";
+import DemoForm from "../components/DemoForm.astro";
+import { plans } from "../../../shared/site-content";
+import { z } from "zod";
+import { submitDemo, validOrigin } from "../lib/server";
+export const prerender = false;
+let ok = false,
+  error = "";
+let values: Record<string, string> = {};
+const queryPlan = Astro.url.searchParams.get("plan");
+let plan = plans.find((p) => p.id === queryPlan)?.id ?? "UNDECIDED";
+if (Astro.request.method === "POST") {
+  if (!validOrigin(Astro.request, Astro.url)) {
+    Astro.response.status = 403;
+    error = "No se pudo validar el origen de la solicitud.";
+  } else
+    try {
+      const data = await Astro.request.formData();
+      values = Object.fromEntries(
+        [
+          "name",
+          "email",
+          "phone",
+          "clinicName",
+          "teamSize",
+          "plan",
+          "message",
+        ].map((k) => [k, String(data.get(k) ?? "").slice(0, 1000)]),
+      );
+      const schema = z.object({
+        name: z.string().trim().min(2).max(120),
+        email: z.string().trim().max(160).pipe(z.email()),
+        phone: z.string().trim().max(30),
+        clinicName: z.string().trim().min(2).max(150),
+        teamSize: z.enum(["SOLO", "TWO_TO_FIVE", "SIX_TO_FIFTEEN", "MORE"]),
+        plan: z.enum([
+          "ESTANDAR",
+          "CRECIMIENTO",
+          "EXPANSION",
+          "INTERNACIONAL",
+          "UNDECIDED",
+        ]),
+        message: z.string().trim().max(800),
+        consent: z.literal(true),
+      });
+      const parsed = schema.safeParse({
+        ...values,
+        consent: data.get("consent") === "on",
+      });
+      if (data.get("website")) ok = true;
+      else if (!parsed.success) {
+        error = "Revisa los campos y acepta el contacto para continuar.";
+        Astro.response.status = 400;
+      } else {
+        const result = await submitDemo(parsed.data);
+        ok = result.ok;
+        error = result.error;
+        if (!ok) Astro.response.status = 503;
+      }
+      if (ok && !data.get("website"))
+        return Astro.redirect("/demo-recibida", 303);
+      plan = plans.find((p) => p.id === values.plan)?.id ?? "UNDECIDED";
+    } catch {
+      Astro.response.status = 400;
+      error = "No pudimos procesar el formulario. Intenta nuevamente.";
+    }
+}
+Astro.response.headers.set("Cache-Control", "no-store");
+---
+
+<Layout title="Solicitar demo" noindex={Astro.request.method === "POST"}
+  ><section class="section grid max-w-6xl gap-12 lg:grid-cols-2">
+    <div>
+      <p class="eyebrow">Hablemos de tu clínica</p><h1
+        class="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl"
+      >
+        Descubre una forma más clara de trabajar.
+      </h1><p class="mt-6 text-lg leading-8 text-slate-500">
+        Cuéntanos cómo trabaja tu equipo. Exploraremos contigo los flujos de
+        Occlus y el plan que acompaña tu operación.
+      </p><ol class="mt-9 space-y-5 text-sm text-teal-900">
+        <li>01 · Cuéntanos qué necesitas.</li><li>
+          02 · Revisamos los flujos en una demo.
+        </li><li>03 · Acordamos alcance y configuración.</li>
+      </ol>
+    </div><div
+      class="rounded-3xl border border-teal-950/10 bg-white p-6 md:p-8"
+    >
+      {
+        ok ? (
+          <p role="status" class="rounded-xl bg-teal-50 p-6">
+            Recibimos tu solicitud.
+          </p>
+        ) : (
+          <DemoForm values={values} plan={plan} error={error} />
+        )
+      }
+    </div>
+  </section></Layout
+>

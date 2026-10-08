@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@theme {
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+:root {
+  color-scheme: light;
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+body {
+  margin: 0;
+  background: #f7f8f2;
+  color: #162b2a;
+}
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+a,
+button {
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    transform 0.2s;
+}
+:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 4px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 999px;
+  background: #115e59;
+  padding: 0.9rem 1.6rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.btn:hover {
+  background: #134e4a;
+}
+.btn-outline {
+  background: transparent;
+  color: #134e4a;
+  border: 1px solid #b6c8c0;
+}
+.btn-outline:hover {
+  background: #e5eee5;
+}
+.eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #0f766e;
+}
+.field {
+  display: block;
+  width: 100%;
+  margin-top: 0.5rem;
+  border: 1px solid #cad5cf;
+  border-radius: 0.8rem;
+  background: white;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+}
+.section {
+  max-width: 80rem;
+  margin: auto;
+  padding: 5rem 1.5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

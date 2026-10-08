@@ -1,0 +1,41 @@
+---
+interface Props {
+  name: string;
+  class?: string;
+}
+const { name, class: className = "size-6" } = Astro.props;
+const paths: Record<string, string[]> = {
+  calendar: [
+    "M8 2v4m8-4v4M3 10h18",
+    "M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2Z",
+    "M7 14h3m4 0h3m-10 4h3",
+  ],
+  clinical: ["M9 4h6v4H9z", "M9 6H5v16h14V6h-4", "M8 12h8m-8 4h8"],
+  wallet: ["M3 6h17v15H3z", "M3 6V3h14v3", "M15 12h5v4h-5z"],
+  box: ["m12 3 9 5-9 5-9-5 9-5Z", "M3 8v9l9 5 9-5V8", "M12 13v9"],
+  chart: ["M4 3v18h17", "M8 17v-6m5 6V7m5 10V4"],
+  team: [
+    "M3 21v-3c0-4 12-4 12 0v3",
+    "M17 13c3 0 4 2 4 5v3",
+    "M12 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z",
+    "M16 3a3 3 0 0 1 0 6",
+  ],
+  arrow: ["M5 12h14m-6-6 6 6-6 6"],
+  check: ["m5 12 4 4L19 6"],
+  shield: ["m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z", "m8 12 3 3 5-5"],
+};
+---
+
+<svg
+  class={className}
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.7"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  >{(paths[name] ?? paths.check).map((d) => <path d={d} />)}</svg
+>

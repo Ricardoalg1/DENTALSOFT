@@ -1,0 +1,119 @@
+---
+import { plans } from "../../../shared/site-content";
+interface Props {
+  values: Record<string, string>;
+  plan: string;
+  error: string;
+}
+const { values, plan, error } = Astro.props;
+---
+
+<form method="POST" action="/demo" class="grid gap-5">
+  <div class="grid gap-5 sm:grid-cols-2">
+    <label class="text-sm font-medium"
+      >Tu nombre<input
+        class="field"
+        name="name"
+        required
+        minlength="2"
+        maxlength="120"
+        autocomplete="name"
+        value={values.name}
+      /></label
+    ><label class="text-sm font-medium"
+      >Correo electrónico<input
+        class="field"
+        name="email"
+        type="email"
+        required
+        maxlength="160"
+        autocomplete="email"
+        value={values.email}
+      /></label>
+  </div><label class="text-sm font-medium"
+    >Nombre de la clínica<input
+      class="field"
+      name="clinicName"
+      required
+      minlength="2"
+      maxlength="150"
+      autocomplete="organization"
+      value={values.clinicName}
+    /></label
+  ><label class="text-sm font-medium"
+    >Teléfono (opcional)<input
+      class="field"
+      name="phone"
+      type="tel"
+      maxlength="30"
+      autocomplete="tel"
+      value={values.phone}
+    /></label
+  ><div class="grid gap-5 sm:grid-cols-2">
+    <label class="text-sm font-medium"
+      >Tamaño del equipo<select class="field" name="teamSize"
+        >{
+          [
+            ["SOLO", "Solo yo"],
+            ["TWO_TO_FIVE", "2 a 5 personas"],
+            ["SIX_TO_FIFTEEN", "6 a 15 personas"],
+            ["MORE", "Más de 15 personas"],
+          ].map(([v, l]) => (
+            <option value={v} selected={values.teamSize === v}>
+              {l}
+            </option>
+          ))
+        }</select
+      ></label
+    ><label class="text-sm font-medium"
+      >Plan de interés<select class="field" name="plan"
+        ><option value="UNDECIDED" selected={plan === "UNDECIDED"}
+          >Quiero orientación</option
+        >{
+          plans.map((p) => (
+            <option value={p.id} selected={p.id === plan}>
+              {p.name}
+            </option>
+          ))
+        }</select
+      ></label>
+  </div><label class="text-sm font-medium"
+    >¿Qué necesitas organizar? (opcional)<textarea
+      class="field"
+      name="message"
+      rows="4"
+      maxlength="800"
+      placeholder="No incluyas datos de pacientes.">{values.message}</textarea
+    ></label
+  ><div hidden aria-hidden="true">
+    <label
+      >Sitio web<input
+        name="website"
+        tabindex="-1"
+        autocomplete="off"
+      /></label>
+  </div><label class="flex gap-3 text-sm leading-7"
+    ><input
+      type="checkbox"
+      name="consent"
+      required
+      class="mt-1.5 size-4 shrink-0"
+    /><span
+      >Autorizo el uso de estos datos para responder mi solicitud y coordinar
+      una demo. He leído el <a class="underline" href="/privacidad"
+        >aviso de privacidad</a
+      >.</span
+    ></label
+  >{
+    error && (
+      <p role="alert" class="rounded-xl bg-red-50 p-4 text-sm text-red-800">
+        {error}
+      </p>
+    )
+  }<button class="btn" type="submit">Solicitar mi demo →</button><p
+    class="text-xs leading-6 text-slate-400"
+  >
+    Registramos tu solicitud. Este formulario no realiza cobros ni envía
+    mensajes automáticos.
+  </p>
+</form>

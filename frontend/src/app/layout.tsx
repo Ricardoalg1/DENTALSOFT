@@ -13,15 +13,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://occlus.lat"),
-  title: { default: "Occlus — Software para clínicas odontológicas", template: "%s · Occlus" },
+  robots: { index: false, follow: false },
+  metadataBase: new URL(process.env.SITE_URL ?? "https://occlus.lat"),
+  openGraph: {
+    type: "website",
+    locale: "es_CO",
+    siteName: "Occlus",
+    title: "Occlus — Software para clínicas odontológicas",
+    description:
+      "Más orden para tu clínica. Agenda, historias, presupuestos e inventario en un mismo lugar.",
+  },
+  title: {
+    default: "Occlus — Software para clínicas odontológicas",
+    template: "%s · Occlus",
+  },
   description:
-    "Agenda, historia clínica con odontograma, facturación electrónica DIAN y RIPS en una sola plataforma para clínicas odontológicas en Colombia.",
+    "Agenda, historias clínicas, presupuestos, caja e inventario para organizar tu clínica odontológica.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-CO" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="es-CO"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

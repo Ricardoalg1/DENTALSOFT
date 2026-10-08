@@ -12,14 +12,40 @@ export async function bffGet(path: string) {
 }
 
 /** Cabeceras de la respuesta del backend que se reenvían al navegador (p. ej. para archivos). */
-const PASSTHROUGH_HEADERS = ["Content-Type", "Content-Length", "Content-Disposition", "Cache-Control", "X-Content-Type-Options"];
+const PASSTHROUGH_HEADERS = [
+  "Content-Type",
+  "Content-Length",
+  "Content-Disposition",
+  "Cache-Control",
+  "X-Content-Type-Options",
+  "X-Occlus-Request-Id",
+];
 
 export async function bffForward(path: string, init: RequestInit) {
   const token = await getToken();
-  if (!token) return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
+  if (!token)
+    return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${token}`);
-  const res = await fetch(`${API_URL}${path}`, { ...init, headers, cache: "no-store" });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...init,
+      signal: init.signal ?? AbortSignal.timeout(60000),
+      headers,
+      cache: "no-store",
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        title: "Servicio temporalmente no disponible",
+        detail:
+          "No pudimos confirmar la respuesta del servidor. Revisa el estado de la operación antes de repetirla.",
+        status: 503,
+      },
+      { status: 503, headers: { "Content-Type": "application/problem+json" } },
+    );
+  }
   const out = new Headers();
   for (const name of PASSTHROUGH_HEADERS) {
     const value = res.headers.get(name);

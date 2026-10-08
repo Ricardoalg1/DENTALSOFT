@@ -1,0 +1,37 @@
+---
+import Layout from "../../layouts/PublicLayout.astro";
+import { articles } from "../../../../shared/site-content";
+export const prerender = true;
+---
+
+<Layout
+  title="Recursos"
+  description="Ideas prácticas para coordinar agenda, insumos y presupuestos de tu clínica."
+  ><section class="section">
+    <p class="eyebrow">Ideas para tu equipo</p><h1
+      class="mt-4 max-w-2xl text-4xl font-semibold tracking-tight md:text-5xl"
+    >
+      Un poco más de orden, cada día.
+    </h1><div class="mt-12 grid gap-6 md:grid-cols-3">
+      {
+        articles.map((a) => (
+          <article class="flex flex-col rounded-3xl border border-teal-950/10 bg-white p-8">
+            <>
+              <span class="eyebrow">{a.category}</span>
+              <h2 class="mt-5 text-2xl font-semibold tracking-tight">
+                <a href={`/blog/${a.slug}`}>{a.title}</a>
+              </h2>
+              <p class="my-6 text-sm leading-7 text-slate-500">{a.summary}</p>
+              <a
+                href={`/blog/${a.slug}`}
+                class="mt-auto text-sm font-semibold text-teal-800"
+              >
+                Leer artículo →
+              </a>
+            </>
+          </article>
+        ))
+      }
+    </div>
+  </section></Layout
+>

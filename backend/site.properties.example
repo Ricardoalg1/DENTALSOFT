@@ -1,0 +1,10 @@
+# Copiar a site.properties. El mismo secreto se configura SOLO en el servidor Next.js.
+occlus.marketing.public-key=
+# UUID de usuarios ADMIN autorizados como equipo de Occlus, separados por coma.
+# No basta con ser administrador de una clínica para acceder al CRM comercial.
+occlus.marketing.admin-user-ids=
+occlus.marketing.analytics-enabled=false
+
+# Activar únicamente tras acordar el plazo. Cero = no definido.
+occlus.marketing.retention-enabled=false
+occlus.marketing.retention-days=0

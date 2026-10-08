@@ -6,6 +6,7 @@ Software en la nube para clínicas odontológicas en Colombia — [occlus.lat](h
 |---|---|
 | `backend/` | Java 21 · Spring Boot 4 · PostgreSQL · Flyway · Spring Security (JWT) |
 | `frontend/` | Next.js 16 · TypeScript · Tailwind · shadcn/ui |
+| `site/` | Astro 7 · Tailwind · sitio público |
 
 ## Desarrollo local
 
@@ -72,7 +73,8 @@ cd backend && ./mvnw test
 7. ✅ Inventario: insumos, existencias por sede, lotes, movimientos y alertas
 8. ✅ Reportes (recaudo, producción, agenda, cartera, exportación CSV)
 9. 🚧 Mensajería: recordatorios, bandeja, simulador y clasificación Claude implementados; activación y validación externa pendientes
-10. Sitio público (planes, blog, demo)
+10. ✅ Sitio público (planes, blog, demo), CRM comercial y métricas agregadas — configuración y publicación pendientes
+11. 🚧 Etapa adicional de producción y operación: salud, errores, logs y herramientas de respaldo implementados; despliegue y recuperación reales pendientes
 
 ## Facturación y RIPS — Fase 6 en curso
 
@@ -113,3 +115,16 @@ Los saldos se manejan por sede y lote, con hasta tres decimales en la unidad def
 Los movimientos son inmutables, no permiten stock negativo y registran usuario, motivo y referencia.
 Los lotes vencidos no se consumen y generan alertas junto con los próximos a vencer y el stock bajo.
 Detalle de operación y alcance en [docs/phase-7-inventory.md](docs/phase-7-inventory.md).
+
+## Sitio público — Fase 10
+
+Sitio público en Astro (`site/`): inicio, planes con pago mensual/anual, blog y solicitudes persistentes de demo. Aplicación clínica y CRM privado en Next.js (`frontend/`).
+CRM separado de las clínicas, con acceso explícito para el equipo de Occlus, paginación, fechas de seguimiento y eliminación por privacidad. Docker y CI preparados; despliegue remoto pendiente.
+Consulta configuración, precios y pendientes de publicación en [docs/phase-10-public-site.md](docs/phase-10-public-site.md).
+
+Para abrir en localhost y compilar, sigue [Fase 10](docs/phase-10-public-site.md#abrir-en-localhost).
+
+## Producción y operación — Etapa 11
+
+Controles de disponibilidad, identificadores de solicitudes, errores controlados y herramientas de respaldo cifrado/restauración. Estado de servicios: `python3 scripts/service-status.py`.
+Alcance y pasos pendientes en [docs/phase-11-operations.md](docs/phase-11-operations.md).

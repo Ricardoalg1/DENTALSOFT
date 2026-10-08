@@ -3,6 +3,7 @@ spring:
     import:
       - optional:file:${DATAICO_CONFIG_FILE:./dataico.properties}
       - optional:file:${MESSAGING_CONFIG_FILE:./messaging.properties}
+      - optional:file:${SITE_CONFIG_FILE:./site.properties}
   application:
     name: occlus-backend
   datasource:
@@ -40,6 +41,12 @@ spring:
         store_data_at_delete: true
 
 occlus:
+  marketing:
+    public-key: ${SITE_PUBLIC_API_KEY:}
+    admin-user-ids: ${OCCLUS_PLATFORM_ADMIN_IDS:}
+    analytics-enabled: ${SITE_ANALYTICS_ENABLED:false}
+    retention-enabled: ${SITE_RETENTION_ENABLED:false}
+    retention-days: ${SITE_RETENTION_DAYS:0}
   messaging:
     scheduler-enabled: ${MESSAGING_SCHEDULER:false}
     reminder-interval: PT5M
@@ -82,7 +89,22 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+server:
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
 management:
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
   endpoints:
     web:
       exposure:

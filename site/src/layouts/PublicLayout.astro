@@ -1,0 +1,131 @@
+---
+import "../styles/global.css";
+import Logo from "../components/Logo.astro";
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+const {
+  title = "Menos pendientes. Más sonrisas.",
+  description = "Agenda, historias clínicas, presupuestos e inventario para organizar tu clínica odontológica.",
+  noindex = false,
+} = Astro.props;
+const canonical = new URL(
+  Astro.url.pathname,
+  Astro.site ?? "https://occlus.lat",
+);
+const appUrl = import.meta.env.PUBLIC_APP_URL ?? "http://localhost:3000";
+const pageTitle = `${title} · Occlus`;
+---
+
+<!doctype html>
+<html lang="es-CO">
+  <head
+    ><meta charset="UTF-8" /><meta
+      name="viewport"
+      content="width=device-width,initial-scale=1"
+    /><title>{pageTitle}</title><meta
+      name="description"
+      content={description}
+    /><link rel="canonical" href={canonical} /><link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon.svg"
+    /><meta property="og:type" content="website" /><meta
+      property="og:locale"
+      content="es_CO"
+    /><meta property="og:site_name" content="Occlus" /><meta
+      property="og:title"
+      content={pageTitle}
+    /><meta property="og:description" content={description} /><meta
+      property="og:url"
+      content={canonical}
+    /><meta
+      property="og:image"
+      content={new URL("/social.png", canonical)}
+    /><meta name="twitter:card" content="summary_large_image" />{
+      noindex && <meta name="robots" content="noindex,nofollow" />
+    }</head
+  ><body
+    ><a
+      href="#contenido"
+      class="sr-only focus:not-sr-only focus:block focus:bg-white focus:p-4"
+      >Ir al contenido</a
+    ><header class="border-b border-teal-950/10 bg-[#f7f8f2]">
+      <div
+        class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-5"
+      >
+        <Logo /><nav
+          aria-label="Navegación principal"
+          class="hidden items-center gap-8 text-sm md:flex"
+        >
+          <a href="/#producto">Producto</a><a href="/planes">Planes</a><a
+            href="/blog">Recursos</a>
+        </nav><div class="flex items-center gap-4">
+          <a href={`${appUrl}/ingresar`} class="text-sm font-medium">Ingresar</a
+          ><a href="/demo" class="btn"
+            >Solicitar demo <span aria-hidden="true">↗</span></a>
+        </div><details class="w-full md:hidden">
+          <summary class="cursor-pointer text-sm font-semibold"
+            >Explorar Occlus</summary
+          ><nav
+            class="mt-4 flex flex-wrap gap-6 pb-2"
+            aria-label="Navegación móvil"
+          >
+            <a href="/#producto">Producto</a><a href="/planes">Planes</a><a
+              href="/blog">Recursos</a>
+          </nav>
+        </details>
+      </div>
+    </header><main id="contenido"><slot /></main><footer
+      class="bg-teal-950 px-6 py-14 text-teal-100"
+    >
+      <div class="mx-auto grid max-w-7xl gap-8 md:grid-cols-[2fr_1fr_1fr]">
+        <div>
+          <Logo light /><p
+            class="mt-5 max-w-sm text-sm leading-7 text-teal-100/70"
+          >
+            Más orden para tu clínica.<br />Más tiempo para tus pacientes.
+          </p>
+        </div><nav class="space-y-3 text-sm" aria-label="Producto">
+          <p
+            class="mb-5 text-xs font-semibold uppercase tracking-widest text-teal-300"
+          >
+            Explora
+          </p><a class="block" href="/planes">Planes</a><a
+            class="block"
+            href="/blog">Recursos</a
+          ><a class="block" href="/demo">Conocer Occlus</a>
+        </nav><nav class="space-y-3 text-sm" aria-label="Información">
+          <p
+            class="mb-5 text-xs font-semibold uppercase tracking-widest text-teal-300"
+          >
+            Información
+          </p><a class="block" href="/privacidad">Privacidad</a><a
+            class="block"
+            href="/condiciones">Condiciones comerciales</a
+          ><a class="block" href={`${appUrl}/ingresar`}>Acceso a tu clínica</a>
+        </nav>
+      </div><div
+        class="mx-auto mt-12 flex max-w-7xl flex-wrap justify-between gap-3 border-t border-white/10 pt-6 text-xs text-teal-100/60"
+      >
+        <span>© Occlus · SINE SAS</span><span
+          >Software para equipos odontológicos</span>
+      </div>
+    </footer><script>
+      // Solo métricas agregadas; la configuración y la clave permanecen en el servidor.
+      void fetch("/site-api/config")
+        .then((r) => r.json())
+        .then((config) => {
+          if (config.analyticsEnabled)
+            void fetch("/site-api/events", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ path: window.location.pathname }),
+              keepalive: true,
+            }).catch(() => {});
+        })
+        .catch(() => {});
+    </script></body>
+</html>
