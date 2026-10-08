@@ -37,7 +37,7 @@ const ITEMS: Item[] = [
   { href: "/app/caja", label: "Caja", icon: Wallet, cashOnly: true },
   { href: "/app/precios", label: "Lista de precios", icon: Tags },
   { href: "/app/facturacion", label: "Facturación y RIPS", icon: FileText, adminOnly: true },
-  { href: "/app/inventario", label: "Inventario", icon: Package, soon: true },
+  { href: "/app/inventario", label: "Inventario", icon: Package },
   { href: "/app/reportes", label: "Reportes", icon: ChartColumn, soon: true },
   { href: "/app/equipo", label: "Equipo", icon: Users, adminOnly: true },
   { href: "/app/sedes", label: "Sedes", icon: Building2 },

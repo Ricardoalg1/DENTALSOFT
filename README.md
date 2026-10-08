@@ -67,7 +67,7 @@ cd backend && ./mvnw test
 4. ✅ Historia clínica + odontograma
 5. ✅ Tratamientos, presupuestos y caja (con protección de cobros simultáneos y cierres)
 6. 🚧 Facturación electrónica DIAN + RIPS: borradores y revisión local implementados; emisión y MUV pendientes
-7. Inventario
+7. ✅ Inventario: insumos, existencias por sede, lotes, movimientos y alertas
 8. Reportes
 9. Recordatorios WhatsApp + asistente IA
 10. Sitio público (planes, blog, demo)
@@ -91,3 +91,12 @@ obtener el CUV. Los consecutivos `OCL-*` identifican borradores internos. La exp
 `numFactura: null` hasta que exista una FEV emitida; no debe radicarse como documento validado.
 
 El alcance y los pasos pendientes están en [docs/phase-6-billing.md](docs/phase-6-billing.md).
+
+## Inventario — Fase 7
+
+Disponible en **Inventario** para todo el equipo. Administradores gestionan el catálogo, stock mínimo
+y ajustes; administradores y auxiliares registran entradas, consumos, bajas y traslados.
+Los saldos se manejan por sede y lote, con hasta tres decimales en la unidad definida.
+Los movimientos son inmutables, no permiten stock negativo y registran usuario, motivo y referencia.
+Los lotes vencidos no se consumen y generan alertas junto con los próximos a vencer y el stock bajo.
+Detalle de operación y alcance en [docs/phase-7-inventory.md](docs/phase-7-inventory.md).
