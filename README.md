@@ -57,6 +57,8 @@ cd backend && ./mvnw test
 - **Archivos** (radiografías, fotos, firmas) en S3. En local, SeaweedFS (MinIO dejó de publicar imágenes
   gratuitas); en producción, AWS S3 con `STORAGE_ENDPOINT` vacío. El tipo de archivo se detecta por su
   contenido, no por la extensión. El navegador los ve a través de `/bff/files/{id}`, nunca con una URL pública.
+- **Reportes**: agregaciones en SQL (`JdbcTemplate`) filtradas por clínica y reforzadas por RLS; solo
+  administradores. El CSV de pagos usa `;`, BOM UTF-8 y neutraliza fórmulas (inyección CSV en Excel).
 - Flyway es dueño del esquema (`backend/src/main/resources/db/migration`); Hibernate solo valida.
 
 ## Roadmap
@@ -68,7 +70,7 @@ cd backend && ./mvnw test
 5. ✅ Tratamientos, presupuestos y caja (con protección de cobros simultáneos y cierres)
 6. 🚧 Facturación electrónica DIAN + RIPS: borradores y revisión local implementados; emisión y MUV pendientes
 7. ✅ Inventario: insumos, existencias por sede, lotes, movimientos y alertas
-8. Reportes
+8. ✅ Reportes (recaudo, producción, agenda, cartera, exportación CSV)
 9. Recordatorios WhatsApp + asistente IA
 10. Sitio público (planes, blog, demo)
 

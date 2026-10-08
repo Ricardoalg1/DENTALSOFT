@@ -511,3 +511,50 @@ export type Account = { budgeted: number; done: number; pendingToDo: number; pai
 export const canCollect = (me: Me) => me.role !== "ASSISTANT";
 /** Quién abre y cierra caja. */
 export const canManageCash = (me: Me) => me.role === "ADMIN" || me.role === "RECEPTION";
+
+// ---------- Reportes ----------
+export type Report = {
+  from: string;
+  to: string;
+  site: Ref | null;
+  revenue: {
+    total: number;
+    count: number;
+    voidedTotal: number;
+    voidedCount: number;
+    byMethod: { method: PaymentMethod; count: number; total: number }[];
+    byDay: { date: string; total: number }[];
+    bySite: { site: Ref; total: number }[];
+  };
+  production: {
+    total: number;
+    items: number;
+    byProfessional: { professional: Ref; items: number; total: number }[];
+    byCategory: { category: ProcedureCategory; items: number; total: number }[];
+    topProcedures: { name: string; count: number; total: number }[];
+  };
+  appointments: {
+    total: number;
+    byStatus: Record<AppointmentStatus, number>;
+    attendanceRate: number | null;
+    noShowRate: number | null;
+    byProfessional: { professional: Ref; total: number; attended: number; noShow: number; cancelled: number }[];
+  };
+  patients: { newPatients: number; attended: number };
+};
+
+export type Receivables = {
+  totalOwed: number;
+  debtorCount: number;
+  totalAdvances: number;
+  debtors: {
+    patientId: string;
+    fullName: string;
+    document: string;
+    phone: string | null;
+    done: number;
+    paid: number;
+    balance: number;
+    lastPaymentAt: string | null;
+  }[];
+};
