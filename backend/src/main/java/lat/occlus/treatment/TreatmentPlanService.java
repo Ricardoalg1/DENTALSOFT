@@ -183,7 +183,7 @@ public class TreatmentPlanService {
     /** El paciente aprueba el presupuesto. Lo puede registrar cualquier usuario (p. ej. recepción). */
     @Transactional
     public PlanResponse accept(AuthUser me, UUID id) {
-        var plan = find(me.clinicId(), id);
+        var plan = findForWrite(me.clinicId(), id);
         requireStatus(plan, PlanStatus.DRAFT, "Solo se puede aceptar un presupuesto en borrador");
         if (items.findByPlanIdOrderBySortOrderAscCreatedAtAsc(id).isEmpty()) {
             throw new BadRequestException("Agrega al menos un procedimiento antes de aceptar el presupuesto");
@@ -196,7 +196,7 @@ public class TreatmentPlanService {
 
     @Transactional
     public PlanResponse reject(AuthUser me, UUID id) {
-        var plan = find(me.clinicId(), id);
+        var plan = findForWrite(me.clinicId(), id);
         requireStatus(plan, PlanStatus.DRAFT, "Solo se puede rechazar un presupuesto en borrador");
         plan.setStatus(PlanStatus.REJECTED);
         plan.setClosedAt(Instant.now());
@@ -207,7 +207,7 @@ public class TreatmentPlanService {
     @Transactional
     public PlanResponse cancel(AuthUser me, UUID id) {
         if (me.role() != Role.ADMIN) access.requireProfessional(me);
-        var plan = find(me.clinicId(), id);
+        var plan = findForWrite(me.clinicId(), id);
         requireStatus(plan, PlanStatus.ACCEPTED, "Solo se puede cancelar un plan aceptado");
         items.findByPlanIdOrderBySortOrderAscCreatedAtAsc(id).stream()
                 .filter(i -> i.getStatus() == ItemStatus.PENDING)
@@ -224,7 +224,7 @@ public class TreatmentPlanService {
     @Transactional
     public PlanResponse setItemStatus(AuthUser me, UUID planId, UUID itemId, ItemStatus next) {
         access.requireProfessional(me);
-        var plan = find(me.clinicId(), planId);
+        var plan = findForWrite(me.clinicId(), planId);
         var item = items.findByIdAndPlanId(itemId, planId).orElseThrow(() -> new NotFoundException("Ítem no encontrado"));
         if (item.getStatus() == next) return toResponse(plan);
 
@@ -266,10 +266,14 @@ public class TreatmentPlanService {
         return plans.findByIdAndClinicId(id, clinicId).orElseThrow(() -> new NotFoundException("Plan no encontrado"));
     }
 
+    private TreatmentPlan findForWrite(UUID clinicId, UUID id) {
+        return plans.findLocked(clinicId, id).orElseThrow(() -> new NotFoundException("Plan no encontrado"));
+    }
+
     /** Presupuesto en borrador, editable por un profesional. */
     private TreatmentPlan findDraft(AuthUser me, UUID id) {
         access.requireProfessional(me);
-        var plan = find(me.clinicId(), id);
+        var plan = findForWrite(me.clinicId(), id);
         requireStatus(plan, PlanStatus.DRAFT, "El presupuesto ya no está en borrador: no se puede modificar");
         return plan;
     }

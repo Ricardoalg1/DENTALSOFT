@@ -300,7 +300,7 @@ function AddItemForm({ procedures, pending, onAdd }: { procedures: Procedure[]; 
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const num = (name: string) => {
-      const v = String(form.get(name) ?? "").replace(/\D/g, "");
+      const v = String(form.get(name) ?? "").trim();
       return v ? Number(v) : undefined;
     };
     onAdd({
@@ -342,11 +342,11 @@ function AddItemForm({ procedures, pending, onAdd }: { procedures: Procedure[]; 
             )}
             <div className="grid gap-1.5">
               <Label htmlFor="item-qty">Cantidad</Label>
-              <Input id="item-qty" name="quantity" inputMode="numeric" defaultValue="1" maxLength={2} />
+              <Input id="item-qty" name="quantity" type="number" min="1" max="99" step="1" defaultValue="1" />
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="item-discount">Descuento (COP)</Label>
-              <Input id="item-discount" name="discount" inputMode="numeric" placeholder="0" />
+              <Input id="item-discount" name="discount" type="number" min="0" step="0.01" placeholder="0" />
             </div>
           </div>
           <Button type="submit" disabled={pending} className="w-fit">

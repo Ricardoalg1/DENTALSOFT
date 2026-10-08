@@ -229,6 +229,34 @@ class TreatmentAndCashTests {
     }
 
     @Test
+    void closingRacesWithPaymentsWithoutLosingCollectedCash() throws Exception {
+        String sessionId = openCash(admin, "10000");
+        var start = new java.util.concurrent.CountDownLatch(1);
+        var tasks = new ArrayList<Callable<Integer>>();
+        for (int i = 0; i < 8; i++) tasks.add(() -> {
+            start.await();
+            return pay("1000", "CASH").andReturn().getResponse().getStatus();
+        });
+        tasks.add(() -> {
+            start.await();
+            return call(post("/api/cash-sessions/" + sessionId + "/close").contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"countedCash\":10000}"), admin).andReturn().getResponse().getStatus();
+        });
+        var statuses = new ArrayList<Integer>();
+        try (var pool = Executors.newFixedThreadPool(9)) {
+            var futures = tasks.stream().map(pool::submit).toList();
+            start.countDown();
+            for (var f : futures) statuses.add(f.get());
+        }
+        assertThat(statuses.getLast()).isEqualTo(200);
+        assertThat(statuses.subList(0, 8)).allMatch(s -> s == 201 || s == 409);
+        long successful = statuses.subList(0, 8).stream().filter(s -> s == 201).count();
+        call(get("/api/cash-sessions/" + sessionId), admin)
+                .andExpect(jsonPath("$.expectedCash").value(10000 + successful * 1000))
+                .andExpect(jsonPath("$.payments.length()").value((int) successful));
+    }
+
+    @Test
     void otherClinicCannotSeePlansOrPayments() throws Exception {
         String planId = createPlan(admin);
         openCash(admin, "0");

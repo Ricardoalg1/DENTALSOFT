@@ -35,7 +35,10 @@ public class CashService {
     /** Últimos turnos (abiertos y cerrados) de la clínica, sin el detalle de pagos. */
     @Transactional(readOnly = true)
     public List<SessionResponse> recent(UUID clinicId) {
-        return sessions.findByClinicIdOrderByOpenedAtDesc(clinicId, Limit.of(30)).stream()
+        var all = new java.util.LinkedHashMap<UUID, CashSession>();
+        sessions.findByClinicIdAndClosedAtIsNullOrderByOpenedAtDesc(clinicId).forEach(s -> all.put(s.getId(), s));
+        sessions.findByClinicIdOrderByOpenedAtDesc(clinicId, Limit.of(30)).forEach(s -> all.putIfAbsent(s.getId(), s));
+        return all.values().stream()
                 .map(s -> toResponse(s, false))
                 .toList();
     }
@@ -63,7 +66,7 @@ public class CashService {
     /** Cierra el turno: guarda el efectivo esperado y el contado. Después no se puede modificar. */
     @Transactional
     public SessionResponse close(AuthUser me, UUID id, BigDecimal countedCash, String notes) {
-        var s = find(me.clinicId(), id);
+        var s = sessions.findLocked(me.clinicId(), id).orElseThrow(() -> new NotFoundException("Caja no encontrada"));
         if (!s.isOpen()) throw new ConflictException("La caja ya está cerrada");
         s.setExpectedCash(expectedCash(s, payments.findByCashSessionIdOrderByReceivedAtAsc(s.getId())));
         s.setCountedCash(countedCash);

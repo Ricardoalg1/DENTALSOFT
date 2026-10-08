@@ -66,7 +66,7 @@ export function PaymentForm({ patientId, openSites, plans, suggestedAmount }: Pr
     startTransition(async () => {
       const result = await registerPayment(patientId, {
         siteId: String(form.get("siteId")),
-        amount: Number(String(form.get("amount")).replace(/\D/g, "")),
+        amount: Number(form.get("amount")),
         method,
         reference: String(form.get("reference") ?? "") || undefined,
         notes: String(form.get("notes") ?? "") || undefined,
@@ -88,8 +88,9 @@ export function PaymentForm({ patientId, openSites, plans, suggestedAmount }: Pr
             id="pay-amount"
             name="amount"
             required
-            inputMode="numeric"
-            pattern="[0-9.]*"
+            type="number"
+            min="0.01"
+            step="0.01"
             autoFocus
             defaultValue={suggestedAmount > 0 ? String(suggestedAmount) : ""}
           />

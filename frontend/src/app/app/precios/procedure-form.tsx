@@ -42,7 +42,7 @@ export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
         code: String(form.get("code") ?? "") || undefined,
         category: String(form.get("category")) as ProcedureCategory,
         cupsCode: String(form.get("cupsCode") ?? "") || undefined,
-        price: Number(String(form.get("price")).replace(/\D/g, "")),
+        price: Number(form.get("price")),
         perTooth: form.get("perTooth") === "on",
         treatsCondition: (String(form.get("treatsCondition") ?? "") || null) as OdontogramCondition | null,
         active: form.get("active") === "on",
@@ -67,8 +67,9 @@ export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
             id={`${p}-price`}
             name="price"
             required
-            inputMode="numeric"
-            pattern="[0-9.]*"
+            type="number"
+            min="0"
+            step="0.01"
             defaultValue={procedure ? String(procedure.price) : ""}
           />
         </div>

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { FormError } from "@/components/form-error";
 import { NativeSelect } from "@/components/native-select";
 import { formatCOP, formatDateTime, formatReceipt } from "@/lib/format";
-import { PAYMENT_METHODS, type CashSession, type Payment, type PaymentMethod, type Site } from "@/lib/types";
+import { PAYMENT_METHODS, type CashSession, type Payment, type Site } from "@/lib/types";
 import { closeCash, openCash } from "./actions";
 
 export function CashPanel({ sessions, sites, canManage }: { sessions: CashSession[]; sites: Site[]; canManage: boolean }) {
@@ -17,11 +17,12 @@ export function CashPanel({ sessions, sites, canManage }: { sessions: CashSessio
   const open = sessions.filter((s) => !s.closedAt);
   const availableSites = sites.filter(s => !open.some(o => o.site?.id === s.id));
   const [siteId, setSiteId] = useState(availableSites[0]?.id ?? "");
+  const selectedSiteId = availableSites.some(s => s.id === siteId) ? siteId : availableSites[0]?.id ?? "";
 
   function submitOpen(form: FormData) {
     setError(undefined);
     startTransition(async () => {
-      const result = await openCash({ siteId: String(form.get("siteId")), openingAmount: Number(String(form.get("openingAmount")).replace(/\D/g, "")) || 0 });
+      const result = await openCash({ siteId: String(form.get("siteId")), openingAmount: Number(form.get("openingAmount")) });
       if (!result.ok) setError(result.error);
     });
   }
@@ -29,7 +30,7 @@ export function CashPanel({ sessions, sites, canManage }: { sessions: CashSessio
   function submitClose(id: string, form: FormData) {
     setError(undefined);
     startTransition(async () => {
-      const result = await closeCash(id, { countedCash: Number(String(form.get("countedCash")).replace(/\D/g, "")) || 0, notes: String(form.get("notes") ?? "") || undefined });
+      const result = await closeCash(id, { countedCash: Number(form.get("countedCash")), notes: String(form.get("notes") ?? "") || undefined });
       if (!result.ok) setError(result.error);
     });
   }
@@ -39,9 +40,9 @@ export function CashPanel({ sessions, sites, canManage }: { sessions: CashSessio
     {canManage && <section className="grid gap-4 rounded-xl border p-4">
       <h2 className="font-semibold">Abrir caja</h2>
       {sites.length === 0 ? <p className="text-sm text-muted-foreground">Crea una sede antes de abrir caja.</p> : availableSites.length === 0 ? <p className="text-sm text-muted-foreground">Todas las sedes activas ya tienen una caja abierta.</p> : <form action={submitOpen} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-        <NativeSelect name="siteId" id="cash-site" label="Sede" options={Object.fromEntries(availableSites.map(s => [s.id, s.name]))} value={siteId} onChange={e => setSiteId(e.target.value)} />
-        <div className="grid gap-1.5"><Label htmlFor="opening">Base inicial (COP)</Label><Input id="opening" name="openingAmount" inputMode="numeric" defaultValue="0" /></div>
-        <Button disabled={pending || !siteId}>Abrir turno</Button>
+        <NativeSelect name="siteId" id="cash-site" label="Sede" options={Object.fromEntries(availableSites.map(s => [s.id, s.name]))} value={selectedSiteId} onChange={e => setSiteId(e.target.value)} />
+        <div className="grid gap-1.5"><Label htmlFor="opening">Base inicial (COP)</Label><Input id="opening" name="openingAmount" type="number" min="0" step="0.01" required defaultValue="0" /></div>
+        <Button disabled={pending || !selectedSiteId}>Abrir turno</Button>
       </form>}
     </section>}
     <section className="grid gap-3">
@@ -63,7 +64,7 @@ function SessionCard({ session: s, canManage, pending, onClose }: { session: Cas
     <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm">{s.totals.map(t => <span key={t.method}>{PAYMENT_METHODS[t.method]}: {formatCOP(t.total)} ({t.count})</span>)}<span>Base: {formatCOP(s.openingAmount)}</span></div>
     {s.closedAt && <p className="text-sm">Efectivo esperado {formatCOP(s.expectedCash)} · contado {formatCOP(s.countedCash ?? 0)} · diferencia <strong>{formatCOP(s.difference ?? 0)}</strong></p>}
     {s.payments?.map(p => <PaymentLine key={p.id} payment={p} />)}
-    {!s.closedAt && canManage && <form action={onClose} className="grid gap-3 border-t pt-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"><div className="grid gap-1.5"><Label htmlFor={`count-${s.id}`}>Efectivo contado (COP)</Label><Input id={`count-${s.id}`} name="countedCash" required inputMode="numeric" defaultValue={String(s.expectedCash)} /></div><div className="grid gap-1.5"><Label htmlFor={`notes-${s.id}`}>Nota de cierre</Label><Input id={`notes-${s.id}`} name="notes" maxLength={500} /></div><Button variant="outline" disabled={pending}>Cerrar caja</Button></form>}
+    {!s.closedAt && canManage && <form action={onClose} className="grid gap-3 border-t pt-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"><div className="grid gap-1.5"><Label htmlFor={`count-${s.id}`}>Efectivo contado (COP)</Label><Input id={`count-${s.id}`} name="countedCash" required type="number" min="0" step="0.01" defaultValue={String(s.expectedCash)} /></div><div className="grid gap-1.5"><Label htmlFor={`notes-${s.id}`}>Nota de cierre</Label><Input id={`notes-${s.id}`} name="notes" maxLength={500} /></div><Button variant="outline" disabled={pending}>Cerrar caja</Button></form>}
   </article>;
 }
 

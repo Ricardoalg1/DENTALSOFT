@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { errorMessage } from "@/lib/forms";
@@ -34,6 +35,7 @@ export async function saveProcedure(id: string | null, input: z.input<typeof pro
       body: JSON.stringify(parsed.data),
     });
   } catch (e) {
+    unstable_rethrow(e);
     return { ok: false, error: errorMessage(e) };
   }
   revalidatePath("/app/precios");
@@ -44,6 +46,7 @@ export async function loadExampleProcedures(): Promise<ActionResult> {
   try {
     await api("/api/procedures/examples", { method: "POST" });
   } catch (e) {
+    unstable_rethrow(e);
     return { ok: false, error: errorMessage(e) };
   }
   revalidatePath("/app/precios");

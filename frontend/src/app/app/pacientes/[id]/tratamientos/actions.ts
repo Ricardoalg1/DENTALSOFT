@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { errorMessage } from "@/lib/forms";
@@ -17,6 +17,7 @@ async function run<T>(patientId: string, fn: () => Promise<T>): Promise<ActionRe
     refresh(patientId);
     return { ok: true, data };
   } catch (e) {
+    unstable_rethrow(e);
     return { ok: false, error: errorMessage(e) };
   }
 }
@@ -38,6 +39,7 @@ export async function createPlan(patientId: string, input: z.input<typeof header
       body: JSON.stringify(parsed.data),
     });
   } catch (e) {
+    unstable_rethrow(e);
     return { ok: false, error: errorMessage(e) };
   }
   redirect(`/app/pacientes/${patientId}/tratamientos/${plan.id}`);

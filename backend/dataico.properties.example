@@ -1,0 +1,10 @@
+# Copiar a backend/dataico.properties. No subir el archivo privado a Git.
+# Arrancar Maven desde backend/ para cargarlo. No usar source: este archivo es Java properties.
+occlus.dataico.auth-token=
+occlus.dataico.account-id=
+# UUID interno de la clínica Occlus que pertenece a esta cuenta Dataico.
+occlus.dataico.clinic-id=
+# Completar con el entorno confirmado por Dataico; no se asume producción.
+occlus.dataico.environment=PRUEBAS
+occlus.dataico.prefix=
+occlus.dataico.resolution-number=

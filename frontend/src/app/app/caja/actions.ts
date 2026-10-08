@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { api, getMe } from "@/lib/api";
 import { errorMessage } from "@/lib/forms";
@@ -18,7 +19,7 @@ export async function openCash(input: { siteId: string; openingAmount: number })
     revalidatePath("/app/caja");
     revalidatePath("/app/pacientes", "layout");
     return { ok: true, data };
-  } catch (e) { return { ok: false, error: errorMessage(e) }; }
+  } catch (e) { unstable_rethrow(e); return { ok: false, error: errorMessage(e) }; }
 }
 
 export async function closeCash(id: string, input: { countedCash: number; notes?: string }): Promise<CashActionResult<CashSession>> {
@@ -32,7 +33,7 @@ export async function closeCash(id: string, input: { countedCash: number; notes?
     revalidatePath("/app/caja");
     revalidatePath("/app/pacientes", "layout");
     return { ok: true, data };
-  } catch (e) { return { ok: false, error: errorMessage(e) }; }
+  } catch (e) { unstable_rethrow(e); return { ok: false, error: errorMessage(e) }; }
 }
 
 export async function voidPayment(id: string, reason: string): Promise<CashActionResult<Payment>> {
@@ -47,5 +48,5 @@ export async function voidPayment(id: string, reason: string): Promise<CashActio
     revalidatePath(`/app/caja/recibos/${id}`);
     revalidatePath("/app/pacientes", "layout");
     return { ok: true, data };
-  } catch (e) { return { ok: false, error: errorMessage(e) }; }
+  } catch (e) { unstable_rethrow(e); return { ok: false, error: errorMessage(e) }; }
 }

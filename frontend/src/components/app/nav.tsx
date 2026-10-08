@@ -36,7 +36,7 @@ const ITEMS: Item[] = [
   { href: "/app/historias", label: "Historias clínicas", icon: ClipboardList, clinicalOnly: true },
   { href: "/app/caja", label: "Caja", icon: Wallet, cashOnly: true },
   { href: "/app/precios", label: "Lista de precios", icon: Tags },
-  { href: "/app/facturacion", label: "Facturación y RIPS", icon: FileText, soon: true },
+  { href: "/app/facturacion", label: "Facturación y RIPS", icon: FileText, adminOnly: true },
   { href: "/app/inventario", label: "Inventario", icon: Package, soon: true },
   { href: "/app/reportes", label: "Reportes", icon: ChartColumn, soon: true },
   { href: "/app/equipo", label: "Equipo", icon: Users, adminOnly: true },

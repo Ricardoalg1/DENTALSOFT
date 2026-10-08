@@ -66,7 +66,7 @@ public class PaymentService {
     @Transactional
     public PaymentResponse register(AuthUser me, UUID patientId, PaymentRequest req) {
         access.requirePatient(me.clinicId(), patientId);
-        var session = sessions.findByClinicIdAndSiteIdAndClosedAtIsNull(me.clinicId(), req.siteId())
+        var session = sessions.findOpenLocked(me.clinicId(), req.siteId())
                 .orElseThrow(() -> new ConflictException("No hay una caja abierta en esa sede: ábrela en Caja"));
         if (req.planId() != null) {
             plans.findByIdAndClinicId(req.planId(), me.clinicId())
@@ -96,7 +96,7 @@ public class PaymentService {
     public PaymentResponse voidPayment(AuthUser me, UUID id, String reason) {
         var p = find(me.clinicId(), id);
         if (p.isVoided()) throw new ConflictException("El pago ya fue anulado");
-        var session = sessions.findById(p.getCashSessionId()).orElseThrow();
+        var session = sessions.findLocked(me.clinicId(), p.getCashSessionId()).orElseThrow();
         if (!session.isOpen()) throw new ConflictException("La caja de ese pago ya se cerró: no se puede anular");
         p.setVoidedAt(Instant.now());
         p.setVoidedBy(me.userId());

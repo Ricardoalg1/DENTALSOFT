@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:${DATAICO_CONFIG_FILE:./dataico.properties}
   application:
     name: occlus-backend
   datasource:
@@ -36,6 +38,13 @@ spring:
         store_data_at_delete: true
 
 occlus:
+  dataico:
+    auth-token: ${DATAICO_AUTH_TOKEN:}
+    account-id: ${DATAICO_ACCOUNT_ID:}
+    clinic-id: ${DATAICO_CLINIC_ID:}
+    environment: ${DATAICO_ENVIRONMENT:PRUEBAS}
+    prefix: ${DATAICO_PREFIX:}
+    resolution-number: ${DATAICO_RESOLUTION_NUMBER:}
   storage:
     # Local: SeaweedFS (docker compose). Producción en AWS: dejar endpoint vacío y usar el rol IAM.
     endpoint: ${STORAGE_ENDPOINT:http://localhost:8333}

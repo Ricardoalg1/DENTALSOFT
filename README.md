@@ -65,9 +65,29 @@ cd backend && ./mvnw test
 2. ✅ Pacientes + RLS + auditoría
 3. ✅ Agenda (citas, horarios, reprogramación con arrastrar y soltar)
 4. ✅ Historia clínica + odontograma
-5. Tratamientos, presupuestos y caja
-6. Facturación electrónica DIAN + RIPS (Res. 2275/2023)
+5. ✅ Tratamientos, presupuestos y caja (con protección de cobros simultáneos y cierres)
+6. 🚧 Facturación electrónica DIAN + RIPS: borradores y revisión local implementados; emisión y MUV pendientes
 7. Inventario
 8. Reportes
 9. Recordatorios WhatsApp + asistente IA
 10. Sitio público (planes, blog, demo)
+
+## Facturación y RIPS — Fase 6 en curso
+
+Los administradores pueden entrar a **Facturación y RIPS**, guardar los datos fiscales del prestador y
+crear documentos desde **Pacientes → Tratamientos y pagos → Preparar factura**. Solo se incluyen
+procedimientos realizados. Cada procedimiento se reserva en un único documento activo; cancelar el
+borrador libera la reserva. Los documentos preparados conservan una copia de los datos del paciente,
+los precios y los diagnósticos tomados de evoluciones firmadas.
+
+Se implementaron la vista previa de RIPS para consultas y procedimientos, las comprobaciones locales
+y la descarga de un **borrador JSON**. Se toma como referencia la Resolución **0948 de 2026** y el
+documento técnico 1 **v003 del 15 de julio de 2026**, publicados en
+[SISPRO](https://contenidos.sispro.gov.co/central-financiamiento/Pages/facturacion-electronica.aspx).
+
+La fase 6 todavía requiere elegir e integrar un proveedor tecnológico, habilitar la emisión DIAN
+(incluidos numeración autorizada, XML y CUFE), verificar los catálogos oficiales y conectar el MUV para
+obtener el CUV. Los consecutivos `OCL-*` identifican borradores internos. La exportación conserva
+`numFactura: null` hasta que exista una FEV emitida; no debe radicarse como documento validado.
+
+El alcance y los pasos pendientes están en [docs/phase-6-billing.md](docs/phase-6-billing.md).

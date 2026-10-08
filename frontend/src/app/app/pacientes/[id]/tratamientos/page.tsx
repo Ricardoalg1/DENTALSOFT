@@ -60,6 +60,7 @@ export default async function TreatmentsPage({ params }: PageProps<"/app/pacient
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
+                    {me.role === "ADMIN" && p.totals.done > 0 && <Link href={`/app/facturacion/nuevo?planId=${p.id}`} className="text-primary hover:underline">Preparar factura</Link>}
                     <span className="tabular-nums">
                       {formatCOP(p.totals.total)}
                       {p.totals.done > 0 && (
