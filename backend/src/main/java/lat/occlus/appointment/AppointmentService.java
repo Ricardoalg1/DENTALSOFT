@@ -87,7 +87,7 @@ public class AppointmentService {
     /** Editar o reprogramar. Solo citas programadas o confirmadas. */
     @Transactional
     public AppointmentResponse update(UUID clinicId, UUID id, AppointmentRequest req) {
-        var appointment = find(clinicId, id);
+        var appointment = findForWrite(clinicId, id);
         if (!appointment.getStatus().isOpen()) {
             throw new ConflictException("Solo se pueden modificar citas programadas o confirmadas");
         }
@@ -97,7 +97,7 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentResponse changeStatus(UUID clinicId, UUID id, StatusRequest req) {
-        var appointment = find(clinicId, id);
+        var appointment = findForWrite(clinicId, id);
         var next = req.status();
         if (!appointment.getStatus().canMoveTo(next)) {
             throw new ConflictException("No se puede pasar la cita de %s a %s".formatted(appointment.getStatus(), next));
@@ -144,6 +144,11 @@ public class AppointmentService {
 
     private Appointment find(UUID clinicId, UUID id) {
         return appointments.findByIdAndClinicId(id, clinicId)
+                .orElseThrow(() -> new NotFoundException("Cita no encontrada"));
+    }
+
+    private Appointment findForWrite(UUID clinicId, UUID id) {
+        return appointments.findForWrite(id, clinicId)
                 .orElseThrow(() -> new NotFoundException("Cita no encontrada"));
     }
 

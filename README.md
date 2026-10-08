@@ -71,7 +71,7 @@ cd backend && ./mvnw test
 6. 🚧 Facturación electrónica DIAN + RIPS: borradores y revisión local implementados; emisión y MUV pendientes
 7. ✅ Inventario: insumos, existencias por sede, lotes, movimientos y alertas
 8. ✅ Reportes (recaudo, producción, agenda, cartera, exportación CSV)
-9. Recordatorios WhatsApp + asistente IA
+9. 🚧 Mensajería: recordatorios, bandeja, simulador y clasificación Claude implementados; activación y validación externa pendientes
 10. Sitio público (planes, blog, demo)
 
 ## Facturación y RIPS — Fase 6 en curso
@@ -93,6 +93,17 @@ obtener el CUV. Los consecutivos `OCL-*` identifican borradores internos. La exp
 `numFactura: null` hasta que exista una FEV emitida; no debe radicarse como documento validado.
 
 El alcance y los pasos pendientes están en [docs/phase-6-billing.md](docs/phase-6-billing.md).
+
+## Mensajes — Fase 9
+
+Administración y recepción tienen una bandeja en **Mensajes**. Se implementaron recordatorios con
+autorización del paciente, simulación de respuestas, confirmación/cancelación explícitas y atención
+humana de preguntas/reprogramaciones. El asistente Claude clasifica respuestas administrativas;
+no accede a la historia clínica ni ejecuta decisiones de agenda por sí mismo.
+
+El modo inicial es simulado y la automatización está apagada. No envía WhatsApp ni llama a Claude.
+El adaptador real requiere configurar Meta, una plantilla aprobada y un webhook HTTPS. Alcance,
+configuración y límites en [docs/phase-9-messaging.md](docs/phase-9-messaging.md).
 
 ## Inventario — Fase 7
 

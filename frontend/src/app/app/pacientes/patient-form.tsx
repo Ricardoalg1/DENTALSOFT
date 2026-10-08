@@ -95,6 +95,14 @@ export function PatientForm({ action, patient, cancelHref }: Props) {
         )}
       </Section>
 
+      <Section title="Recordatorios por WhatsApp" description="Marca la opción únicamente si el paciente autorizó el uso de su teléfono para recordatorios y conserva el soporte de esa autorización.">
+        <label className="flex items-center gap-2 text-sm sm:col-span-2">
+          <input type="checkbox" name="whatsappConsent" defaultChecked={state?.values ? state.values.whatsappConsent === "on" : patient?.whatsappConsent ?? false} className="size-4 accent-primary" />
+          El paciente autorizó recibir recordatorios por WhatsApp
+        </label>
+        <p className="text-xs text-muted-foreground sm:col-span-2">Se admite un celular colombiano con o sin +57. Desmarca para retirar la autorización; el paciente también puede responder BAJA.</p>
+      </Section>
+
       <div className="flex gap-2">
         <Button type="submit" size="lg" disabled={pending}>
           {pending ? "Guardando…" : patient ? "Guardar cambios" : "Crear paciente"}

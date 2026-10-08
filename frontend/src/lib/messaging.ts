@@ -1,0 +1,7 @@
+export type MessagingSettings = { remindersEnabled: boolean; hoursBefore: number; aiEnabled: boolean };
+export type MessagingChannel = { simulated: boolean; aiAvailable: boolean; schedulerEnabled: boolean; message: string };
+export type Message = { id: string; patientId: string | null; patientName: string | null; appointmentId: string | null; appointmentStartsAt: string | null; direction: "IN" | "OUT"; kind: string; phone: string; body: string; status: string; simulated: boolean; deliveryStatus: string | null; intent: string | null; intentSource: string | null; intentSummary: string | null; action: string | null; needsAttention: boolean; resolvedAt: string | null; resolutionNote: string | null; error: string | null; createdAt: string; providerMessageId: string | null };
+export type MessagingOverview = { settings: MessagingSettings; channel: MessagingChannel; messages: Message[]; attentionCount: number };
+export const MESSAGE_STATUSES: Record<string,string> = { QUEUED: "En cola", SENDING: "Enviando", SENT: "Aceptado por Meta", SIMULATED: "Simulado", FAILED: "Envío no confirmado", RECEIVED: "Recibido", PROCESSED: "Procesado" };
+export const MESSAGE_ACTIONS: Record<string,string> = { REVIEW: "Revisión de recepción", CONFIRMED: "Cita confirmada", CANCELLED: "Cita cancelada", UNSUBSCRIBED: "Autorización retirada", STALE_APPOINTMENT: "Cita modificada o respuesta fuera de plazo" };
+export const DELIVERY_STATUSES: Record<string,string> = { sent: "Enviado", delivered: "Entregado", read: "Leído", failed: "Falló la entrega" };

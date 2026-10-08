@@ -8,10 +8,16 @@ import org.springframework.data.domain.Limit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, UUID>, JpaSpecificationExecutor<Appointment> {
 
     Optional<Appointment> findByIdAndClinicId(UUID id, UUID clinicId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select a from Appointment a where a.id=:id and a.clinicId=:clinicId")
+    Optional<Appointment> findForWrite(UUID id, UUID clinicId);
 
     List<Appointment> findByClinicIdAndPatientIdOrderByStartsAtDesc(UUID clinicId, UUID patientId, Limit limit);
 

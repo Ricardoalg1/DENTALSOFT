@@ -160,6 +160,11 @@ public class PatientService {
         p.setGuardianRelationship(clean(req.guardianRelationship()));
         p.setNotes(clean(req.notes()));
         if (req.active() != null) p.setActive(req.active());
+        if (req.whatsappConsent() != null && req.whatsappConsent() != p.isWhatsappConsent()) {
+            p.setWhatsappConsent(req.whatsappConsent());
+            // Fecha de la autorización (o null si la retira): sirve como soporte ante la SIC.
+            p.setWhatsappConsentAt(req.whatsappConsent() ? java.time.Instant.now() : null);
+        }
     }
 
     private static PatientResponse toResponse(Patient p) {
@@ -169,7 +174,8 @@ public class PatientService {
                 p.getPhone(), p.getEmail(), p.getAddress(), p.getMunicipality(), p.getResidenceZone(),
                 p.getRegime(), p.getInsurer(), p.getOccupation(),
                 p.getGuardianName(), p.getGuardianPhone(), p.getGuardianRelationship(),
-                p.getNotes(), p.isActive(), p.getCreatedAt(), p.getUpdatedAt());
+                p.getNotes(), p.isActive(), p.isWhatsappConsent(), p.getWhatsappConsentAt(),
+                p.getCreatedAt(), p.getUpdatedAt());
     }
 
     /** Campos que se muestran en el historial, con etiquetas en español. */
@@ -197,6 +203,7 @@ public class PatientService {
         AUDITED_FIELDS.put("Parentesco acudiente", Patient::getGuardianRelationship);
         AUDITED_FIELDS.put("Notas", Patient::getNotes);
         AUDITED_FIELDS.put("Activo", p -> p.isActive() ? "Sí" : "No");
+        AUDITED_FIELDS.put("Autoriza WhatsApp", p -> p.isWhatsappConsent() ? "Sí" : "No");
     }
 
     private static Map<String, String> auditedValues(Patient p) {

@@ -1,0 +1,16 @@
+# Copiar a backend/messaging.properties (ignorado por Git), arrancar Maven desde backend/.
+# No cargar con source: es un archivo Java properties.
+# Valores iniciales: no hay mensajes externos ni llamadas a Claude.
+occlus.messaging.scheduler-enabled=false
+occlus.messaging.whatsapp.live-enabled=false
+occlus.messaging.whatsapp.clinic-id=
+occlus.messaging.whatsapp.access-token=
+occlus.messaging.whatsapp.phone-number-id=
+occlus.messaging.whatsapp.app-secret=
+occlus.messaging.whatsapp.verify-token=
+occlus.messaging.whatsapp.api-version=v23.0
+occlus.messaging.whatsapp.reminder-template=recordatorio_cita
+occlus.messaging.whatsapp.template-language=es
+occlus.messaging.ai.enabled=false
+occlus.messaging.ai.api-key=
+occlus.messaging.ai.model=claude-opus-5-5

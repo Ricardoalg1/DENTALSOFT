@@ -102,6 +102,8 @@ export type Patient = {
   guardianRelationship: string | null;
   notes: string | null;
   active: boolean;
+  whatsappConsent: boolean;
+  whatsappConsentAt: string | null;
   createdAt: string;
   updatedAt: string;
 };

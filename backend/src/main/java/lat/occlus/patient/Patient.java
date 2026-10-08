@@ -76,6 +76,11 @@ public class Patient {
 
     private boolean active = true;
 
+    /** Autorizó recibir recordatorios por WhatsApp (Ley 1581). */
+    private boolean whatsappConsent;
+
+    private Instant whatsappConsentAt;
+
     @NotAudited
     private String searchKey;
 

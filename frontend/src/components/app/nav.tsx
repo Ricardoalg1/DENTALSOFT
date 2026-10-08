@@ -14,6 +14,7 @@ import {
   ChartColumn,
   Users,
   UserRound,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,12 +28,14 @@ type Item = {
   clinicalOnly?: boolean;
   /** Solo quienes cobran (todos menos el auxiliar). */
   cashOnly?: boolean;
+  messagingOnly?: boolean;
 };
 
 const ITEMS: Item[] = [
   { href: "/app", label: "Inicio", icon: LayoutDashboard },
   { href: "/app/pacientes", label: "Pacientes", icon: UserRound },
   { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
+  { href: "/app/mensajes", label: "Mensajes", icon: MessageSquare, messagingOnly: true },
   { href: "/app/historias", label: "Historias clínicas", icon: ClipboardList, clinicalOnly: true },
   { href: "/app/caja", label: "Caja", icon: Wallet, cashOnly: true },
   { href: "/app/precios", label: "Lista de precios", icon: Tags },
@@ -43,11 +46,11 @@ const ITEMS: Item[] = [
   { href: "/app/sedes", label: "Sedes", icon: Building2 },
 ];
 
-export function Nav({ isAdmin, clinical, cash }: { isAdmin: boolean; clinical: boolean; cash: boolean }) {
+export function Nav({ isAdmin, clinical, cash, messaging }: { isAdmin: boolean; clinical: boolean; cash: boolean; messaging: boolean }) {
   const pathname = usePathname();
   return (
     <nav className="grid gap-0.5">
-      {ITEMS.filter((i) => (isAdmin || !i.adminOnly) && (clinical || !i.clinicalOnly) && (cash || !i.cashOnly)).map(({ href, label, icon: Icon, soon }) => {
+      {ITEMS.filter((i) => (isAdmin || !i.adminOnly) && (clinical || !i.clinicalOnly) && (cash || !i.cashOnly) && (messaging || !i.messagingOnly)).map(({ href, label, icon: Icon, soon }) => {
         const active = href === "/app" ? pathname === "/app" : pathname.startsWith(href);
         if (soon) {
           return (

@@ -17,6 +17,7 @@
 		<java.version>21</java.version>
 		<springdoc.version>3.1.1</springdoc.version>
 		<awssdk.version>2.55.12</awssdk.version>
+		<anthropic.version>2.70.0</anthropic.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -65,6 +66,11 @@
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.anthropic</groupId>
+			<artifactId>anthropic-java</artifactId>
+			<version>${anthropic.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>

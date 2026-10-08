@@ -1,6 +1,8 @@
 spring:
   config:
-    import: optional:file:${DATAICO_CONFIG_FILE:./dataico.properties}
+    import:
+      - optional:file:${DATAICO_CONFIG_FILE:./dataico.properties}
+      - optional:file:${MESSAGING_CONFIG_FILE:./messaging.properties}
   application:
     name: occlus-backend
   datasource:
@@ -38,6 +40,24 @@ spring:
         store_data_at_delete: true
 
 occlus:
+  messaging:
+    scheduler-enabled: ${MESSAGING_SCHEDULER:false}
+    reminder-interval: PT5M
+    inbound-interval: PT5S
+    whatsapp:
+      live-enabled: ${WHATSAPP_LIVE_ENABLED:false}
+      clinic-id: ${WHATSAPP_CLINIC_ID:}
+      access-token: ${WHATSAPP_ACCESS_TOKEN:}
+      phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+      app-secret: ${WHATSAPP_APP_SECRET:}
+      verify-token: ${WHATSAPP_VERIFY_TOKEN:}
+      api-version: ${WHATSAPP_API_VERSION:v23.0}
+      reminder-template: ${WHATSAPP_REMINDER_TEMPLATE:recordatorio_cita}
+      template-language: ${WHATSAPP_TEMPLATE_LANGUAGE:es}
+    ai:
+      enabled: ${MESSAGING_AI_ENABLED:false}
+      api-key: ${ANTHROPIC_API_KEY:}
+      model: ${OCCLUS_AI_MODEL:claude-opus-5-5}
   dataico:
     auth-token: ${DATAICO_AUTH_TOKEN:}
     account-id: ${DATAICO_ACCOUNT_ID:}

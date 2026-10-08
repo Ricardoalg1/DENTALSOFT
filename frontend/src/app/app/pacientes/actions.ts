@@ -1,6 +1,6 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { errorMessage, keepValues, type FormState } from "@/lib/forms";
@@ -44,6 +44,7 @@ const patientSchema = z.object({
   guardianPhone: optional(30),
   guardianRelationship: optional(40),
   notes: optional(1000),
+  whatsappConsent: z.enum(["on", "off"]).transform(v => v === "on"),
   // Checkbox: solo viene en el formulario de edición.
   active: z
     .enum(["on", "off"])
@@ -54,6 +55,7 @@ const patientSchema = z.object({
 function parse(formData: FormData) {
   const raw = Object.fromEntries(formData);
   if (formData.has("activePresent")) raw.active = formData.get("active") === "on" ? "on" : "off";
+  raw.whatsappConsent = formData.get("whatsappConsent") === "on" ? "on" : "off";
   return patientSchema.safeParse(raw);
 }
 
@@ -67,6 +69,7 @@ export async function createPatient(_: FormState, formData: FormData): Promise<F
     const patient = await api<Patient>("/api/patients", { method: "POST", body: JSON.stringify(parsed.data) });
     id = patient.id;
   } catch (e) {
+    unstable_rethrow(e);
     return { error: errorMessage(e), values: keepValues(formData) };
   }
   redirect(`/app/pacientes/${id}`);
@@ -80,6 +83,7 @@ export async function updatePatient(id: string, _: FormState, formData: FormData
   try {
     await api<Patient>(`/api/patients/${id}`, { method: "PUT", body: JSON.stringify(parsed.data) });
   } catch (e) {
+    unstable_rethrow(e);
     return { error: errorMessage(e), values: keepValues(formData) };
   }
   redirect(`/app/pacientes/${id}`);

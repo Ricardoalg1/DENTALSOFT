@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           <Logo />
           <p className="mt-1 truncate text-xs text-muted-foreground">{me.clinicName}</p>
         </div>
-        <Nav isAdmin={me.role === "ADMIN"} clinical={canReadClinical(me)} cash={canCollect(me)} />
+        <Nav isAdmin={me.role === "ADMIN"} clinical={canReadClinical(me)} cash={canCollect(me)} messaging={me.role === "ADMIN" || me.role === "RECEPTION"} />
         <div className="mt-auto grid gap-2 border-t pt-4">
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{me.fullName}</p>

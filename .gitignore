@@ -9,6 +9,7 @@
 .env.*
 !.env.example
 backend/dataico.properties
+backend/messaging.properties
 
 # Backend
 backend/target/
