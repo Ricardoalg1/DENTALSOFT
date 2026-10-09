@@ -2,6 +2,8 @@
 
 Software en la nube para clínicas odontológicas en Colombia — [occlus.lat](https://occlus.lat).
 
+Documentación técnica completa: [fases implementadas, arquitectura y código explicado](docs/implementacion-completa.md).
+
 | Carpeta | Stack |
 |---|---|
 | `backend/` | Java 21 · Spring Boot 4 · PostgreSQL · Flyway · Spring Security (JWT) |
