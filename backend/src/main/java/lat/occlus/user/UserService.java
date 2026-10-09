@@ -24,6 +24,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserLimits limits;
     private final TransactionTemplate tx;
+    private final lat.occlus.auth.SessionService sessions;
 
     @Transactional(readOnly = true)
     public List<ProfessionalResponse> professionals(UUID clinicId) {
@@ -80,6 +81,7 @@ public class UserService {
             throw new ConflictException("No puedes desactivarte ni quitarte el rol de administrador");
         }
         if (req.fullName() != null && !req.fullName().isBlank()) user.setFullName(req.fullName().trim());
+        boolean roleChanged = req.role() != null && req.role() != user.getRole();
         if (req.role() != null) user.setRole(req.role());
         if (req.active() != null) {
             // Reactivar a alguien también cuenta contra el límite del plan.
@@ -87,6 +89,8 @@ public class UserService {
             user.setActive(req.active());
         }
         if (req.professional() != null) user.setProfessional(req.professional());
+        // Desactivar o cambiar de rol cierra sus sesiones al instante (el validador también lo exige).
+        if (!user.isActive() || roleChanged) sessions.revokeAll(userId, null, user.isActive() ? "ROLE_CHANGED" : "DEACTIVATED");
         return UserResponse.from(user);
     }
 }

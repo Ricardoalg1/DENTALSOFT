@@ -62,6 +62,11 @@ export async function register(_: FormState, formData: FormData): Promise<FormSt
 }
 
 export async function logout() {
+  // Cierra la sesión también en el servidor: el token deja de valer aunque alguien lo tuviera copiado.
+  // Si ya había vencido o falla la llamada, igual se borra la cookie.
+  try {
+    await api("/api/auth/logout", { method: "POST" });
+  } catch {}
   await clearSession();
   redirect("/ingresar");
 }

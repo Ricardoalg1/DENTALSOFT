@@ -35,7 +35,7 @@ public class SubscriptionAdmin {
     private final PlanCatalog plans;
     private final PlatformAudit audit;
     private final PlatformGate gate;
-    private final PaymentGateway gateway;
+    private final PaymentGateways gateways;
 
     @Transactional
     public SubscriptionView changePlan(AuthUser me, UUID id, PlanChange req) {
@@ -163,17 +163,21 @@ public class SubscriptionAdmin {
     // ---------- Cobro automático y pagos ----------
 
     @Transactional
-    public void setPaymentMethod(AuthUser me, UUID id, String tokenRef, String label) {
+    public void setPaymentMethod(AuthUser me, UUID id, String provider, String tokenRef, String label) {
         billing.lock(id);
+        String chosen = provider == null || provider.isBlank() ? gateways.cardOnFileProviders().stream().findFirst().orElse(null) : provider.trim().toUpperCase();
+        if (chosen == null || gateways.charger(chosen).isEmpty()) {
+            throw new BadRequestException("Esa pasarela no está activada. Disponibles: %s.".formatted(String.join(", ", gateways.cardOnFileProviders())));
+        }
         db.update("""
                 insert into subscription_payment_method (clinic_id, provider, token_ref, label, created_by)
                 values (?, ?, ?, ?, ?)
                 on conflict (clinic_id) do update set provider = excluded.provider, token_ref = excluded.token_ref,
                     label = excluded.label, created_by = excluded.created_by, created_at = now()""",
-                id, gateway.provider(), tokenRef.trim(), label.trim(), me.userId());
+                id, chosen, tokenRef.trim(), label.trim(), me.userId());
         // El token es sensible: la auditoría guarda solo la etiqueta.
         audit.record(me, "PAYMENT_METHOD_SET", id, "Registró un medio de pago para el cobro automático",
-                Views.details("provider", gateway.provider(), "label", label.trim()));
+                Views.details("provider", chosen, "label", label.trim()));
     }
 
     @Transactional
@@ -221,14 +225,7 @@ public class SubscriptionAdmin {
             if (!status.equals("PENDING") && !status.equals("FAILED")) throw new ConflictException("Ese cobro ya está " + (status.equals("PAID") ? "pagado." : "anulado."));
             target = chargeId;
         } else {
-            var open = db.queryForList("select id from subscription_charge where clinic_id = ? and status in ('PENDING', 'FAILED') order by period_start limit 1", UUID.class, id);
-            if (!open.isEmpty()) {
-                target = open.getFirst();
-            } else {
-                Instant start = sub.currentPeriodEnd() != null ? sub.currentPeriodEnd()
-                        : sub.trialEndsAt() != null ? sub.trialEndsAt() : now;
-                target = billing.createCharge(id, start, sub.billingCycle(), sub.price(), now, me.userId());
-            }
+            target = billing.openOrAdvanceCharge(id, sub, me.userId(), now);
         }
         billing.settle(id, target, "MANUAL", reference.trim(), null, me.userId(), now);
         var charge = charges(id).stream().filter(c -> c.id().equals(target)).findFirst().orElseThrow();

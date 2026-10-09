@@ -13,27 +13,27 @@ const { light = false } = Astro.props;
 	{
 		light ? (
 			<img
-				src="/logo_dark.jpg"
+				src="/logo_dark.png"
 				alt="Occlus App"
 				width="960"
 				height="598"
-				class="h-auto w-36"
+				class="h-auto w-20"
 			/>
 		) : (
 			<>
 				<img
-					src="/logo_light.jpg"
+					src="/logo_light.png"
 					alt="Occlus — Solución dental digital"
 					width="1292"
 					height="792"
-					class="h-auto w-36 dark:hidden"
+					class="h-auto w-20 dark:hidden"
 				/>
 				<img
-					src="/logo_dark.jpg"
+					src="/logo_dark.png"
 					alt="Occlus App"
 					width="960"
 					height="598"
-					class="hidden h-auto w-36 dark:block"
+					class="hidden h-auto w-20 dark:block"
 				/>
 			</>
 		)

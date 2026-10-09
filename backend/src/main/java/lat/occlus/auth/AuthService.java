@@ -15,7 +15,6 @@ import lat.occlus.platform.PlatformGate;
 import lat.occlus.platform.PlatformProperties;
 import lat.occlus.platform.ProvisioningService;
 import lat.occlus.platform.Subscription;
-import lat.occlus.shared.security.TokenService;
 import lat.occlus.shared.tenant.TenantContext;
 import lat.occlus.shared.web.BadRequestException;
 import lat.occlus.shared.web.ForbiddenException;
@@ -35,7 +34,7 @@ public class AuthService {
     private final ClinicRepository clinics;
     private final AppUserRepository users;
     private final PasswordEncoder passwordEncoder;
-    private final TokenService tokenService;
+    private final SessionService sessions;
     private final ProvisioningService provisioning;
     private final Entitlements entitlements;
     private final PlatformGate platformGate;
@@ -51,7 +50,8 @@ public class AuthService {
         }
         var result = provisioning.provision(new ProvisioningService.Request(
                 req.clinicName(), req.nit(), req.fullName(), req.email(), req.password(), false,
-                "INTEGRAL", BillingCycle.MONTHLY, null, null, null, platform.selfServiceTrialDays(), null,
+                "INTEGRAL", BillingCycle.MONTHLY, null, null, java.util.EnumSet.allOf(lat.occlus.platform.AppModule.class),
+                platform.selfServiceTrialDays(), null,
                 ProvisioningService.ClientData.none(), "SELF_SERVICE"), null);
         var admin = TenantContext.callAsSystem(() -> users.findById(result.adminId()).orElseThrow());
         return toResponse(admin);
@@ -78,6 +78,8 @@ public class AuthService {
         }
         user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
         user.setPasswordChangeRequired(false);
+        // Quien tuviera la contraseña anterior (o un token robado) queda fuera; solo vale la sesión nueva.
+        sessions.revokeAll(userId, null, "PASSWORD_CHANGED");
         return toResponse(user);
     }
 
@@ -106,7 +108,7 @@ public class AuthService {
     }
 
     private TokenResponse toResponse(AppUser user) {
-        var token = tokenService.issue(user);
+        var token = sessions.open(user);
         return new TokenResponse(token.value(), token.expiresAt());
     }
 }

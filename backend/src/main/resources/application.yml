@@ -50,8 +50,25 @@ occlus:
     # Renovaciones, cobros y suspensiones automáticas. El acceso NO depende de esto: se calcula por fechas.
     scheduler-enabled: ${SUBSCRIPTIONS_SCHEDULER:false}
     engine-interval: PT15M
-    # Hoy solo existe «simulated»: no mueve dinero real. Ver docs/phase-12-platform-admin.md.
-    gateway: simulated
+  # Cobro de la suscripción. Ver docs/phase-13-payments.md.
+  payments:
+    # Pasarela de PRUEBA: no mueve dinero. En producción SIEMPRE false.
+    simulated: ${PAYMENTS_SIMULATED:true}
+    # Dirección pública (https://occlus.lat, sin barra final): a ella vuelve la persona tras pagar y a ella llaman los webhooks.
+    public-url: ${PUBLIC_URL:}
+    wompi:
+      enabled: ${WOMPI_ENABLED:false}
+      environment: ${WOMPI_ENVIRONMENT:sandbox}
+      public-key: ${WOMPI_PUBLIC_KEY:}
+      private-key: ${WOMPI_PRIVATE_KEY:}
+      events-secret: ${WOMPI_EVENTS_SECRET:}
+      integrity-secret: ${WOMPI_INTEGRITY_SECRET:}
+    epayco:
+      enabled: ${EPAYCO_ENABLED:false}
+      customer-id: ${EPAYCO_CUSTOMER_ID:}
+      public-key: ${EPAYCO_PUBLIC_KEY:}
+      p-key: ${EPAYCO_P_KEY:}
+      test: ${EPAYCO_TEST:true}
   marketing:
     public-key: ${SITE_PUBLIC_API_KEY:}
     admin-user-ids: ${OCCLUS_PLATFORM_ADMIN_IDS:}

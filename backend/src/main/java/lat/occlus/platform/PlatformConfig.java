@@ -6,5 +6,5 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
-@EnableConfigurationProperties(PlatformProperties.class)
+@EnableConfigurationProperties({PlatformProperties.class, PaymentProperties.class})
 class PlatformConfig {}

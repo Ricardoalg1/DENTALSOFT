@@ -114,7 +114,7 @@ class PlatformAdminTests {
         String newToken = PlatformTestSupport.changePassword(mvc, tempToken, temp, "Otra-clave-123");
 
         call(get("/api/patients"), newToken).andExpect(status().isOk());
-        call(get("/api/patients"), tempToken).andExpect(status().isForbidden()); // el token viejo sigue restringido
+        call(get("/api/patients"), tempToken).andExpect(status().isUnauthorized()); // cambiar la contraseña cierra la sesión anterior
         call(get("/api/auth/me"), newToken).andExpect(jsonPath("$.mustChangePassword").value(false));
         login(mvc, email, "Otra-clave-123");
 

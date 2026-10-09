@@ -206,6 +206,7 @@ export async function resumeClinic(id: string) {
 
 const methodSchema = z.object({
   id: uuid,
+  provider: z.enum(["WOMPI", "SIMULATED"]).optional(),
   tokenRef: z.string().trim().min(3, "Pega el token que entregó la pasarela").max(200),
   label: z.string().trim().min(2, "Escribe una etiqueta (ej. Visa ···· 4242)").max(80),
 });

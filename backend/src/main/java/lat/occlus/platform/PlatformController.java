@@ -158,7 +158,7 @@ public class PlatformController {
     @PutMapping("/clinics/{id}/payment-method")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void setPaymentMethod(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @Valid @RequestBody PaymentMethodRequest req) {
-        gate.run(me(jwt), () -> subscriptions.setPaymentMethod(me(jwt), id, req.tokenRef(), req.label()));
+        gate.run(me(jwt), () -> subscriptions.setPaymentMethod(me(jwt), id, req.provider(), req.tokenRef(), req.label()));
     }
 
     @DeleteMapping("/clinics/{id}/payment-method")

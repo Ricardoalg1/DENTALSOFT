@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { ChangePasswordForm } from "@/components/app/change-password-form";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getMe } from "@/lib/api";
+import { SessionsCard } from "@/components/app/sessions-card";
+import { SubscriptionCard } from "@/components/app/subscription-card";
+import { api, getMe } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import { MODULE_LABELS, STATUS_LABELS, STATUS_VARIANT } from "@/lib/platform";
+import { MODULE_LABELS, STATUS_LABELS, STATUS_VARIANT, type SubscriptionState } from "@/lib/platform";
 import { ROLE_LABELS } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Mi cuenta" };
@@ -13,6 +15,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/cuen
   const me = await getMe();
   const changed = (await searchParams).cambiada === "1";
   const sub = me.subscription;
+  const billing = me.role === "ADMIN" ? await api<SubscriptionState>("/api/subscription") : null;
   return (
     <div className="grid max-w-3xl gap-6">
       <div>
@@ -22,7 +25,9 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/cuen
         </p>
       </div>
 
-      {sub && (
+      {billing && <SubscriptionCard state={billing} modules={me.modules} />}
+
+      {sub && !billing && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -52,6 +57,8 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/cuen
           </CardContent>
         </Card>
       )}
+
+      <SessionsCard />
 
       <Card>
         <CardHeader>

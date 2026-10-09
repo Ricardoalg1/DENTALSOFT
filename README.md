@@ -122,6 +122,10 @@ Detalle de operación y alcance en [docs/phase-7-inventory.md](docs/phase-7-inve
 
 El equipo de Occlus crea clientes, habilita módulos por cliente (exigidos por el backend en cada petición, no solo en pantalla), controla suscripciones con renovación automática, y ve auditoría, eventos y notificaciones. La pasarela de pagos es **simulada**: ver [Fase 12](docs/phase-12-platform-admin.md) para el alcance, la configuración (`OCCLUS_PLATFORM_ADMIN_IDS`) y lo que falta decidir.
 
+## Pagos y sesiones — Fase 13
+
+Pago de la suscripción con **Wompi** y **ePayco** (checkout alojado, webhooks firmados y verificados contra la pasarela), cobro automático con tarjeta guardada en Wompi, sesiones revocables y módulos por plan. Falta probar con llaves reales: ver [Fase 13](docs/phase-13-payments.md).
+
 ## Sitio público — Fase 10
 
 Sitio público en Astro (`site/`): inicio, planes con pago mensual/anual, blog y solicitudes persistentes de demo. Aplicación clínica y CRM privado en Next.js (`frontend/`).

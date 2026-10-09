@@ -2,7 +2,10 @@ import { LockKeyhole, LogOut } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { Logo } from "@/components/logo";
 import { ChangePasswordForm } from "@/components/app/change-password-form";
+import { PayButtons } from "@/components/app/pay-buttons";
 import { Button } from "@/components/ui/button";
+import { formatCOP } from "@/lib/format";
+import type { SubscriptionState } from "@/lib/platform";
 
 function Frame({ children }: { children: React.ReactNode }) {
   return (
@@ -21,7 +24,7 @@ function Frame({ children }: { children: React.ReactNode }) {
 }
 
 /** Suscripción suspendida, cancelada o vencida: no se muestra nada de la aplicación. */
-export function SuspendedScreen({ clinicName, message }: { clinicName: string; message: string | null }) {
+export function SuspendedScreen({ clinicName, message, payment }: { clinicName: string; message: string | null; payment: SubscriptionState | null }) {
   return (
     <Frame>
       <div className="grid gap-3">
@@ -33,6 +36,13 @@ export function SuspendedScreen({ clinicName, message }: { clinicName: string; m
         <p className="text-sm text-muted-foreground">
           Tus datos están seguros y no se pierden. Cuando se regularice, todo estará tal como lo dejaste.
         </p>
+        {payment?.canPay && (
+          <div className="grid gap-2 rounded-lg border p-3">
+            <p className="text-sm font-medium">Reactiva tu cuenta ahora: {formatCOP(payment.price)}</p>
+            <PayButtons providers={payment.checkoutProviders} />
+            <p className="text-xs text-muted-foreground">Al aprobarse el pago, tu acceso vuelve de inmediato.</p>
+          </div>
+        )}
       </div>
     </Frame>
   );

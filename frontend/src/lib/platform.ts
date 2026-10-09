@@ -51,6 +51,7 @@ export const EVENT_KIND_LABELS: Record<string, string> = {
   RENEWAL_UPCOMING: "Renovación próxima",
   RENEWAL_DUE: "Renovación pendiente",
   PAYMENT_RECEIVED: "Pago recibido",
+  PAYMENT_REVIEW: "Pago a revisar",
   PAYMENT_FAILED: "Cobro fallido",
   SUSPENDED: "Suspensión",
   SUBSCRIPTION_CANCELLED: "Cancelación",
@@ -103,7 +104,10 @@ export type EventRow = {
 };
 
 export type Overview = {
+  /** simulated | simulated+live | live | none */
   gatewayMode: string;
+  checkoutProviders: string[];
+  cardProviders: string[];
   schedulerEnabled: boolean;
   graceDays: number;
   clinics: { total: number; trial: number; active: number; pastDue: number; suspended: number; cancelled: number };
@@ -255,3 +259,47 @@ export type PlatformState =
       created?: CreatedClient;
     }
   | undefined;
+
+// ---------- Suscripción vista por la propia clínica ----------
+
+export const PROVIDER_LABELS: Record<string, string> = { WOMPI: "Wompi", EPAYCO: "ePayco", SIMULATED: "Simulada" };
+
+export type SubscriptionState = {
+  planCode: string;
+  planName: string;
+  status: SubscriptionStatus;
+  billingCycle: keyof typeof CYCLE_LABELS;
+  price: number;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  accessAllowed: boolean;
+  inactiveMessage: string | null;
+  dueDate: string | null;
+  canPay: boolean;
+  cannotPayReason: string | null;
+  checkoutProviders: string[];
+  cardOnFileAvailable: boolean;
+  paymentMethod: { provider: string; label: string } | null;
+  charges: ChargeView[];
+};
+
+export type CheckoutStarted = {
+  checkoutId: string;
+  provider: string;
+  redirectUrl: string | null;
+  params: Record<string, string>;
+};
+
+export type CheckoutResult = { status: "CREATED" | "APPROVED" | "DECLINED"; message: string };
+
+export type WompiSetup = {
+  publicKey: string;
+  apiBase: string;
+  acceptanceToken: string;
+  acceptancePermalink: string;
+  personalAuthToken: string;
+  personalAuthPermalink: string;
+};
+
+export type SessionInfo = { id: string; createdAt: string; userAgent: string | null; current: boolean };

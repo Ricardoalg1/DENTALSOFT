@@ -44,7 +44,7 @@ public final class PlatformDtos {
     public record ClinicAlert(UUID clinicId, String clinicName, String status, Instant date, BigDecimal amount) {}
 
     public record Overview(
-            String gatewayMode, boolean schedulerEnabled, int graceDays, StatusCounts clinics,
+            String gatewayMode, java.util.List<String> checkoutProviders, java.util.List<String> cardProviders, boolean schedulerEnabled, int graceDays, StatusCounts clinics,
             /** Ingreso mensual recurrente: suscripciones activas o en mora, con el anual dividido en 12. */
             BigDecimal mrr, BigDecimal arr,
             List<ClinicAlert> trialsEnding, List<ClinicAlert> pastDue, List<ClinicAlert> renewalsUpcoming,
@@ -147,7 +147,8 @@ public final class PlatformDtos {
     public record ReactivateRequest(@Min(1) @Max(60) int courtesyDays, @NotBlank @Size(min = 3, max = 300) String reason) {}
 
     /** Token emitido por la pasarela (nunca datos de tarjeta) y una etiqueta para reconocerlo. */
-    public record PaymentMethodRequest(@NotBlank @Size(max = 200) String tokenRef, @NotBlank @Size(max = 80) String label) {}
+    public record PaymentMethodRequest(@Size(max = 20) String provider, @NotBlank @Size(max = 200) String tokenRef,
+                                       @NotBlank @Size(max = 80) String label) {}
 
     public record ChargeView(UUID id, Instant periodStart, Instant periodEnd, BigDecimal amount, String status,
                              String method, int attempts, Instant nextAttemptAt, String reference,

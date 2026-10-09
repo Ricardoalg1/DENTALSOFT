@@ -52,6 +52,20 @@ public class SubscriptionBilling {
     }
 
     /**
+     * El cobro que toca pagar: el pendiente (o fallido) más antiguo; si no hay, el del periodo siguiente
+     * (pago adelantado). Lo usan el registro manual y el pago por pasarela.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public UUID openOrAdvanceCharge(UUID clinicId, Subscription sub, UUID actor, Instant now) {
+        var open = db.queryForList("""
+                select id from subscription_charge where clinic_id = ? and status in ('PENDING', 'FAILED')
+                order by period_start limit 1""", UUID.class, clinicId);
+        if (!open.isEmpty()) return open.getFirst();
+        Instant start = sub.currentPeriodEnd() != null ? sub.currentPeriodEnd() : sub.trialEndsAt() != null ? sub.trialEndsAt() : now;
+        return createCharge(clinicId, start, sub.billingCycle(), sub.price(), now, actor);
+    }
+
+    /**
      * Marca un cobro como pagado y deja la suscripción activa. Idempotente: pagar dos veces el
      * mismo cobro no extiende el periodo dos veces.
      *
@@ -71,8 +85,11 @@ public class SubscriptionBilling {
 
         Instant start = ((Timestamp) charge.get("period_start")).toInstant();
         Instant end = ((Timestamp) charge.get("period_end")).toInstant();
-        boolean lapsed = sub.status() == SubscriptionStatus.SUSPENDED || sub.status() == SubscriptionStatus.CANCELLED
-                || (sub.status() == SubscriptionStatus.PAST_DUE && !now.isBefore(sub.pastDueSince().plus(entitlements.grace())));
+        // «Vencida de verdad»: el periodo terminó sin pago. Una suspensión administrativa con el periodo todavía
+        // vigente NO es esto: el tiempo ya pagado se respeta y lo nuevo se suma al final.
+        boolean periodEnded = sub.currentPeriodEnd() == null || !sub.currentPeriodEnd().isAfter(now);
+        boolean lapsed = periodEnded && (sub.status() == SubscriptionStatus.SUSPENDED || sub.status() == SubscriptionStatus.CANCELLED
+                || (sub.status() == SubscriptionStatus.PAST_DUE && !now.isBefore(sub.pastDueSince().plus(entitlements.grace()))));
         if (lapsed) {
             start = now;
             end = sub.billingCycle().endOfPeriodStarting(now);
@@ -83,15 +100,16 @@ public class SubscriptionBilling {
                 method, reference, providerRef, ts(now), ts(start), ts(end), chargeId);
 
         boolean advances = sub.currentPeriodEnd() == null || end.isAfter(sub.currentPeriodEnd());
-        if (advances) {
-            // Pago adelantado de un periodo contiguo: se amplía el final sin mover el inicio.
-            boolean contiguous = sub.status() == SubscriptionStatus.ACTIVE && sub.currentPeriodEnd() != null
-                    && !start.isAfter(sub.currentPeriodEnd());
+        // Quien paga queda activo SIEMPRE, aunque el pago no extienda el periodo (p. ej. estaba suspendido con tiempo pagado).
+        if (advances || sub.status() != SubscriptionStatus.ACTIVE) {
+            // Pago de un periodo contiguo: se amplía el final sin mover el inicio.
+            boolean contiguous = !lapsed && sub.currentPeriodEnd() != null && !start.isAfter(sub.currentPeriodEnd());
             Instant periodStart = contiguous ? sub.currentPeriodStart() : start;
+            Instant periodEnd = advances ? end : sub.currentPeriodEnd();
             db.update("""
                     update clinic_subscription set status = 'ACTIVE', current_period_start = ?, current_period_end = ?,
                            past_due_since = null, suspended_at = null, cancelled_at = null, updated_at = now()
-                    where clinic_id = ?""", ts(periodStart), ts(end), clinicId);
+                    where clinic_id = ?""", ts(periodStart), ts(periodEnd), clinicId);
         }
         BigDecimal amount = (BigDecimal) charge.get("amount");
         events.emit("PAYMENT_RECEIVED", Severity.INFO, clinicId, "Pago recibido de " + clinicName(clinicId),

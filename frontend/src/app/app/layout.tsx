@@ -8,14 +8,24 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { platformAccess } from "@/lib/marketing";
-import { getMe } from "@/lib/api";
+import { unstable_rethrow } from "next/navigation";
+import { api, getMe } from "@/lib/api";
+import type { SubscriptionState } from "@/lib/platform";
 import { ROLE_LABELS, canCollect, canReadClinical } from "@/lib/types";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const me = await getMe();
   if (me.mustChangePassword) return <ForcedPasswordScreen name={me.fullName} />;
   if (!me.subscription || !me.subscription.accessAllowed) {
-    return <SuspendedScreen clinicName={me.clinicName} message={me.subscription?.inactiveMessage ?? null} />;
+    // El administrador puede pagar desde aquí mismo y reactivarse sin ayuda de nadie.
+    const payment =
+      me.role === "ADMIN"
+        ? await api<SubscriptionState>("/api/subscription").catch((e) => {
+            unstable_rethrow(e);
+            return null;
+          })
+        : null;
+    return <SuspendedScreen clinicName={me.clinicName} message={me.subscription?.inactiveMessage ?? null} payment={payment} />;
   }
   return (
     <div className="flex min-h-svh flex-col md:flex-row">

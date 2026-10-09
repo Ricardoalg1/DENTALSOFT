@@ -40,11 +40,11 @@ En la aplicación de cada clínica: el menú solo muestra los módulos contratad
 
 ## Decisiones y supuestos que conviene revisar
 
-- **Qué módulos trae cada plan** es una suposición de negocio (Esencial: historia clínica y tratamientos/caja; Equipo: + reportes; Integral y Global: todos). Se edita en *Planes* sin tocar código; los clientes existentes conservan lo suyo.
-- **La pasarela de pagos es simulada** (`occlus.platform.gateway: simulated`; aprueba salvo que el token contenga «fail»). El arranque falla si se configura otra. Falta elegir proveedor (Wompi, ePayco, etc.) y escribir su adaptador (`PaymentGateway`): hay que conseguir credenciales y decidir tokenización. Mientras tanto, los pagos reales se registran a mano. **Nunca se guardan datos de tarjeta**, solo el token.
+- **Qué módulos trae cada plan** es una suposición de negocio (ver la tabla en la [Etapa 13](phase-13-payments.md#módulos-por-plan)). Se edita en *Planes* sin tocar código; los clientes existentes conservan lo suyo.
+- **Pagos**: ver [Etapa 13](phase-13-payments.md). Hay una pasarela simulada para desarrollo (`PAYMENTS_SIMULATED`, apagada en producción) y adaptadores de Wompi y ePayco pendientes de probarse con llaves reales. **Nunca se guardan datos de tarjeta**, solo el token.
 - **Sin restablecer contraseñas ni «entrar como el cliente»**, a propósito: darían acceso a datos clínicos desde el panel. Si un cliente olvida su contraseña hay que decidir el flujo (correo de recuperación) antes de construirlo.
-- **El JWT no se revoca** al cambiar el rol de alguien; la suscripción y los módulos sí rigen al instante porque se consultan en cada petición.
-- El registro abierto está **apagado en producción** (`SELF_REGISTRATION=false` en backend y frontend); en desarrollo sigue encendido y crea una prueba de 14 días del plan Integral.
+- **Sesiones**: son revocables (cerrar sesión, cambiar contraseña, desactivar o cambiar de rol cortan el acceso al instante). Ver [Etapa 13](phase-13-payments.md#sesiones-revocables).
+- El registro abierto está **apagado en producción** (`SELF_REGISTRATION=false` en backend y frontend); en desarrollo sigue encendido y crea una prueba de 14 días del plan Integral con todos los módulos.
 - Las 8 clínicas que ya existían pasaron a plan *Interno* (todos los módulos, sin cobro ni vencimiento) para no cortar a nadie.
 
 ## Configuración

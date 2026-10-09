@@ -33,7 +33,7 @@ public class SubscriptionSteps {
     private static final DateTimeFormatter DATE =
             DateTimeFormatter.ofPattern("d 'de' MMM 'de' yyyy", Locale.forLanguageTag("es-CO")).withZone(ZoneId.of("America/Bogota"));
 
-    public record Ticket(BigDecimal amount, String tokenRef, int attempt) {}
+    public record Ticket(BigDecimal amount, String tokenRef, int attempt, String provider, String customerEmail) {}
 
     private final JdbcTemplate db;
     private final Entitlements entitlements;
@@ -161,7 +161,10 @@ public class SubscriptionSteps {
     @Transactional
     public Ticket begin(UUID clinicId, UUID chargeId, Instant now) {
         var rows = db.queryForList("""
-                select c.amount, c.attempts, m.token_ref from subscription_charge c
+                select c.amount, c.attempts, m.token_ref, m.provider,
+                       (select u.email from app_user u where u.clinic_id = c.clinic_id and u.role = 'ADMIN' and u.active
+                        order by u.created_at limit 1) as admin_email
+                from subscription_charge c
                 join subscription_payment_method m on m.clinic_id = c.clinic_id
                 where c.id = ? and c.clinic_id = ? and c.status = 'PENDING' and c.attempts < ? and c.next_attempt_at <= ?
                 for update of c skip locked""", chargeId, clinicId, MAX_ATTEMPTS, ts(now));
@@ -170,7 +173,8 @@ public class SubscriptionSteps {
         int attempt = ((Number) row.get("attempts")).intValue() + 1;
         db.update("update subscription_charge set attempts = ?, next_attempt_at = ? where id = ?",
                 attempt, ts(now.plus(LEASE)), chargeId);
-        return new Ticket((BigDecimal) row.get("amount"), (String) row.get("token_ref"), attempt);
+        return new Ticket((BigDecimal) row.get("amount"), (String) row.get("token_ref"), attempt,
+                (String) row.get("provider"), (String) row.get("admin_email"));
     }
 
     /** Paso 3: aplica el resultado de la pasarela. @return true si el cobro quedó pagado. */
@@ -181,6 +185,14 @@ public class SubscriptionSteps {
             return true;
         }
         billing.lock(clinicId);
+        if (result.pending()) {
+            // La pasarela aún no decide: el webhook lo resolverá. Si no llega, se reintenta con el mismo espaciado.
+            Duration wait = Duration.ofDays(attempt == 1 ? 1 : attempt == 2 ? 3 : 5);
+            db.update("""
+                    update subscription_charge set failure_reason = ?, next_attempt_at = ? where id = ? and status = 'PENDING'""",
+                    result.failureReason(), ts(now.plus(wait)), chargeId);
+            return false;
+        }
         boolean exhausted = attempt >= MAX_ATTEMPTS;
         // Reintentos a 1, 3 y 5 días del intento anterior; agotados, queda FAILED (se puede pagar a mano).
         Duration backoff = Duration.ofDays(attempt == 1 ? 1 : attempt == 2 ? 3 : 5);

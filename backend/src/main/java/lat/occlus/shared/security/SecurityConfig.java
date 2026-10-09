@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                        .requestMatchers("/api/webhooks/whatsapp").permitAll()
+                        .requestMatchers("/api/webhooks/whatsapp", "/api/webhooks/wompi", "/api/webhooks/epayco").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST,"/api/public/demo-requests","/api/public/site-events").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
@@ -49,8 +49,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(JwtProperties props) {
-        return NimbusJwtDecoder.withSecretKey(props.secretKey()).macAlgorithm(MacAlgorithm.HS256).build();
+    JwtDecoder jwtDecoder(JwtProperties props, SessionValidator sessions) {
+        var decoder = NimbusJwtDecoder.withSecretKey(props.secretKey()).macAlgorithm(MacAlgorithm.HS256).build();
+        decoder.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(
+                org.springframework.security.oauth2.jwt.JwtValidators.createDefault(), sessions));
+        return decoder;
     }
 
     @Bean

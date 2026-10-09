@@ -39,7 +39,8 @@ public class PlatformFeeds {
     private final JdbcTemplate db;
     private final ObjectMapper mapper;
     private final PlatformProperties props;
-    private final PaymentGateway gateway;
+    private final PaymentGateways gateways;
+    private final PaymentProperties payments;
     private final PlanCatalog plans;
     private final PlatformAudit audit;
 
@@ -119,7 +120,7 @@ public class PlatformFeeds {
                   and cs.current_period_end <= ? order by d limit 10""", week);
         long unread = db.queryForObject("select count(*) from platform_notification where read_at is null", Long.class);
         var recent = db.query("select * from platform_event order by at desc limit 10", this::event);
-        return new Overview(gateway.provider(), props.schedulerEnabled(), props.graceDays(),
+        return new Overview(gateways.mode(payments), gateways.hostedProviders(), gateways.cardOnFileProviders(), props.schedulerEnabled(), props.graceDays(),
                 new StatusCounts(total, c[0], c[1], c[2], c[3], c[4]), mrr, mrr.multiply(BigDecimal.valueOf(12)),
                 trials, pastDue, renewals, unread, recent);
     }

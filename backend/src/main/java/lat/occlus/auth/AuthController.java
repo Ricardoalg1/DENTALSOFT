@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService service;
+    private final SessionService sessions;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -42,6 +45,31 @@ public class AuthController {
     @PostMapping("/change-password")
     TokenResponse changePassword(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody AuthDtos.ChangePasswordRequest req) {
         return service.changePassword(AuthUser.from(jwt).userId(), req);
+    }
+
+    /** Cierra esta sesión en el servidor (no solo borra la cookie): el token deja de valer. */
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void logout(@AuthenticationPrincipal Jwt jwt) {
+        sessions.revoke(AuthUser.from(jwt).userId(), AuthUser.sessionId(jwt), "LOGOUT");
+    }
+
+    @GetMapping("/sessions")
+    java.util.List<SessionService.SessionInfo> sessions(@AuthenticationPrincipal Jwt jwt) {
+        return sessions.list(AuthUser.from(jwt).userId(), AuthUser.sessionId(jwt));
+    }
+
+    @DeleteMapping("/sessions/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void revokeSession(@AuthenticationPrincipal Jwt jwt, @PathVariable java.util.UUID id) {
+        sessions.revoke(AuthUser.from(jwt).userId(), id, "REVOKED_BY_USER");
+    }
+
+    /** «Cerrar las demás sesiones»: conserva solo la actual. */
+    @PostMapping("/sessions/revoke-others")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void revokeOthers(@AuthenticationPrincipal Jwt jwt) {
+        sessions.revokeAll(AuthUser.from(jwt).userId(), AuthUser.sessionId(jwt), "REVOKED_BY_USER");
     }
 
     @GetMapping("/me")

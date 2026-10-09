@@ -17,7 +17,8 @@ export default async function NewClientPage({ searchParams }: PageProps<"/app/pl
     // Si la solicitud ya no existe, se crea el cliente en blanco en vez de fallar.
     leadId ? api<Lead>(`/api/marketing/leads/${leadId}`).catch(() => null) : Promise.resolve(null),
   ]);
-  const wanted = lead?.plan?.toUpperCase();
+  // Los ids del formulario del sitio público no son los códigos del catálogo.
+  const wanted = lead ? ({ ESTANDAR: "ESENCIAL", CRECIMIENTO: "EQUIPO", EXPANSION: "INTEGRAL", INTERNACIONAL: "GLOBAL" } as Record<string, string>)[lead.plan] : undefined;
   return (
     <div className="grid max-w-3xl gap-6">
       <Link href="/app/plataforma/clientes" className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">

@@ -17,6 +17,7 @@ import {
   AUDIT_ACTION_LABELS,
   CHARGE_STATUS_LABELS,
   CYCLE_LABELS,
+  PROVIDER_LABELS,
   STATUS_LABELS,
   STATUS_VARIANT,
   formatBytes,
@@ -308,11 +309,19 @@ export default async function ClientDetailPage({ params }: PageProps<"/app/plata
                       )}
                       <ActionForm action={setPaymentMethod} submit={c.paymentMethod ? "Reemplazar" : "Guardar medio de pago"}>
                         <input type="hidden" name="id" value={id} />
-                        <FormField name="tokenRef" label="Token de la pasarela" required autoComplete="off" />
+                        {overview.cardProviders.length > 0 && (
+                          <NativeSelect
+                            name="provider"
+                            label="Pasarela"
+                            defaultValue={overview.cardProviders.find((p) => p !== "SIMULATED") ?? overview.cardProviders[0]}
+                            options={Object.fromEntries(overview.cardProviders.map((p) => [p, PROVIDER_LABELS[p] ?? p]))}
+                          />
+                        )}
+                        <FormField name="tokenRef" label="Token de la pasarela (Wompi: id de la fuente de pago)" required autoComplete="off" />
                         <FormField name="label" label="Etiqueta para reconocerlo" required placeholder="Visa ···· 4242" />
                         <p className="text-xs text-muted-foreground">
                           Solo se guarda el token que entrega la pasarela, nunca datos de tarjeta. El token no vuelve a mostrarse.
-                          {overview.gatewayMode === "simulated" && " En modo simulado, un token que contenga «fail» hace que el cobro sea rechazado (útil para probar)."}
+                          {overview.cardProviders.includes("SIMULATED") && " Con la pasarela simulada, un token que contenga «fail» hace que el cobro sea rechazado (útil para probar)."}
                         </p>
                       </ActionForm>
                     </div>

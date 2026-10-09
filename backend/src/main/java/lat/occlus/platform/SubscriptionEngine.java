@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class SubscriptionEngine {
 
     private final SubscriptionSteps steps;
-    private final PaymentGateway gateway;
+    private final PaymentGateways gateways;
     private final PlatformProperties props;
 
     @Scheduled(fixedDelayString = "${occlus.platform.engine-interval:PT15M}", initialDelayString = "PT1M")
@@ -65,11 +65,15 @@ public class SubscriptionEngine {
 
     /** Llamada de red: sin transacción ni candado. La clave de idempotencia evita doble cobro si hay que repetir. */
     private PaymentGateway.ChargeResult charge(UUID clinic, UUID chargeId, SubscriptionSteps.Ticket ticket) {
+        var gateway = gateways.charger(ticket.provider());
+        if (gateway.isEmpty()) {
+            return PaymentGateway.ChargeResult.declined("La pasarela «%s» no está activada en este entorno".formatted(ticket.provider()));
+        }
         try {
-            return gateway.charge(new PaymentGateway.ChargeRequest(clinic, chargeId, ticket.amount(), "COP",
-                    ticket.tokenRef(), "sub-" + chargeId + "-" + ticket.attempt()));
+            return gateway.get().charge(new PaymentGateway.ChargeRequest(clinic, chargeId, ticket.amount(), "COP",
+                    ticket.tokenRef(), "sub-" + chargeId + "-" + ticket.attempt(), ticket.customerEmail()));
         } catch (RuntimeException e) {
-            return new PaymentGateway.ChargeResult(false, null, "La pasarela no respondió (" + e.getClass().getSimpleName() + ")");
+            return PaymentGateway.ChargeResult.declined("La pasarela no respondió (" + e.getClass().getSimpleName() + ")");
         }
     }
 }

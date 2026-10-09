@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { formatCOP, formatDate } from "@/lib/format";
-import type { ClinicAlert, Overview } from "@/lib/platform";
+import { PROVIDER_LABELS, type ClinicAlert, type Overview } from "@/lib/platform";
 import { runEngine } from "./actions";
 
 export const metadata: Metadata = { title: "Plataforma" };
@@ -56,14 +56,31 @@ export default async function PlatformOverviewPage() {
   const c = o.clinics;
   return (
     <div className="grid gap-6">
-      {o.gatewayMode === "simulated" && (
+      {o.gatewayMode.startsWith("simulated") && (
+        <Alert variant={o.gatewayMode === "simulated" ? "default" : "destructive"}>
+          <Info />
+          <AlertDescription>
+            La pasarela <strong>simulada</strong> está activa: no cobra dinero real.{" "}
+            {o.gatewayMode === "simulated"
+              ? "Solo sirve para probar el ciclo; los pagos reales se registran a mano o se activa Wompi/ePayco."
+              : "Hay pasarelas reales activas al mismo tiempo: apaga la simulada en producción (PAYMENTS_SIMULATED=false)."}
+          </AlertDescription>
+        </Alert>
+      )}
+      {o.gatewayMode === "none" && (
         <Alert>
           <Info />
           <AlertDescription>
-            La pasarela de pagos está en <strong>modo simulado</strong>: no se cobra dinero real. Los cobros automáticos solo
-            sirven para probar el ciclo; los pagos reales se registran a mano en cada cliente.
+            No hay ninguna pasarela de pago activa: los clientes no pueden pagar en línea y los cobros se registran a mano. Para activar Wompi o ePayco
+            configura sus llaves (ver docs/phase-13-payments.md).
           </AlertDescription>
         </Alert>
+      )}
+      {o.checkoutProviders.length > 0 && (
+        <p className="text-sm text-muted-foreground">
+          Pago en línea activo con: {o.checkoutProviders.map((p) => PROVIDER_LABELS[p] ?? p).join(" y ")}.
+          {o.cardProviders.includes("WOMPI") && " Renovación automática con tarjeta guardada: Wompi."}
+        </p>
       )}
       {!o.schedulerEnabled && (
         <Alert variant="destructive">

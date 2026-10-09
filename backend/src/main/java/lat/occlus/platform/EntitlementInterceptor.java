@@ -28,15 +28,17 @@ class EntitlementInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         if (!(handler instanceof HandlerMethod method)) return true;
-        if (method.getBeanType().isAnnotationPresent(SkipEntitlements.class)) return true;
         if (!(SecurityContextHolder.getContext().getAuthentication() instanceof JwtAuthenticationToken auth)) return true;
 
         var jwt = auth.getToken();
-        // Contraseña temporal: hasta que la cambie no puede usar nada más.
-        if (Boolean.TRUE.equals(jwt.getClaimAsBoolean(TokenService.CLAIM_PWD_CHANGE))) {
+        // Contraseña temporal: hasta que la cambie solo puede usar la autenticación (cambiar la contraseña,
+        // ver su perfil, cerrar sesión). Esto aplica también a los controladores exentos de suscripción.
+        if (Boolean.TRUE.equals(jwt.getClaimAsBoolean(TokenService.CLAIM_PWD_CHANGE))
+                && !method.getBeanType().equals(lat.occlus.auth.AuthController.class)) {
             throw new EntitlementException(EntitlementException.PASSWORD_CHANGE_REQUIRED,
                     "Debes cambiar tu contraseña temporal antes de continuar.", null);
         }
+        if (method.getBeanType().isAnnotationPresent(SkipEntitlements.class)) return true;
         entitlements.require(AuthUser.from(jwt).clinicId(), requiredModule(method));
         return true;
     }

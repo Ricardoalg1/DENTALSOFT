@@ -1,6 +1,6 @@
 # Tema de Occlus
 
-La aplicación Next y el sitio Astro usan una paleta basada en `logo_light.jpg` y `logo_dark.jpg`.
+La aplicación Next y el sitio Astro usan una paleta basada en `logo_light.png` y `logo_dark.png`.
 
 | Elemento   | Claro                 | Oscuro                   |
 | ---------- | --------------------- | ------------------------ |
