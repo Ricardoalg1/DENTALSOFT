@@ -11,10 +11,16 @@ export class ApiError extends Error {
     public status: number,
     message: string,
     public requestId?: string,
+    /** Código de negocio del backend (p. ej. MODULE_DISABLED, SUBSCRIPTION_INACTIVE). */
+    public code?: string,
+    public module?: string,
   ) {
     super(message);
   }
 }
+
+/** Los tres 403 que significan "tu cuenta cambió": se resuelven con una pantalla, no con un error genérico. */
+const ENTITLEMENT_CODES = new Set(["SUBSCRIPTION_INACTIVE", "MODULE_DISABLED", "PASSWORD_CHANGE_REQUIRED"]);
 
 type ApiInit = RequestInit & { auth?: boolean };
 
@@ -54,15 +60,27 @@ export async function api<T>(
   if (res.status === 401 && auth) redirect("/salir");
   if (!res.ok) {
     let message = "Ocurrió un error inesperado";
+    let code: string | undefined;
+    let moduleKey: string | undefined;
     try {
       const problem = await res.json();
       message = problem.detail ?? problem.title ?? message;
+      if (typeof problem.code === "string") code = problem.code;
+      if (typeof problem.module === "string") moduleKey = problem.module;
     } catch {}
+    // Lecturas (páginas): si la suscripción o el módulo cambiaron con la sesión abierta, se muestra la
+    // pantalla correspondiente. Las escrituras (acciones) devuelven el mensaje para mostrarlo en el formulario.
+    const isRead = !init.method || init.method === "GET";
+    if (auth && isRead && code && ENTITLEMENT_CODES.has(code)) {
+      redirect(code === "MODULE_DISABLED" ? `/app/modulo?m=${encodeURIComponent(moduleKey ?? "")}` : "/app");
+    }
     const requestId = res.headers.get("X-Occlus-Request-Id");
     throw new ApiError(
       res.status,
       message,
       requestId && /^[0-9a-f-]{36}$/i.test(requestId) ? requestId : undefined,
+      code,
+      moduleKey,
     );
   }
   if (res.status === 204) return undefined as T;

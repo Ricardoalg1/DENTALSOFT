@@ -14,12 +14,12 @@ const days = env("SITE_RETENTION_DAYS");
       class="text-4xl font-semibold tracking-tight"
     >
       Privacidad de tu solicitud
-    </h1><p class="text-sm text-slate-400">
+    </h1><p class="text-sm text-muted-foreground">
       Versión de preparación · 8 de octubre de 2026
     </p><h2 class="text-xl font-semibold">Responsable</h2><p>
       {owner}, a través de Occlus. Contacto: {name}.
     </p><h2 class="text-xl font-semibold">Datos y finalidad</h2><p
-      class="leading-8 text-slate-600"
+      class="leading-8 text-muted-foreground"
     >
       Recopilamos nombre, correo, clínica, tamaño de equipo, plan de interés y,
       si los proporcionas, teléfono y mensaje. Registramos la fecha de
@@ -27,7 +27,7 @@ const days = env("SITE_RETENTION_DAYS");
       el seguimiento comercial. No incluyas datos clínicos ni información de
       pacientes.
     </p><h2 class="text-xl font-semibold">Acceso y conservación</h2><p
-      class="leading-8 text-slate-600"
+      class="leading-8 text-muted-foreground"
     >
       El equipo comercial autorizado accede a estas solicitudes. Las notas de
       seguimiento se eliminan junto con la solicitud cuando se atiende una
@@ -40,13 +40,13 @@ const days = env("SITE_RETENTION_DAYS");
           conservación del servidor.
         </p>
       ) : (
-        <p class="text-slate-600">
+        <p class="text-muted-foreground">
           El plazo de conservación está pendiente de definición por el
           responsable antes de la publicación.
         </p>
       )
     }<h2 class="text-xl font-semibold">Métricas del sitio</h2><p
-      class="leading-8 text-slate-600"
+      class="leading-8 text-muted-foreground"
     >
       Si se habilitan, se cuentan vistas por página y día. No usamos cookies de
       analítica ni guardamos identificadores de visitantes, IP o consultas de
@@ -57,7 +57,7 @@ const days = env("SITE_RETENTION_DAYS");
         <p>
           Para consultar, corregir o solicitar la eliminación de tu información
           y retirar la autorización, escribe a{" "}
-          <a class="underline text-teal-800" href={`mailto:${email}`}>
+          <a class="underline text-primary" href={`mailto:${email}`}>
             {email}
           </a>
           . Verificaremos la identidad del solicitante antes de modificar o
@@ -70,7 +70,7 @@ const days = env("SITE_RETENTION_DAYS");
           esté configurado.
         </p>
       )
-    }<p class="border-t pt-6 text-sm leading-7 text-slate-500">
+    }<p class="border-t pt-6 text-sm leading-7 text-muted-foreground">
       Este aviso cubre el formulario comercial del sitio. El tratamiento de
       datos clínicos dentro de la aplicación requiere los acuerdos y políticas
       de cada clínica. El responsable debe completar y revisar esta versión

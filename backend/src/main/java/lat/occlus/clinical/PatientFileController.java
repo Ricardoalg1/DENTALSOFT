@@ -1,5 +1,8 @@
 package lat.occlus.clinical;
 
+import lat.occlus.platform.AppModule;
+import lat.occlus.platform.RequiresModule;
+
 import jakarta.validation.Valid;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 /** Radiografías, fotos y documentos del paciente. Mismo acceso que la historia clínica. */
+@RequiresModule(AppModule.CLINICAL_RECORD)
 @RestController
 @PreAuthorize(ClinicalAccess.CAN_READ)
 @RequiredArgsConstructor

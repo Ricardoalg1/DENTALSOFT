@@ -1,6 +1,8 @@
 ---
 import "../styles/global.css";
 import Logo from "../components/Logo.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import { THEME_INIT_SCRIPT } from "../../../shared/theme";
 interface Props {
   title?: string;
   description?: string;
@@ -22,7 +24,7 @@ const pageTitle = `${title} · Occlus`;
 <!doctype html>
 <html lang="es-CO">
   <head
-    ><meta charset="UTF-8" /><meta
+    ><script is:inline set:html={THEME_INIT_SCRIPT}></script><meta charset="UTF-8" /><meta
       name="viewport"
       content="width=device-width,initial-scale=1"
     /><title>{pageTitle}</title><meta
@@ -50,9 +52,9 @@ const pageTitle = `${title} · Occlus`;
   ><body
     ><a
       href="#contenido"
-      class="sr-only focus:not-sr-only focus:block focus:bg-white focus:p-4"
+      class="sr-only focus:not-sr-only focus:block focus:bg-card focus:p-4"
       >Ir al contenido</a
-    ><header class="border-b border-teal-950/10 bg-[#f7f8f2]">
+    ><header class="border-b border-border bg-background">
       <div
         class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-5"
       >
@@ -62,7 +64,8 @@ const pageTitle = `${title} · Occlus`;
         >
           <a href="/#producto">Producto</a><a href="/planes">Planes</a><a
             href="/blog">Recursos</a>
-        </nav><div class="flex items-center gap-4">
+        </nav><div class="flex flex-wrap items-center gap-3">
+          <ThemeToggle />
           <a href={`${appUrl}/ingresar`} class="text-sm font-medium">Ingresar</a
           ><a href="/demo" class="btn"
             >Solicitar demo <span aria-hidden="true">↗</span></a>
@@ -79,12 +82,12 @@ const pageTitle = `${title} · Occlus`;
         </details>
       </div>
     </header><main id="contenido"><slot /></main><footer
-      class="bg-teal-950 px-6 py-14 text-teal-100"
+      class="bg-brand-deep px-6 py-14 text-teal-100"
     >
       <div class="mx-auto grid max-w-7xl gap-8 md:grid-cols-[2fr_1fr_1fr]">
         <div>
           <Logo light /><p
-            class="mt-5 max-w-sm text-sm leading-7 text-teal-100/70"
+            class="mt-5 max-w-sm text-sm leading-7 opacity-90/70"
           >
             Más orden para tu clínica.<br />Más tiempo para tus pacientes.
           </p>

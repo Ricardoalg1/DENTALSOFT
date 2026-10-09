@@ -1,5 +1,8 @@
 package lat.occlus.inventory;
 
+import lat.occlus.platform.AppModule;
+import lat.occlus.platform.RequiresModule;
+
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lat.occlus.shared.security.AuthUser;
@@ -10,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+@RequiresModule(AppModule.INVENTORY)
 @RestController @RequestMapping("/api/inventory") @RequiredArgsConstructor
 public class InventoryController {
  private final InventoryService inventory;

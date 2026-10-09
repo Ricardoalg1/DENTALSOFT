@@ -1,5 +1,8 @@
 package lat.occlus.clinical;
 
+import lat.occlus.platform.AppModule;
+import lat.occlus.platform.RequiresModule;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Consentimientos informados y sus plantillas. Las plantillas las administra solo el administrador. */
+@RequiresModule(AppModule.CLINICAL_RECORD)
 @RestController
 @PreAuthorize(ClinicalAccess.CAN_READ)
 @RequiredArgsConstructor

@@ -1,5 +1,7 @@
 package lat.occlus.marketing;
 
+import lat.occlus.platform.SkipEntitlements;
+
 import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
@@ -10,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+@SkipEntitlements
 @RestController @RequiredArgsConstructor
 public class MarketingController {
  private final MarketingService marketing;

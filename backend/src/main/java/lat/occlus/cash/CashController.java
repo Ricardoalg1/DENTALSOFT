@@ -1,5 +1,8 @@
 package lat.occlus.cash;
 
+import lat.occlus.platform.AppModule;
+import lat.occlus.platform.RequiresModule;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Caja y pagos. Abrir y cerrar caja: administrador y recepción. Cobrar: además el odontólogo
  * (clínicas pequeñas). Anular un pago: solo el administrador.
  */
+@RequiresModule(AppModule.TREATMENTS_CASH)
 @RestController
 @RequiredArgsConstructor
 public class CashController {

@@ -7,15 +7,17 @@ type Props = React.ComponentProps<typeof Input> & {
   errors?: string[];
 };
 
-export function FormField({ name, label, errors, ...inputProps }: Props) {
-  const errorId = `${name}-error`;
+export function FormField({ name, label, errors, id, ...inputProps }: Props) {
+  // id propio cuando hay varios formularios con el mismo campo en una página; si no, el name.
+  const inputId = id ?? name;
+  const errorId = `${inputId}-error`;
   return (
     <div className="grid gap-1.5">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={inputId}>{label}</Label>
       {/* key: si el valor por defecto cambia (p. ej. tras un error), se remonta el input con el nuevo valor. */}
       <Input
         key={String(inputProps.defaultValue ?? "")}
-        id={name}
+        id={inputId}
         name={name}
         aria-invalid={errors ? true : undefined}
         aria-describedby={errors ? errorId : undefined}

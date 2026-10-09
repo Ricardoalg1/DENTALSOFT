@@ -3,7 +3,7 @@ import { ArrowLeft, CalendarPlus, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { api, getMe } from "@/lib/api";
-import { ALERT_CONDITIONS, MEDICAL_CONDITIONS, canReadClinical, type ClinicalBackground } from "@/lib/types";
+import { ALERT_CONDITIONS, MEDICAL_CONDITIONS, canReadClinical, hasModule, type ClinicalBackground } from "@/lib/types";
 import { loadPatient } from "./load-patient";
 import { PatientTabs } from "./patient-tabs";
 
@@ -11,7 +11,8 @@ import { PatientTabs } from "./patient-tabs";
 export default async function PatientLayout({ children, params }: LayoutProps<"/app/pacientes/[id]">) {
   const { id } = await params;
   const [patient, me] = await Promise.all([loadPatient(id), getMe()]);
-  const clinical = canReadClinical(me);
+  const clinical = canReadClinical(me) && hasModule(me, "CLINICAL_RECORD");
+  const treatments = hasModule(me, "TREATMENTS_CASH");
   const background = clinical ? await api<ClinicalBackground>(`/api/patients/${id}/clinical-background`) : null;
 
   const alerts = [
@@ -64,7 +65,7 @@ export default async function PatientLayout({ children, params }: LayoutProps<"/
         )}
       </div>
 
-      <PatientTabs patientId={id} clinical={clinical} />
+      <PatientTabs patientId={id} clinical={clinical} treatments={treatments} />
       {children}
     </div>
   );

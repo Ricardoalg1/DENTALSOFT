@@ -23,6 +23,16 @@ public final class AuthDtos {
 
     public record TokenResponse(String accessToken, Instant expiresAt) {}
 
+    public record ChangePasswordRequest(
+            @NotBlank String currentPassword,
+            @NotBlank @Size(min = 8, max = 72) String newPassword) {}
+
+    /** Resumen de la suscripción para que la interfaz muestre avisos; la decisión real la toma el backend. */
+    public record SubscriptionInfo(String status, String planCode, String planName, Instant trialEndsAt,
+                                   Instant currentPeriodEnd, Instant accessUntil, boolean inGrace,
+                                   boolean cancelAtPeriodEnd, boolean accessAllowed, String inactiveMessage) {}
+
     public record MeResponse(UUID id, String email, String fullName, Role role, boolean professional,
-                             UUID clinicId, String clinicName) {}
+                             UUID clinicId, String clinicName, java.util.List<String> modules,
+                             SubscriptionInfo subscription, boolean mustChangePassword, boolean platformAdmin) {}
 }

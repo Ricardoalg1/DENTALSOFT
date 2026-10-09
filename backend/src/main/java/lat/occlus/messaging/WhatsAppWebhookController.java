@@ -1,5 +1,9 @@
 package lat.occlus.messaging;
 
+import lat.occlus.platform.AppModule;
+
+import lat.occlus.platform.SkipEntitlements;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
@@ -16,10 +20,12 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /** Endpoint público solo para Meta: firma del cuerpo original y enrutamiento por número receptor. */
+@SkipEntitlements
 @RestController @RequestMapping("/api/webhooks/whatsapp") @RequiredArgsConstructor
 public class WhatsAppWebhookController {
  private final MessagingProperties config;
  private final MessagingService messages;
+ private final lat.occlus.platform.Entitlements entitlements;
  private final ObjectMapper mapper;
  @GetMapping
  public ResponseEntity<String> verify(@RequestParam("hub.mode") String mode,
@@ -42,6 +48,8 @@ public class WhatsAppWebhookController {
    var value=change.path("value");
    if(!config.whatsapp().phoneNumberId().equals(value.path("metadata").path("phone_number_id").asString(""))) continue;
    TenantContext.callAs(config.whatsapp().clinicId(),()->{
+    // Sin módulo o sin suscripción con acceso: se responde 200 a Meta (para que no reintente) y se descarta.
+    if(!entitlements.allows(config.whatsapp().clinicId(),AppModule.MESSAGING)) return null;
     for(var message:value.path("messages")) inbound(message);
     for(var status:value.path("statuses")) {
      String id=status.path("id").asString("");

@@ -15,7 +15,7 @@ export default function GlobalError({
           margin: 0,
           padding: 32,
           fontFamily: "system-ui, sans-serif",
-          background: "#f7f8f2",
+          background: "var(--background)",
         }}
       >
         <title>Servicio temporalmente no disponible · Occlus</title>

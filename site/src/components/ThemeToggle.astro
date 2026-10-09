@@ -1,0 +1,23 @@
+<button id="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Tema oscuro"
+  class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-medium text-foreground shadow-sm hover:bg-muted">
+  <span aria-hidden="true" class="dark:hidden">☀</span>
+  <span aria-hidden="true" class="hidden dark:inline">☾</span>
+  <span class="hidden sm:inline">Tema oscuro</span>
+  <span aria-hidden="true" class="relative h-4 w-7 rounded-full bg-muted dark:bg-primary">
+    <span class="absolute left-0.5 top-0.5 size-3 rounded-full bg-foreground transition-transform dark:translate-x-3 dark:bg-primary-foreground"></span>
+  </span>
+</button>
+<script>
+  const toggle = document.getElementById("theme-toggle");
+  const update = () => toggle?.setAttribute("aria-checked", String(document.documentElement.classList.contains("dark")));
+  update();
+  window.addEventListener("occlus-theme-change", update);
+  toggle?.addEventListener("click", () => {
+    const root = document.documentElement;
+    const next = root.classList.contains("dark") ? "light" : "dark";
+    root.classList.toggle("dark", next === "dark");
+    root.dataset.themeChoice = next;
+    try { localStorage.setItem("occlus-theme", next); } catch { /* Solo esta visita. */ }
+    window.dispatchEvent(new Event("occlus-theme-change"));
+  });
+</script>

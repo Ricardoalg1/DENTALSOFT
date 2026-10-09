@@ -15,8 +15,10 @@ import {
   Users,
   UserRound,
   MessageSquare,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
+import type { ModuleKey } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Item = {
@@ -30,9 +32,19 @@ type Item = {
   cashOnly?: boolean;
   messagingOnly?: boolean;
   platformOnly?: boolean;
+  /** Solo el equipo de Occlus (panel de plataforma). */
+  platformAdminOnly?: boolean;
+  /** Módulo que debe tener habilitada la clínica. */
+  module?: ModuleKey;
 };
 
 const ITEMS: Item[] = [
+  {
+    href: "/app/plataforma",
+    label: "Plataforma",
+    icon: ShieldCheck,
+    platformAdminOnly: true,
+  },
   {
     href: "/app/comercial",
     label: "Comercial",
@@ -46,28 +58,28 @@ const ITEMS: Item[] = [
     href: "/app/mensajes",
     label: "Mensajes",
     icon: MessageSquare,
-    messagingOnly: true,
+    messagingOnly: true, module: "MESSAGING"
   },
   {
     href: "/app/historias",
     label: "Historias clínicas",
     icon: ClipboardList,
-    clinicalOnly: true,
+    clinicalOnly: true, module: "CLINICAL_RECORD"
   },
-  { href: "/app/caja", label: "Caja", icon: Wallet, cashOnly: true },
-  { href: "/app/precios", label: "Lista de precios", icon: Tags },
+  { href: "/app/caja", label: "Caja", icon: Wallet, cashOnly: true, module: "TREATMENTS_CASH" },
+  { href: "/app/precios", label: "Lista de precios", icon: Tags, module: "TREATMENTS_CASH" },
   {
     href: "/app/facturacion",
     label: "Facturación y RIPS",
     icon: FileText,
-    adminOnly: true,
+    adminOnly: true, module: "BILLING_RIPS"
   },
-  { href: "/app/inventario", label: "Inventario", icon: Package },
+  { href: "/app/inventario", label: "Inventario", icon: Package, module: "INVENTORY" },
   {
     href: "/app/reportes",
     label: "Reportes",
     icon: ChartColumn,
-    adminOnly: true,
+    adminOnly: true, module: "REPORTS"
   },
   { href: "/app/equipo", label: "Equipo", icon: Users, adminOnly: true },
   { href: "/app/sedes", label: "Sedes", icon: Building2 },
@@ -79,12 +91,16 @@ export function Nav({
   cash,
   messaging,
   platform,
+  modules,
+  platformAdmin,
 }: {
   isAdmin: boolean;
   clinical: boolean;
   cash: boolean;
   messaging: boolean;
   platform: boolean;
+  modules: ModuleKey[];
+  platformAdmin: boolean;
 }) {
   const pathname = usePathname();
   return (
@@ -95,7 +111,9 @@ export function Nav({
           (clinical || !i.clinicalOnly) &&
           (cash || !i.cashOnly) &&
           (messaging || !i.messagingOnly) &&
-          (platform || !i.platformOnly),
+          (platform || !i.platformOnly) &&
+          (platformAdmin || !i.platformAdminOnly) &&
+          (!i.module || modules.includes(i.module)),
       ).map(({ href, label, icon: Icon, soon }) => {
         const active =
           href === "/app" ? pathname === "/app" : pathname.startsWith(href);

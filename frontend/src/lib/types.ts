@@ -18,7 +18,35 @@ export type Me = {
   professional: boolean;
   clinicId: string;
   clinicName: string;
+  /** Módulos opcionales que el backend le permite usar hoy a la clínica (vacío si no tiene acceso). */
+  modules: ModuleKey[];
+  subscription: SubscriptionInfo | null;
+  /** Entró con una contraseña temporal: no puede hacer nada hasta cambiarla. */
+  mustChangePassword: boolean;
+  /** Pertenece al equipo de Occlus: ve el panel de plataforma. */
+  platformAdmin: boolean;
 };
+
+export type ModuleKey = "CLINICAL_RECORD" | "TREATMENTS_CASH" | "BILLING_RIPS" | "INVENTORY" | "REPORTS" | "MESSAGING";
+
+export type SubscriptionStatus = "TRIAL" | "ACTIVE" | "PAST_DUE" | "SUSPENDED" | "CANCELLED";
+
+export type SubscriptionInfo = {
+  status: SubscriptionStatus;
+  planCode: string;
+  planName: string;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+  accessUntil: string | null;
+  inGrace: boolean;
+  cancelAtPeriodEnd: boolean;
+  accessAllowed: boolean;
+  inactiveMessage: string | null;
+};
+
+export function hasModule(me: Pick<Me, "modules">, module: ModuleKey) {
+  return me.modules.includes(module);
+}
 
 export type User = { id: string; email: string; fullName: string; role: Role; active: boolean; professional: boolean };
 

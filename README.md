@@ -118,6 +118,10 @@ Los movimientos son inmutables, no permiten stock negativo y registran usuario, 
 Los lotes vencidos no se consumen y generan alertas junto con los próximos a vencer y el stock bajo.
 Detalle de operación y alcance en [docs/phase-7-inventory.md](docs/phase-7-inventory.md).
 
+## Panel de plataforma — Fase 12
+
+El equipo de Occlus crea clientes, habilita módulos por cliente (exigidos por el backend en cada petición, no solo en pantalla), controla suscripciones con renovación automática, y ve auditoría, eventos y notificaciones. La pasarela de pagos es **simulada**: ver [Fase 12](docs/phase-12-platform-admin.md) para el alcance, la configuración (`OCCLUS_PLATFORM_ADMIN_IDS`) y lo que falta decidir.
+
 ## Sitio público — Fase 10
 
 Sitio público en Astro (`site/`): inicio, planes con pago mensual/anual, blog y solicitudes persistentes de demo. Aplicación clínica y CRM privado en Next.js (`frontend/`).

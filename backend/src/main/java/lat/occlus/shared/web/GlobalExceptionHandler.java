@@ -16,6 +16,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(NotFoundException.class)
     ProblemDetail notFound(NotFoundException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
@@ -29,6 +31,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ForbiddenException.class)
     ProblemDetail forbidden(ForbiddenException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    /** Suscripción o módulo no disponible: 403 con un código que el frontend traduce a una pantalla. */
+    @ExceptionHandler(lat.occlus.platform.EntitlementException.class)
+    ProblemDetail entitlement(lat.occlus.platform.EntitlementException ex) {
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problem.setProperty("code", ex.code());
+        if (ex.module() != null) problem.setProperty("module", ex.module().name());
+        return problem;
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -53,6 +64,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail dataIntegrity(DataIntegrityViolationException ex) {
         String cause = String.valueOf(ex.getMostSpecificCause().getMessage());
+        log.warn("Violación de integridad: {}", cause);
         String detail = CONSTRAINT_MESSAGES.entrySet().stream()
                 .filter(e -> cause.contains(e.getKey()))
                 .map(Map.Entry::getValue)

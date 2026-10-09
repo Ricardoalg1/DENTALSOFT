@@ -41,6 +41,17 @@ spring:
         store_data_at_delete: true
 
 occlus:
+  platform:
+    # En producción: false. Los clientes los crea el administrador desde /app/plataforma.
+    self-registration: ${SELF_REGISTRATION:true}
+    # Días que una clínica sigue funcionando después de vencer su suscripción o fallar un cobro.
+    grace-days: ${SUBSCRIPTION_GRACE_DAYS:7}
+    self-service-trial-days: ${SELF_SERVICE_TRIAL_DAYS:14}
+    # Renovaciones, cobros y suspensiones automáticas. El acceso NO depende de esto: se calcula por fechas.
+    scheduler-enabled: ${SUBSCRIPTIONS_SCHEDULER:false}
+    engine-interval: PT15M
+    # Hoy solo existe «simulated»: no mueve dinero real. Ver docs/phase-12-platform-admin.md.
+    gateway: simulated
   marketing:
     public-key: ${SITE_PUBLIC_API_KEY:}
     admin-user-ids: ${OCCLUS_PLATFORM_ADMIN_IDS:}

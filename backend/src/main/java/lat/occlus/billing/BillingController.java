@@ -1,5 +1,8 @@
 package lat.occlus.billing;
 
+import lat.occlus.platform.AppModule;
+import lat.occlus.platform.RequiresModule;
+
 import static lat.occlus.billing.BillingDtos.*;
 
 import jakarta.validation.Valid;
@@ -15,6 +18,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 /** Primer alcance: facturación por administradores, con acceso clínico ya autorizado. */
+@RequiresModule(AppModule.BILLING_RIPS)
 @RestController @RequiredArgsConstructor @PreAuthorize("hasRole('ADMIN')")
 public class BillingController {
     private final BillingService billing;

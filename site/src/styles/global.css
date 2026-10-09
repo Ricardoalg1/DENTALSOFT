@@ -1,9 +1,44 @@
 @import "tailwindcss";
-@theme {
+@custom-variant dark (&:where(.dark, .dark *));
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-brand-deep: #0d2c48;
+  --color-brand-glow: var(--brand-glow);
   --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
 }
 :root {
   color-scheme: light;
+  --background: #f7f5ea;
+  --foreground: #0d2c48;
+  --card: #fffdf6;
+  --primary: #246c78;
+  --primary-foreground: #ffffff;
+  --muted: #e8eeeb;
+  --muted-foreground: #526675;
+  --border: #ccd8d2;
+  --accent: #dcecea;
+  --brand-glow: #99c8c6;
+}
+.dark {
+  color-scheme: dark;
+  --background: #0c2943;
+  --foreground: #edf5f8;
+  --card: #133650;
+  --primary: #78c5c7;
+  --primary-foreground: #09263c;
+  --muted: #1b3b53;
+  --muted-foreground: #afc5d3;
+  --border: #35566c;
+  --accent: #234d63;
+  --brand-glow: #256377;
 }
 html {
   scroll-behavior: smooth;
@@ -11,8 +46,8 @@ html {
 }
 body {
   margin: 0;
-  background: #f7f8f2;
-  color: #162b2a;
+  background: var(--background);
+  color: var(--foreground);
 }
 button,
 a,
@@ -29,7 +64,7 @@ button {
     transform 0.2s;
 }
 :focus-visible {
-  outline: 2px solid #0f766e;
+  outline: 2px solid var(--primary);
   outline-offset: 4px;
 }
 .btn {
@@ -38,37 +73,38 @@ button {
   justify-content: center;
   gap: 0.6rem;
   border-radius: 999px;
-  background: #115e59;
+  background: var(--primary);
   padding: 0.9rem 1.6rem;
-  color: white;
+  color: var(--primary-foreground);
   font-size: 0.875rem;
   font-weight: 600;
 }
 .btn:hover {
-  background: #134e4a;
+  background: color-mix(in srgb, var(--primary) 85%, var(--foreground));
 }
 .btn-outline {
   background: transparent;
-  color: #134e4a;
-  border: 1px solid #b6c8c0;
+  color: var(--primary);
+  border: 1px solid var(--border);
 }
 .btn-outline:hover {
-  background: #e5eee5;
+  background: var(--muted);
 }
 .eyebrow {
   font-size: 0.7rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 700;
-  color: #0f766e;
+  color: var(--primary);
 }
 .field {
   display: block;
   width: 100%;
   margin-top: 0.5rem;
-  border: 1px solid #cad5cf;
+  border: 1px solid var(--border);
   border-radius: 0.8rem;
-  background: white;
+  background: var(--card);
+  color: var(--foreground);
   padding: 0.85rem 1rem;
   font-size: 0.875rem;
 }
@@ -84,5 +120,23 @@ button {
   * {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+* {
+  border-color: var(--border);
+}
+::selection {
+  background: var(--accent);
+  color: var(--foreground);
+}
+@media print {
+  :root,
+  .dark {
+    color-scheme: light;
+    --background: white;
+    --foreground: #0d2c48;
+    --card: white;
+    --muted-foreground: #526675;
   }
 }

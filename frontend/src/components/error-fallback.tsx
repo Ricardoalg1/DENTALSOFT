@@ -8,11 +8,11 @@ export function ErrorFallback({
 }) {
   return (
     <section
-      className="mx-auto max-w-xl rounded-2xl border bg-white p-8 text-slate-900"
+      className="mx-auto max-w-xl rounded-2xl border bg-card p-8 text-foreground"
       role="alert"
     >
       <h1 className="text-2xl font-semibold">No pudimos cargar esta página.</h1>
-      <p className="mt-4 text-sm leading-6 text-slate-600">
+      <p className="mt-4 text-sm leading-6 text-muted-foreground">
         Intenta nuevamente. Si estabas guardando información, revisa su estado
         antes de repetir la operación.
       </p>
@@ -29,7 +29,7 @@ export function ErrorFallback({
         </a>
       </div>
       {digest && (
-        <p className="mt-5 text-xs text-slate-500">
+        <p className="mt-5 text-xs text-muted-foreground">
           Referencia para soporte: {digest}
         </p>
       )}

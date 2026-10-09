@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export function PatientTabs({ patientId, clinical }: { patientId: string; clinical: boolean }) {
+export function PatientTabs({ patientId, clinical, treatments }: { patientId: string; clinical: boolean; treatments: boolean }) {
   const pathname = usePathname();
   const base = `/app/pacientes/${patientId}`;
   const tabs = [
@@ -21,7 +21,9 @@ export function PatientTabs({ patientId, clinical }: { patientId: string; clinic
           },
         ]
       : []),
-    { href: `${base}/tratamientos`, label: "Tratamientos y pagos", active: pathname.startsWith(`${base}/tratamientos`) },
+    ...(treatments
+      ? [{ href: `${base}/tratamientos`, label: "Tratamientos y pagos", active: pathname.startsWith(`${base}/tratamientos`) }]
+      : []),
   ];
   return (
     <nav aria-label="Secciones del paciente" className="-mb-2 flex gap-1 overflow-x-auto border-b">

@@ -36,6 +36,8 @@ public class TestcontainersConfiguration {
 			registry.add("occlus.storage.endpoint",
 					() -> "http://" + s3Container.getHost() + ":" + s3Container.getMappedPort(9090));
 			registry.add("occlus.storage.bucket", () -> "occlus-test");
+			// Administrador de plataforma de las pruebas (lo crea PlatformTestSupport con este mismo UUID).
+			registry.add("occlus.marketing.admin-user-ids", () -> lat.occlus.support.PlatformTestSupport.PLATFORM_ADMIN_ID);
 			registry.add("spring.datasource.url", postgres::getJdbcUrl);
 			registry.add("spring.datasource.username", () -> "occlus_app");
 			registry.add("spring.datasource.password", () -> "occlus_app");

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { selfRegistrationEnabled } from "@/lib/registration";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Ingresar" };
@@ -17,12 +18,18 @@ export default async function LoginPage({ searchParams }: PageProps<"/ingresar">
       </CardHeader>
       <CardContent className="grid gap-4">
         <LoginForm next={typeof next === "string" ? next : undefined} />
-        <p className="text-center text-sm text-muted-foreground">
-          ¿Aún no tienes cuenta?{" "}
-          <Link href="/registro" className="font-medium text-primary hover:underline">
-            Registra tu clínica
-          </Link>
-        </p>
+        {selfRegistrationEnabled ? (
+          <p className="text-center text-sm text-muted-foreground">
+            ¿Aún no tienes cuenta?{" "}
+            <Link href="/registro" className="font-medium text-primary hover:underline">
+              Registra tu clínica
+            </Link>
+          </p>
+        ) : (
+          <p className="text-center text-sm text-muted-foreground">
+            ¿Quieres usar Occlus en tu clínica? Escríbenos desde el sitio y te creamos la cuenta.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

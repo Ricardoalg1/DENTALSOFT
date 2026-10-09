@@ -1,5 +1,7 @@
 package lat.occlus.auth;
 
+import lat.occlus.platform.SkipEntitlements;
+
 import jakarta.validation.Valid;
 import lat.occlus.auth.AuthDtos.LoginRequest;
 import lat.occlus.auth.AuthDtos.MeResponse;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+@SkipEntitlements
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -33,6 +36,12 @@ public class AuthController {
     @PostMapping("/login")
     TokenResponse login(@Valid @RequestBody LoginRequest req) {
         return service.login(req);
+    }
+
+    /** Cambia la contraseña y devuelve un token nuevo (sin la marca de contraseña temporal). */
+    @PostMapping("/change-password")
+    TokenResponse changePassword(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody AuthDtos.ChangePasswordRequest req) {
+        return service.changePassword(AuthUser.from(jwt).userId(), req);
     }
 
     @GetMapping("/me")

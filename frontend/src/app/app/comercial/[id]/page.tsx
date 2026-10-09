@@ -44,6 +44,14 @@ export default async function Page({
         <p className="mt-2 text-muted-foreground">
           {lead.name} · {statuses[lead.status]}
         </p>
+        {lead.status !== "WON" && (
+          <Link
+            href={`/app/plataforma/clientes/nuevo?lead=${lead.id}`}
+            className="mt-4 inline-block rounded bg-primary px-4 py-2 text-sm text-primary-foreground"
+          >
+            Crear cliente con estos datos
+          </Link>
+        )}
       </header>
       <div className="grid gap-8 md:grid-cols-2">
         <section className="rounded-xl border p-5">

@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import lat.occlus.platform.UserLimits;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,8 @@ public class UserService {
 
     private final AppUserRepository users;
     private final PasswordEncoder passwordEncoder;
+    private final UserLimits limits;
+    private final TransactionTemplate tx;
 
     @Transactional(readOnly = true)
     public List<ProfessionalResponse> professionals(UUID clinicId) {
@@ -35,11 +39,15 @@ public class UserService {
 
     /**
      * Sin @Transactional a propósito: la verificación de correo corre en su propia transacción
-     * en modo sistema (el correo es único entre TODAS las clínicas) y luego se guarda el usuario.
+     * en modo sistema (el correo es único entre TODAS las clínicas) y luego se guarda el usuario,
+     * dentro de una transacción propia que además aplica el límite de usuarios del plan.
      */
     public AppUser create(UUID clinicId, CreateUserRequest req) {
         ensureEmailAvailable(req.email());
-        return users.save(newUser(clinicId, req));
+        return tx.execute(status -> {
+            limits.lockAndCheck(clinicId, 1);
+            return users.save(newUser(clinicId, req));
+        });
     }
 
     public void ensureEmailAvailable(String email) {
@@ -73,7 +81,11 @@ public class UserService {
         }
         if (req.fullName() != null && !req.fullName().isBlank()) user.setFullName(req.fullName().trim());
         if (req.role() != null) user.setRole(req.role());
-        if (req.active() != null) user.setActive(req.active());
+        if (req.active() != null) {
+            // Reactivar a alguien también cuenta contra el límite del plan.
+            if (req.active() && !user.isActive()) limits.lockAndCheck(clinicId, 1);
+            user.setActive(req.active());
+        }
         if (req.professional() != null) user.setProfessional(req.professional());
         return UserResponse.from(user);
     }

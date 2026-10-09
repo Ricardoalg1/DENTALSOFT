@@ -1,5 +1,8 @@
 package lat.occlus.treatment;
 
+import lat.occlus.platform.AppModule;
+import lat.occlus.platform.RequiresModule;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Lista de precios y planes de tratamiento. Todos los roles pueden consultarlos (recepción cobra
  * y registra la aceptación); editar el presupuesto y marcar lo realizado es de los profesionales.
  */
+@RequiresModule(AppModule.TREATMENTS_CASH)
 @RestController
 @RequiredArgsConstructor
 public class TreatmentController {

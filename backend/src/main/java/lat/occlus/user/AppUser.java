@@ -40,6 +40,9 @@ public class AppUser {
     /** Atiende pacientes: aparece como profesional en la agenda. */
     private boolean professional;
 
+    /** Contraseña temporal entregada por un administrador de plataforma: debe cambiarla al ingresar. */
+    private boolean passwordChangeRequired;
+
     @CreationTimestamp
     private Instant createdAt;
 

@@ -15,16 +15,16 @@ export const prerender = true;
     </h1><div class="mt-12 grid gap-6 md:grid-cols-3">
       {
         articles.map((a) => (
-          <article class="flex flex-col rounded-3xl border border-teal-950/10 bg-white p-8">
+          <article class="flex flex-col rounded-3xl border border-border bg-card p-8">
             <>
               <span class="eyebrow">{a.category}</span>
               <h2 class="mt-5 text-2xl font-semibold tracking-tight">
                 <a href={`/blog/${a.slug}`}>{a.title}</a>
               </h2>
-              <p class="my-6 text-sm leading-7 text-slate-500">{a.summary}</p>
+              <p class="my-6 text-sm leading-7 text-muted-foreground">{a.summary}</p>
               <a
                 href={`/blog/${a.slug}`}
-                class="mt-auto text-sm font-semibold text-teal-800"
+                class="mt-auto text-sm font-semibold text-primary"
               >
                 Leer artículo →
               </a>

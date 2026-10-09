@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service @RequiredArgsConstructor
 public class MarketingStore {
  private final JdbcTemplate db;
+ private final lat.occlus.platform.PlatformEvents events;
  @Transactional
  public void create(DemoRequest r) {
   // Serializa recepción y límites persistentes; no depende de memoria de una instancia.
@@ -25,6 +26,8 @@ public class MarketingStore {
   if(duplicate) return;
   if(db.queryForObject("select count(*) from demo_lead where created_at>now()-interval '1 hour'",Integer.class)>=60) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,"Hay muchas solicitudes en este momento. Intenta más tarde.");
   db.update("insert into demo_lead(id,name,email,phone,clinic_name,team_size,plan,message) values(?,?,?,?,?,?,?,?)",UUID.randomUUID(),r.name().trim(),email,r.phone(),r.clinicName().trim(),r.teamSize(),r.plan(),r.message());
+  // Aviso al equipo de plataforma. Sin datos de contacto en el evento: solo el nombre de la clínica.
+  events.emit("LEAD_RECEIVED",lat.occlus.platform.Severity.INFO,null,"Nueva solicitud de demo: "+r.clinicName().trim(),java.util.Map.of("plan",String.valueOf(r.plan())),null,true);
  }
  @Transactional
  public void event(String path){db.update("insert into site_metric(day,path,views) values((now() at time zone 'America/Bogota')::date,?,1) on conflict(day,path) do update set views=site_metric.views+1",path);}

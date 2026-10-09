@@ -1,5 +1,8 @@
 package lat.occlus.reports;
 
+import lat.occlus.platform.AppModule;
+import lat.occlus.platform.RequiresModule;
+
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Reportes de gestión: información financiera, solo para administradores. */
+@RequiresModule(AppModule.REPORTS)
 @RestController
 @RequestMapping("/api/reports")
 @PreAuthorize("hasRole('ADMIN')")

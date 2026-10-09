@@ -13,24 +13,24 @@ const { article } = Astro.props;
 
 <Layout title={article.title} description={article.summary}
   ><article class="mx-auto max-w-3xl px-6 py-16">
-    <a href="/blog" class="text-sm text-teal-800">← Todos los recursos</a><p
+    <a href="/blog" class="text-sm text-primary">← Todos los recursos</a><p
       class="eyebrow mt-8"
     >
       {article.category}
     </p><h1 class="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
       {article.title}
-    </h1><p class="mt-5 text-xs text-slate-400">
+    </h1><p class="mt-5 text-xs text-muted-foreground">
       Equipo Occlus · 8 de octubre de 2026
-    </p><p class="mt-8 text-xl leading-8 text-slate-500">{article.summary}</p>{
+    </p><p class="mt-8 text-xl leading-8 text-muted-foreground">{article.summary}</p>{
       article.sections.map(([title, text]) => (
         <section class="mt-10">
           <>
             <h2 class="text-2xl font-semibold">{title}</h2>
-            <p class="mt-4 leading-8 text-slate-600">{text}</p>
+            <p class="mt-4 leading-8 text-muted-foreground">{text}</p>
           </>
         </section>
       ))
-    }<aside class="mt-12 rounded-2xl bg-[#e4edd9] p-8">
+    }<aside class="mt-12 rounded-2xl bg-accent p-8">
       <h2 class="text-xl font-semibold">Lleva esta rutina a tu clínica.</h2><a
         href="/demo"
         class="btn mt-5">Conocer Occlus</a>

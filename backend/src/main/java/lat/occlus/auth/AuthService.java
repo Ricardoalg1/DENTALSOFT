@@ -1,60 +1,59 @@
 package lat.occlus.auth;
 
+import java.time.Instant;
 import java.util.UUID;
+import lat.occlus.auth.AuthDtos.ChangePasswordRequest;
 import lat.occlus.auth.AuthDtos.LoginRequest;
 import lat.occlus.auth.AuthDtos.MeResponse;
 import lat.occlus.auth.AuthDtos.RegisterRequest;
+import lat.occlus.auth.AuthDtos.SubscriptionInfo;
 import lat.occlus.auth.AuthDtos.TokenResponse;
-import lat.occlus.clinic.Clinic;
 import lat.occlus.clinic.ClinicRepository;
+import lat.occlus.platform.BillingCycle;
+import lat.occlus.platform.Entitlements;
+import lat.occlus.platform.PlatformGate;
+import lat.occlus.platform.PlatformProperties;
+import lat.occlus.platform.ProvisioningService;
+import lat.occlus.platform.Subscription;
 import lat.occlus.shared.security.TokenService;
 import lat.occlus.shared.tenant.TenantContext;
+import lat.occlus.shared.web.BadRequestException;
+import lat.occlus.shared.web.ForbiddenException;
 import lat.occlus.shared.web.NotFoundException;
-import lat.occlus.site.Site;
-import lat.occlus.site.SiteRepository;
 import lat.occlus.user.AppUser;
 import lat.occlus.user.AppUserRepository;
-import lat.occlus.user.Role;
-import lat.occlus.user.UserDtos.CreateUserRequest;
-import lat.occlus.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final ClinicRepository clinics;
-    private final SiteRepository sites;
     private final AppUserRepository users;
-    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
-    private final TransactionTemplate tx;
+    private final ProvisioningService provisioning;
+    private final Entitlements entitlements;
+    private final PlatformGate platformGate;
+    private final PlatformProperties platform;
 
     /**
-     * Crea clínica + sede principal + administrador. El id de la clínica se genera aquí para
-     * abrir la transacción YA dentro del contexto de esa clínica (RLS exige que coincida).
+     * Registro de una clínica de prueba. Solo si {@code occlus.platform.self-registration} está
+     * activo (en producción los clientes los crea el administrador desde el panel).
      */
     public TokenResponse register(RegisterRequest req) {
-        userService.ensureEmailAvailable(req.email());
-        UUID clinicId = UUID.randomUUID();
-
-        AppUser admin = TenantContext.callAs(clinicId, () -> tx.execute(status -> {
-            clinics.save(new Clinic(clinicId, req.clinicName().trim(), blankToNull(req.nit())));
-
-            var site = new Site();
-            site.setClinicId(clinicId);
-            site.setName("Sede principal");
-            sites.save(site);
-
-            return users.save(userService.newUser(clinicId,
-                    new CreateUserRequest(req.email(), req.fullName(), Role.ADMIN, req.password())));
-        }));
+        if (!platform.selfRegistration()) {
+            throw new ForbiddenException("El registro público está deshabilitado. Solicita tu cuenta al equipo de Occlus.");
+        }
+        var result = provisioning.provision(new ProvisioningService.Request(
+                req.clinicName(), req.nit(), req.fullName(), req.email(), req.password(), false,
+                "INTEGRAL", BillingCycle.MONTHLY, null, null, null, platform.selfServiceTrialDays(), null,
+                ProvisioningService.ClientData.none(), "SELF_SERVICE"), null);
+        var admin = TenantContext.callAsSystem(() -> users.findById(result.adminId()).orElseThrow());
         return toResponse(admin);
     }
 
@@ -67,20 +66,47 @@ public class AuthService {
         return toResponse(user);
     }
 
+    @Transactional
+    public TokenResponse changePassword(UUID userId, ChangePasswordRequest req) {
+        var user = users.findById(userId).orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+        // 400 y no 401: un 401 haría que la interfaz crea que la sesión venció y la cierre.
+        if (!passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("La contraseña actual no es correcta.");
+        }
+        if (req.currentPassword().equals(req.newPassword())) {
+            throw new BadRequestException("La nueva contraseña debe ser diferente de la actual.");
+        }
+        user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
+        user.setPasswordChangeRequired(false);
+        return toResponse(user);
+    }
+
     @Transactional(readOnly = true)
     public MeResponse me(UUID userId) {
         var user = users.findById(userId).orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
         var clinic = clinics.findById(user.getClinicId()).orElseThrow();
+        var sub = entitlements.find(clinic.getId()).orElse(null);
+        var info = subscriptionInfo(sub);
         return new MeResponse(user.getId(), user.getEmail(), user.getFullName(), user.getRole(), user.isProfessional(),
-                clinic.getId(), clinic.getName());
+                clinic.getId(), clinic.getName(),
+                sub == null || !info.accessAllowed() ? java.util.List.of()
+                        : sub.modules().stream().map(Enum::name).sorted().toList(),
+                info, user.isPasswordChangeRequired(), platformGate.isListed(user.getId(), user.getRole()));
+    }
+
+    private SubscriptionInfo subscriptionInfo(Subscription sub) {
+        if (sub == null) {
+            return new SubscriptionInfo("NONE", null, null, null, null, null, false, false, false,
+                    Entitlements.inactiveMessage(null));
+        }
+        var access = sub.access(Instant.now(), entitlements.grace());
+        return new SubscriptionInfo(sub.status().name(), sub.planCode(), sub.planName(), sub.trialEndsAt(),
+                sub.currentPeriodEnd(), access.until(), access.inGrace(), sub.cancelAtPeriodEnd(), access.allowed(),
+                access.allowed() ? null : Entitlements.inactiveMessage(access.reason()));
     }
 
     private TokenResponse toResponse(AppUser user) {
         var token = tokenService.issue(user);
         return new TokenResponse(token.value(), token.expiresAt());
-    }
-
-    private static String blankToNull(String s) {
-        return s == null || s.isBlank() ? null : s.trim();
     }
 }

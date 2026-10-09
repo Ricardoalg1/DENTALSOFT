@@ -1,21 +1,41 @@
 ---
 interface Props {
-  light?: boolean;
+	light?: boolean;
 }
 const { light = false } = Astro.props;
 ---
 
 <a
-  href="/"
-  class:list={[
-    "inline-flex items-center gap-2.5 text-xl font-semibold tracking-tight",
-    light ? "text-white" : "text-teal-950",
-  ]}
-  aria-label="Occlus, inicio"
-  ><span
-    class:list={[
-      "grid size-9 place-items-center rounded-xl text-lg font-bold",
-      light ? "bg-white/15 text-white" : "bg-teal-800 text-white",
-    ]}>O</span
-  >Occlus<span class="ml-0.5 text-teal-500">.</span></a
+	href="/"
+	class="inline-block overflow-hidden rounded-xl"
+	aria-label="Occlus, inicio"
 >
+	{
+		light ? (
+			<img
+				src="/logo_dark.jpg"
+				alt="Occlus App"
+				width="960"
+				height="598"
+				class="h-auto w-36"
+			/>
+		) : (
+			<>
+				<img
+					src="/logo_light.jpg"
+					alt="Occlus — Solución dental digital"
+					width="1292"
+					height="792"
+					class="h-auto w-36 dark:hidden"
+				/>
+				<img
+					src="/logo_dark.jpg"
+					alt="Occlus App"
+					width="960"
+					height="598"
+					class="hidden h-auto w-36 dark:block"
+				/>
+			</>
+		)
+	}
+</a>

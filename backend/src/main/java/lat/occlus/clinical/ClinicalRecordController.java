@@ -1,5 +1,8 @@
 package lat.occlus.clinical;
 
+import lat.occlus.platform.AppModule;
+import lat.occlus.platform.RequiresModule;
+
 import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -35,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
  * El @PreAuthorize de la clase deja fuera a recepción en TODOS los endpoints; escribir además
  * exige ser profesional (lo valida {@link ClinicalAccess} en los servicios).
  */
+@RequiresModule(AppModule.CLINICAL_RECORD)
 @RestController
 @PreAuthorize(ClinicalAccess.CAN_READ)
 @RequiredArgsConstructor
