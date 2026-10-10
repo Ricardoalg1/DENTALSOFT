@@ -89,6 +89,20 @@ public class ClinicalRecordController {
         return notes.list(AuthUser.from(jwt), "my-drafts".equals(scope));
     }
 
+    @GetMapping("/api/clinical-notes/search")
+    lat.occlus.shared.web.PageResponse<NoteSummary> searchNotes(@AuthenticationPrincipal Jwt jwt,
+            @RequestParam(defaultValue="") String q, @RequestParam(defaultValue="signed") String scope,
+            @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size) {
+        if (!java.util.Set.of("signed", "my-drafts").contains(scope)) throw new lat.occlus.shared.web.BadRequestException("Estado inválido");
+        return notes.search(AuthUser.from(jwt), q, "my-drafts".equals(scope), page, size);
+    }
+
+    @GetMapping("/api/patients/{patientId}/clinical-notes/page")
+    lat.occlus.shared.web.PageResponse<NoteResponse> patientNotesPage(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID patientId,
+            @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="10") int size) {
+        return notes.patientPage(AuthUser.from(jwt).clinicId(), patientId, page, size);
+    }
+
     @GetMapping("/api/clinical-notes/{id}")
     NoteResponse note(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
         return notes.get(AuthUser.from(jwt).clinicId(), id);

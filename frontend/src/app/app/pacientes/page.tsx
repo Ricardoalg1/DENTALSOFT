@@ -1,11 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import {
+  Plus,
+  Search,
+  UsersRound,
+  Phone,
+  IdCard,
+  ArrowUpRight,
+  X,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { api } from "@/lib/api";
 import { REGIMES, type Page, type PatientSummary } from "@/lib/types";
 
@@ -13,12 +28,20 @@ export const metadata: Metadata = { title: "Pacientes" };
 
 const PAGE_SIZE = 20;
 
-export default async function PatientsPage({ searchParams }: PageProps<"/app/pacientes">) {
+export default async function PatientsPage({
+  searchParams,
+}: PageProps<"/app/pacientes">) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.trim() : "";
-  const page = Math.max(Number(params.page) || 0, 0);
+  const page = Math.min(
+    1000000,
+    Math.max(Math.trunc(Number(params.page) || 0), 0),
+  );
 
-  const query = new URLSearchParams({ page: String(page), size: String(PAGE_SIZE) });
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(PAGE_SIZE),
+  });
   if (q) query.set("q", q);
   const result = await api<Page<PatientSummary>>(`/api/patients?${query}`);
 
@@ -32,9 +55,13 @@ export default async function PatientsPage({ searchParams }: PageProps<"/app/pac
     <div className="grid max-w-6xl gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Pacientes</h1>
+          <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
+            <UsersRound className="size-7 text-primary" />
+            Pacientes
+          </h1>
           <p className="text-muted-foreground">
-            {result.totalElements} {result.totalElements === 1 ? "paciente" : "pacientes"}
+            {result.totalElements}{" "}
+            {result.totalElements === 1 ? "paciente" : "pacientes"}
             {q && ` para “${q}”`}
           </p>
         </div>
@@ -44,27 +71,58 @@ export default async function PatientsPage({ searchParams }: PageProps<"/app/pac
       </div>
 
       {/* Formulario GET: la búsqueda queda en la URL (se puede compartir o recargar). */}
-      <form className="flex max-w-md gap-2" role="search">
-        <Input name="q" defaultValue={q} placeholder="Buscar por nombre o documento" aria-label="Buscar pacientes" />
+      <form
+        className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3"
+        role="search"
+      >
+        <Search className="size-4 text-muted-foreground" />
+        <Input
+          name="q"
+          defaultValue={q}
+          placeholder="Buscar por nombre o documento"
+          aria-label="Buscar pacientes"
+          className="max-w-md"
+        />
         <Button type="submit" variant="outline">
           <Search /> Buscar
         </Button>
+        {q && (
+          <Link
+            href="/app/pacientes"
+            className={buttonVariants({ variant: "ghost", size: "sm" })}
+          >
+            <X />
+            Limpiar
+          </Link>
+        )}
       </form>
 
       <Card>
         <CardContent className="overflow-x-auto">
           {result.content.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              {q ? "No hay pacientes que coincidan con la búsqueda." : "Aún no hay pacientes registrados."}
+              {q
+                ? "No hay pacientes que coincidan con la búsqueda."
+                : "Aún no hay pacientes registrados."}
             </p>
           ) : (
-            <Table>
+            <Table pagination={false}>
               <TableHeader>
                 <TableRow>
                   <TableHead>Paciente</TableHead>
-                  <TableHead>Documento</TableHead>
+                  <TableHead>
+                    <span className="flex items-center gap-2">
+                      <IdCard className="size-3.5" />
+                      Documento
+                    </span>
+                  </TableHead>
                   <TableHead>Edad</TableHead>
-                  <TableHead>Teléfono</TableHead>
+                  <TableHead>
+                    <span className="flex items-center gap-2">
+                      <Phone className="size-3.5" />
+                      Teléfono
+                    </span>
+                  </TableHead>
                   <TableHead>Afiliación</TableHead>
                 </TableRow>
               </TableHeader>
@@ -72,8 +130,23 @@ export default async function PatientsPage({ searchParams }: PageProps<"/app/pac
                 {result.content.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>
-                      <Link href={`/app/pacientes/${p.id}`} className="font-medium hover:text-primary hover:underline">
+                      <Link
+                        href={`/app/pacientes/${p.id}`}
+                        className="inline-flex items-center gap-3 font-medium hover:text-primary hover:underline"
+                      >
+                        <span
+                          className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary"
+                          aria-hidden
+                        >
+                          {p.fullName
+                            .split(" ")
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((part) => part[0])
+                            .join("")}
+                        </span>
                         {p.fullName}
+                        <ArrowUpRight className="size-3.5 text-muted-foreground" />
                       </Link>
                       {!p.active && (
                         <Badge variant="outline" className="ml-2">
@@ -85,10 +158,17 @@ export default async function PatientsPage({ searchParams }: PageProps<"/app/pac
                       {p.documentType} {p.documentNumber}
                     </TableCell>
                     <TableCell className="tabular-nums">{p.age} años</TableCell>
-                    <TableCell className="tabular-nums">{p.phone ?? "—"}</TableCell>
+                    <TableCell className="tabular-nums">
+                      {p.phone ?? "—"}
+                    </TableCell>
                     <TableCell>
                       {REGIMES[p.regime]}
-                      {p.insurer && <span className="text-muted-foreground"> · {p.insurer}</span>}
+                      {p.insurer && (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          · {p.insurer}
+                        </span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -99,9 +179,15 @@ export default async function PatientsPage({ searchParams }: PageProps<"/app/pac
       </Card>
 
       {result.totalPages > 1 && (
-        <nav className="flex items-center gap-3 text-sm" aria-label="Paginación">
+        <nav
+          className="flex items-center gap-3 text-sm"
+          aria-label="Paginación"
+        >
           {page > 0 ? (
-            <Link href={pageHref(page - 1)} className={buttonVariants({ variant: "outline", size: "sm" })}>
+            <Link
+              href={pageHref(page - 1)}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
               Anterior
             </Link>
           ) : null}
@@ -109,7 +195,10 @@ export default async function PatientsPage({ searchParams }: PageProps<"/app/pac
             Página {page + 1} de {result.totalPages}
           </span>
           {page + 1 < result.totalPages ? (
-            <Link href={pageHref(page + 1)} className={buttonVariants({ variant: "outline", size: "sm" })}>
+            <Link
+              href={pageHref(page + 1)}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
               Siguiente
             </Link>
           ) : null}

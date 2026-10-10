@@ -17,5 +17,9 @@ public interface ClinicalNoteRepository extends JpaRepository<ClinicalNote, UUID
 
     List<ClinicalNote> findByClinicIdAndSignedAtIsNotNullOrderBySignedAtDesc(UUID clinicId, Limit limit);
 
+    org.springframework.data.domain.Page<ClinicalNote> findByClinicIdAndPatientId(UUID clinicId, UUID patientId, org.springframework.data.domain.Pageable page);
+
+    List<ClinicalNote> findByClinicIdAndPatientIdAndSignedAtIsNotNullOrderByAttendedAtAsc(UUID clinicId, UUID patientId, Limit limit);
+
     boolean existsByAppointmentId(UUID appointmentId);
 }

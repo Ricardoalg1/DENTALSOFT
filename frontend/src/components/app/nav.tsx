@@ -1,4 +1,5 @@
 "use client";
+import { MODULE_COLORS, ROUTE_MODULES } from "@/lib/module-colors";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -58,28 +59,48 @@ const ITEMS: Item[] = [
     href: "/app/mensajes",
     label: "Mensajes",
     icon: MessageSquare,
-    messagingOnly: true, module: "MESSAGING"
+    messagingOnly: true,
+    module: "MESSAGING",
   },
   {
     href: "/app/historias",
     label: "Historias clínicas",
     icon: ClipboardList,
-    clinicalOnly: true, module: "CLINICAL_RECORD"
+    clinicalOnly: true,
+    module: "CLINICAL_RECORD",
   },
-  { href: "/app/caja", label: "Caja", icon: Wallet, cashOnly: true, module: "TREATMENTS_CASH" },
-  { href: "/app/precios", label: "Lista de precios", icon: Tags, module: "TREATMENTS_CASH" },
+  {
+    href: "/app/caja",
+    label: "Caja",
+    icon: Wallet,
+    cashOnly: true,
+    module: "TREATMENTS_CASH",
+  },
+  {
+    href: "/app/precios",
+    label: "Lista de precios",
+    icon: Tags,
+    module: "TREATMENTS_CASH",
+  },
   {
     href: "/app/facturacion",
     label: "Facturación y RIPS",
     icon: FileText,
-    adminOnly: true, module: "BILLING_RIPS"
+    adminOnly: true,
+    module: "BILLING_RIPS",
   },
-  { href: "/app/inventario", label: "Inventario", icon: Package, module: "INVENTORY" },
+  {
+    href: "/app/inventario",
+    label: "Inventario",
+    icon: Package,
+    module: "INVENTORY",
+  },
   {
     href: "/app/reportes",
     label: "Reportes",
     icon: ChartColumn,
-    adminOnly: true, module: "REPORTS"
+    adminOnly: true,
+    module: "REPORTS",
   },
   { href: "/app/equipo", label: "Equipo", icon: Users, adminOnly: true },
   { href: "/app/sedes", label: "Sedes", icon: Building2 },
@@ -124,7 +145,23 @@ export function Nav({
               className="flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground/60"
               title="Próximamente"
             >
-              <Icon className="size-4" />
+              <span
+                className="grid size-7 shrink-0 place-items-center rounded-lg"
+                style={
+                  MODULE_COLORS[ROUTE_MODULES[href.split("/")[2]]]
+                    ? {
+                        color:
+                          MODULE_COLORS[ROUTE_MODULES[href.split("/")[2]]]
+                            .color,
+                        background:
+                          MODULE_COLORS[ROUTE_MODULES[href.split("/")[2]]]
+                            .background,
+                      }
+                    : undefined
+                }
+              >
+                <Icon className="size-4" aria-hidden />
+              </span>
               {label}
               <span className="ml-auto text-[10px] uppercase tracking-wide">
                 Pronto
@@ -143,7 +180,22 @@ export function Nav({
                 "bg-primary/10 font-medium text-primary hover:bg-primary/15",
             )}
           >
-            <Icon className="size-4" />
+            <span
+              className="grid size-7 shrink-0 place-items-center rounded-lg"
+              style={
+                MODULE_COLORS[ROUTE_MODULES[href.split("/")[2]]]
+                  ? {
+                      color:
+                        MODULE_COLORS[ROUTE_MODULES[href.split("/")[2]]].color,
+                      background:
+                        MODULE_COLORS[ROUTE_MODULES[href.split("/")[2]]]
+                          .background,
+                    }
+                  : undefined
+              }
+            >
+              <Icon className="size-4" aria-hidden />
+            </span>
             {label}
           </Link>
         );

@@ -1,108 +1,162 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import {
+  Search,
+  FileText,
+  FilePenLine,
+  ShieldCheck,
+  ClipboardList,
+  ArrowUpRight,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PaginationLinks } from "@/components/pagination-links";
 import { api, getMe } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
-import { canReadClinical, type ClinicalNoteSummary } from "@/lib/types";
-
+import {
+  canReadClinical,
+  type ClinicalNoteSummary,
+  type Page,
+} from "@/lib/types";
 export const metadata: Metadata = { title: "Historias clínicas" };
-
-export default async function ClinicalNotesPage() {
+export default async function ClinicalNotesPage({
+  searchParams,
+}: PageProps<"/app/historias">) {
   const me = await getMe();
   if (!canReadClinical(me)) redirect("/app");
-  const [drafts, recent] = await Promise.all([
-    me.professional ? api<ClinicalNoteSummary[]>("/api/clinical-notes?scope=my-drafts") : Promise.resolve([]),
-    api<ClinicalNoteSummary[]>("/api/clinical-notes"),
-  ]);
-
+  const sp = await searchParams;
+  const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 160) : "";
+  const scope =
+    sp.scope === "my-drafts" && me.professional ? "my-drafts" : "signed";
+  const page = Math.min(1000000, Math.max(0, Math.trunc(Number(sp.page) || 0)));
+  const query = new URLSearchParams({
+    q,
+    scope,
+    page: String(page),
+    size: "20",
+  });
+  const result = await api<Page<ClinicalNoteSummary>>(
+    `/api/clinical-notes/search?${query}`,
+  );
+  const href = (next: number) => {
+    const qs = new URLSearchParams(query);
+    qs.set("page", String(next));
+    return `/app/historias?${qs}`;
+  };
   return (
-    <div className="grid max-w-5xl gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="grid max-w-6xl gap-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Historias clínicas</h1>
-          <p className="text-muted-foreground">
-            Para registrar una atención, abre la ficha del paciente o la cita en la agenda.
+          <h1 className="flex items-center gap-3 text-3xl font-semibold">
+            <FileText className="size-7 text-primary" />
+            Historias clínicas
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            Busca documentos por paciente, identificación, profesional, motivo o
+            código de diagnóstico.
           </p>
         </div>
         {me.role === "ADMIN" && (
-          <Link href="/app/historias/plantillas" className={buttonVariants({ variant: "outline" })}>
+          <Link
+            href="/app/historias/plantillas"
+            className={buttonVariants({ variant: "outline" })}
+          >
+            <ClipboardList />
             Plantillas de consentimiento
           </Link>
         )}
-      </div>
-
-      {me.professional && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Pendientes de firma {drafts.length > 0 && <Badge variant="destructive">{drafts.length}</Badge>}
-            </CardTitle>
-            <CardDescription>Tus evoluciones en borrador. Mientras no las firmes no hacen parte de la historia clínica.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <NotesTable notes={drafts} empty="No tienes evoluciones pendientes." draftLinks />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Firmadas recientemente</CardTitle>
-          <CardDescription>Últimas 50 evoluciones firmadas en la clínica.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <NotesTable notes={recent} empty="Aún no hay evoluciones firmadas." />
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function NotesTable({ notes, empty, draftLinks }: { notes: ClinicalNoteSummary[]; empty: string; draftLinks?: boolean }) {
-  if (notes.length === 0) return <p className="text-sm text-muted-foreground">{empty}</p>;
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Atención</TableHead>
-          <TableHead>Paciente</TableHead>
-          <TableHead className="hidden sm:table-cell">Profesional</TableHead>
-          <TableHead className="hidden md:table-cell">Diagnóstico</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {notes.map((n) => {
-          const href = draftLinks
-            ? `/app/pacientes/${n.patient.id}/historia/${n.id}`
-            : `/app/pacientes/${n.patient.id}/historia`;
-          return (
-            <TableRow key={n.id}>
-              <TableCell className="tabular-nums">{formatDateTime(n.attendedAt)}</TableCell>
-              <TableCell>
-                <Link href={href} className="font-medium text-primary hover:underline">
-                  {n.patient.name}
-                </Link>
-                {n.reason && <p className="max-w-64 truncate text-xs text-muted-foreground">{n.reason}</p>}
-              </TableCell>
-              <TableCell className="hidden sm:table-cell">{n.dentist.name}</TableCell>
-              <TableCell className="hidden md:table-cell">
-                {n.diagnosisMain ? (
-                  <span title={n.diagnosisMain.description}>
-                    <span className="tabular-nums">{n.diagnosisMain.display}</span>{" "}
-                    <span className="text-muted-foreground">{n.diagnosisMain.description}</span>
-                  </span>
+      </header>
+      <form
+        role="search"
+        className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4"
+      >
+        <Search className="size-5 text-muted-foreground" />
+        <Input
+          name="q"
+          defaultValue={q}
+          placeholder="Buscar en las historias de tu clínica"
+          aria-label="Buscar historias"
+          className="max-w-lg"
+        />
+        <select
+          name="scope"
+          defaultValue={scope}
+          className="rounded-lg border bg-background px-3 py-2 text-sm"
+        >
+          <option value="signed">Evoluciones firmadas</option>
+          {me.professional && (
+            <option value="my-drafts">Mis borradores pendientes</option>
+          )}
+        </select>
+        <Button type="submit">
+          <Search />
+          Buscar
+        </Button>
+      </form>
+      <div className="grid gap-4 md:grid-cols-2">
+        {result.content.map((note) => (
+          <Link
+            key={note.id}
+            href={
+              note.status === "DRAFT"
+                ? `/app/pacientes/${note.patient.id}/historia/${note.id}`
+                : `/app/historias/${note.id}`
+            }
+            data-hover-card
+            className="group grid gap-4 rounded-2xl border bg-card p-5 shadow-sm"
+          >
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                {note.status === "SIGNED" ? (
+                  <ShieldCheck className="size-4 text-primary" />
                 ) : (
-                  "—"
+                  <FilePenLine className="size-4" />
                 )}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+                {formatDateTime(note.attendedAt)}
+              </span>
+              <Badge
+                variant={note.status === "SIGNED" ? "secondary" : "outline"}
+              >
+                {note.status === "SIGNED" ? "Firmada" : "Pendiente de firma"}
+              </Badge>
+            </div>
+            <div className="border-l-2 border-primary/30 pl-4">
+              <h2 className="font-semibold">{note.patient.name}</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {note.dentist.name}
+              </p>
+              <p className="mt-3 line-clamp-2 text-sm">
+                {note.reason || "Sin motivo registrado"}
+              </p>
+              {note.diagnosisMain && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {note.diagnosisMain.display} ·{" "}
+                  {note.diagnosisMain.description}
+                </p>
+              )}
+            </div>
+            <p className="flex items-center justify-between border-t pt-3 text-xs font-medium text-primary">
+              {note.status === "SIGNED"
+                ? "Abrir documento"
+                : "Continuar evolución"}
+              <ArrowUpRight className="size-4" />
+            </p>
+          </Link>
+        ))}
+      </div>
+      {result.content.length === 0 && (
+        <p className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
+          No se encontraron documentos para estos filtros.
+        </p>
+      )}
+      <PaginationLinks
+        page={result.page}
+        pages={result.totalPages}
+        total={result.totalElements}
+        href={href}
+      />
+    </div>
   );
 }

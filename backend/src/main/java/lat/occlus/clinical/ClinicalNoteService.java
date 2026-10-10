@@ -43,6 +43,7 @@ public class ClinicalNoteService {
     /** Margen para diferencias de reloj entre el navegador y el servidor. */
     private static final Duration CLOCK_SKEW = Duration.ofMinutes(5);
 
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final ClinicalNoteRepository notes;
     private final ClinicalNoteAddendumRepository addenda;
     private final AppointmentRepository appointments;
@@ -67,6 +68,10 @@ public class ClinicalNoteService {
         var list = myDrafts
                 ? notes.findByClinicIdAndDentistIdAndSignedAtIsNullOrderByAttendedAtDesc(me.clinicId(), me.userId())
                 : notes.findByClinicIdAndSignedAtIsNotNullOrderBySignedAtDesc(me.clinicId(), Limit.of(50));
+        return summaries(list);
+    }
+
+    private List<NoteSummary> summaries(List<ClinicalNote> list) {
         Map<UUID, Patient> patientById = patients.findAllById(ids(list, ClinicalNote::getPatientId)).stream()
                 .collect(Collectors.toMap(Patient::getId, Function.identity()));
         Map<UUID, Ref> userById = access.userRefs(ids(list, ClinicalNote::getDentistId));
@@ -77,6 +82,42 @@ public class ClinicalNoteService {
                     n.getAttendedAt().atZone(BOGOTA).toOffsetDateTime(), status(n), n.getReason(),
                     dx.get(n.getDiagnosisMain()), n.getSignedAt());
         }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public lat.occlus.shared.web.PageResponse<NoteSummary> search(AuthUser me, String query, boolean drafts, int page, int size) {
+        if (page < 0 || page > 1000000 || size < 1 || size > 100 || query.length() > 160)
+            throw new BadRequestException("Filtros de búsqueda inválidos");
+        String term = "%" + query.trim().replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%";
+        String filter = " from clinical_note n join patient p on p.id=n.patient_id and p.clinic_id=n.clinic_id join app_user u on u.id=n.dentist_id and u.clinic_id=n.clinic_id where n.clinic_id=? and "
+                + (drafts ? "n.signed_at is null and n.dentist_id=?" : "n.signed_at is not null")
+                + " and (concat_ws(' ',p.first_name,p.middle_name,p.first_last_name,p.second_last_name,p.document_number,u.full_name,n.reason,n.diagnosis_main) ilike ? escape '!')";
+        var args = new ArrayList<Object>(); args.add(me.clinicId()); if (drafts) args.add(me.userId()); args.add(term);
+        long count = jdbc.queryForObject("select count(*)" + filter, Long.class, args.toArray());
+        int pages = (int) Math.ceil((double) count / size);
+        int actual = pages == 0 ? 0 : Math.min(page, pages - 1);
+        args.add(size); args.add(actual * size);
+        var ids = jdbc.queryForList("select n.id" + filter + " order by n.attended_at desc,n.id limit ? offset ?", UUID.class, args.toArray());
+        var found = notes.findAllById(ids).stream().collect(Collectors.toMap(ClinicalNote::getId, Function.identity()));
+        return new lat.occlus.shared.web.PageResponse<>(summaries(ids.stream().map(found::get).filter(Objects::nonNull).toList()), actual, size, count, pages);
+    }
+
+    @Transactional(readOnly = true)
+    public lat.occlus.shared.web.PageResponse<NoteResponse> patientPage(UUID clinic, UUID patient, int page, int size) {
+        access.requirePatient(clinic, patient);
+        if (page < 0 || page > 1000000 || size < 1 || size > 100) throw new BadRequestException("Página inválida");
+        var result = notes.findByClinicIdAndPatientId(clinic, patient, org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Order.desc("attendedAt"), org.springframework.data.domain.Sort.Order.desc("id"))));
+        return new lat.occlus.shared.web.PageResponse<>(toResponses(result.getContent()), result.getNumber(), size, result.getTotalElements(), result.getTotalPages());
+    }
+
+    @Transactional(readOnly = true)
+    public List<NoteResponse> signedForExport(UUID clinic, UUID patient) {
+        access.requirePatient(clinic, patient);
+        var list = notes.findByClinicIdAndPatientIdAndSignedAtIsNotNullOrderByAttendedAtAsc(clinic, patient, Limit.of(2001));
+        if (list.size() > 2000) throw new BadRequestException("La historia excede el límite de 2000 evoluciones por exportación");
+        var result = toResponses(list);
+        if (result.stream().anyMatch(n -> !Boolean.TRUE.equals(n.integrityOk()))) throw new ConflictException("Una evolución no supera la comprobación de integridad");
+        return result;
     }
 
     @Transactional

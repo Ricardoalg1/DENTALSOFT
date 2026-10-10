@@ -1,3 +1,11 @@
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { platformAccess, statuses, type Crm } from "@/lib/marketing";
@@ -106,20 +114,20 @@ export default async function Page({
           estado incluyen todas las solicitudes.
         </p>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-3">Clínica / contacto</th>
-                <th className="p-3">Plan</th>
-                <th className="p-3">Estado</th>
-                <th className="p-3">Fecha</th>
-                <th className="p-3">Seguimiento</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table pagination={false} className="w-full text-left text-sm">
+            <TableHeader>
+              <TableRow className="border-b">
+                <TableHead className="p-3">Clínica / contacto</TableHead>
+                <TableHead className="p-3">Plan</TableHead>
+                <TableHead className="p-3">Estado</TableHead>
+                <TableHead className="p-3">Fecha</TableHead>
+                <TableHead className="p-3">Seguimiento</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {leads.map((l) => (
-                <tr key={l.id} className="border-b">
-                  <td className="p-3">
+                <TableRow key={l.id} className="border-b">
+                  <TableCell className="p-3">
                     <Link
                       href={`/app/comercial/${l.id}`}
                       className="font-medium underline"
@@ -129,17 +137,17 @@ export default async function Page({
                     <p>
                       {l.name} · {l.email}
                     </p>
-                  </td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell className="p-3">
                     {plans.find((p) => p.id === l.plan)?.name ?? "Por definir"}
-                  </td>
-                  <td className="p-3">{statuses[l.status]}</td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell className="p-3">{statuses[l.status]}</TableCell>
+                  <TableCell className="p-3">
                     {new Date(l.createdAt).toLocaleDateString("es-CO", {
                       timeZone: "America/Bogota",
                     })}
-                  </td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell className="p-3">
                     {l.followUpOn
                       ? new Date(
                           `${l.followUpOn}T12:00:00-05:00`,
@@ -147,11 +155,11 @@ export default async function Page({
                           timeZone: "America/Bogota",
                         })
                       : "Sin fecha"}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
         {!leads.length && (
           <p className="py-6 text-sm text-muted-foreground">

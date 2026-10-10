@@ -68,7 +68,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/app/plat
 
       <Card>
         <CardContent className="overflow-x-auto">
-          <Table>
+          <Table pagination={false}>
             <TableHeader>
               <TableRow>
                 <TableHead>Cliente</TableHead>

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 type Props = Omit<React.ComponentProps<"select">, "children"> & {
   name: string;
-  label: string;
+  label: React.ReactNode;
   options: Record<string, string>;
   /** Texto de la opción vacía; si se omite, no hay opción vacía. */
   placeholder?: string;
@@ -11,7 +11,16 @@ type Props = Omit<React.ComponentProps<"select">, "children"> & {
 };
 
 /** <select> nativo con el estilo de los inputs: accesible y sin JavaScript extra. */
-export function NativeSelect({ name, label, options, placeholder, errors, className, id, ...props }: Props) {
+export function NativeSelect({
+  name,
+  label,
+  options,
+  placeholder,
+  errors,
+  className,
+  id,
+  ...props
+}: Props) {
   // id propio cuando hay varios formularios iguales en la página; si no, el name.
   const selectId = id ?? name;
   return (

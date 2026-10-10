@@ -66,7 +66,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/app/plataf
 
       <Card>
         <CardContent className="overflow-x-auto">
-          <Table>
+          <Table pagination={false}>
             <TableHeader>
               <TableRow>
                 <TableHead>Fecha</TableHead>

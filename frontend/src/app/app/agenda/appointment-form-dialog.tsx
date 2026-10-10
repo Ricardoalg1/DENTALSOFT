@@ -1,10 +1,29 @@
 "use client";
 
+import {
+  CalendarPlus,
+  CalendarDays,
+  Clock3,
+  Timer,
+  UserRound,
+  Stethoscope,
+  Building2,
+  NotebookPen,
+  FileText,
+  Check,
+  LoaderCircle,
+} from "lucide-react";
+import { toast } from "sonner";
 import { useState, useTransition } from "react";
 import { FormError } from "@/components/form-error";
 import { NativeSelect } from "@/components/native-select";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +33,14 @@ import { saveAppointment } from "./actions";
 import { PatientPicker, type PickedPatient } from "./patient-picker";
 
 export type AppointmentDraft =
-  | { mode: "new"; date: string; time: string; duration: number; dentistId?: string; siteId?: string }
+  | {
+      mode: "new";
+      date: string;
+      time: string;
+      duration: number;
+      dentistId?: string;
+      siteId?: string;
+    }
   | { mode: "edit"; appointment: Appointment };
 
 type Props = {
@@ -36,7 +62,14 @@ const DURATIONS: Record<string, string> = {
   "120": "2 horas",
 };
 
-export function AppointmentFormDialog({ draft, professionals, sites, presetPatient, onClose, onSaved }: Props) {
+export function AppointmentFormDialog({
+  draft,
+  professionals,
+  sites,
+  presetPatient,
+  onClose,
+  onSaved,
+}: Props) {
   const editing = draft.mode === "edit" ? draft.appointment : null;
   const [patient, setPatient] = useState<PickedPatient | null>(
     editing
@@ -61,7 +94,10 @@ export function AppointmentFormDialog({ draft, professionals, sites, presetPatie
     : draft.mode === "new"
       ? draft
       : null;
-  const durationOptions = { ...DURATIONS, [String(initial!.duration)]: `${initial!.duration} min` };
+  const durationOptions = {
+    ...DURATIONS,
+    [String(initial!.duration)]: `${initial!.duration} min`,
+  };
 
   function submit(formData: FormData) {
     if (!patient) {
@@ -79,8 +115,10 @@ export function AppointmentFormDialog({ draft, professionals, sites, presetPatie
     };
     startTransition(async () => {
       const result = await saveAppointment(editing?.id ?? null, input);
-      if (result.ok) onSaved(result.data);
-      else setError(result.error);
+      if (result.ok) {
+        toast.success(editing ? "Cita actualizada" : "Cita agendada");
+        onSaved(result.data);
+      } else setError(result.error);
     });
   }
 
@@ -95,54 +133,130 @@ export function AppointmentFormDialog({ draft, professionals, sites, presetPatie
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editing ? "Editar cita" : "Nueva cita"}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarPlus className="size-5 text-primary" />
+            {editing ? "Editar cita" : "Nueva cita"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="grid gap-4">
           <FormError message={error} />
           <div className="grid gap-1.5">
-            <Label>Paciente</Label>
-            <PatientPicker value={patient} onChange={setPatient} disabled={!!editing} />
+            <Label className="flex items-center gap-2">
+              <UserRound className="size-4 text-primary" />
+              Paciente
+            </Label>
+            <PatientPicker
+              value={patient}
+              onChange={setPatient}
+              disabled={!!editing}
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <NativeSelect
               name="dentistId"
-              label="Profesional"
+              label={
+                <span className="flex items-center gap-2">
+                  <Stethoscope className="size-4 text-primary" />
+                  Profesional
+                </span>
+              }
               required
-              options={Object.fromEntries(professionals.map((p) => [p.id, p.fullName]))}
+              options={Object.fromEntries(
+                professionals.map((p) => [p.id, p.fullName]),
+              )}
               defaultValue={initial?.dentistId ?? professionals[0]?.id}
             />
             <NativeSelect
               name="siteId"
-              label="Sede"
+              label={
+                <span className="flex items-center gap-2">
+                  <Building2 className="size-4 text-primary" />
+                  Sede
+                </span>
+              }
               required
-              options={Object.fromEntries(sites.filter((s) => s.active).map((s) => [s.id, s.name]))}
+              options={Object.fromEntries(
+                sites.filter((s) => s.active).map((s) => [s.id, s.name]),
+              )}
               defaultValue={initial?.siteId ?? sites[0]?.id}
             />
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="date">Fecha</Label>
-              <Input id="date" name="date" type="date" required defaultValue={initial?.date} />
+              <Label htmlFor="date" className="flex items-center gap-2">
+                <CalendarDays className="size-4 text-primary" />
+                Fecha
+              </Label>
+              <Input
+                id="date"
+                name="date"
+                type="date"
+                required
+                defaultValue={initial?.date}
+              />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="time">Hora</Label>
-              <Input id="time" name="time" type="time" step={300} required defaultValue={initial?.time} />
+              <Label htmlFor="time" className="flex items-center gap-2">
+                <Clock3 className="size-4 text-primary" />
+                Hora
+              </Label>
+              <Input
+                id="time"
+                name="time"
+                type="time"
+                step={300}
+                required
+                defaultValue={initial?.time}
+              />
             </div>
-            <NativeSelect name="duration" label="Duración" options={durationOptions} defaultValue={String(initial?.duration)} />
+            <NativeSelect
+              name="duration"
+              label={
+                <span className="flex items-center gap-2">
+                  <Timer className="size-4 text-primary" />
+                  Duración
+                </span>
+              }
+              options={durationOptions}
+              defaultValue={String(initial?.duration)}
+            />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="reason">Motivo</Label>
-            <Input id="reason" name="reason" maxLength={200} placeholder="Ej.: valoración, control de ortodoncia" defaultValue={editing?.reason ?? ""} />
+            <Label htmlFor="reason" className="flex items-center gap-2">
+              <FileText className="size-4 text-primary" />
+              Motivo
+            </Label>
+            <Input
+              id="reason"
+              name="reason"
+              maxLength={200}
+              placeholder="Ej.: valoración, control de ortodoncia"
+              defaultValue={editing?.reason ?? ""}
+            />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="notes">Notas</Label>
-            <Textarea id="notes" name="notes" maxLength={1000} rows={2} defaultValue={editing?.notes ?? ""} />
+            <Label htmlFor="notes" className="flex items-center gap-2">
+              <NotebookPen className="size-4 text-primary" />
+              Notas
+            </Label>
+            <Textarea
+              id="notes"
+              name="notes"
+              maxLength={1000}
+              rows={2}
+              defaultValue={editing?.notes ?? ""}
+            />
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
             <Button type="submit" disabled={pending}>
+              {pending ? (
+                <LoaderCircle className="size-4 animate-spin" />
+              ) : (
+                <Check className="size-4" />
+              )}
               {pending ? "Guardando…" : editing ? "Guardar cambios" : "Agendar"}
             </Button>
           </div>

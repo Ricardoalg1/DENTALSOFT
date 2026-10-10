@@ -50,6 +50,23 @@
 }
 
 :root {
+  --module-patients: #2563a6;
+  --module-patients-bg: color-mix(in srgb, #2563a6 12%, var(--card));
+  --module-agenda: #216e6e;
+  --module-agenda-bg: color-mix(in srgb, #216e6e 12%, var(--card));
+  --module-clinical: #7651a3;
+  --module-clinical-bg: color-mix(in srgb, #7651a3 12%, var(--card));
+  --module-cash: #a35c13;
+  --module-cash-bg: color-mix(in srgb, #a35c13 12%, var(--card));
+  --module-billing: #a34166;
+  --module-billing-bg: color-mix(in srgb, #a34166 12%, var(--card));
+  --module-inventory: #4b7723;
+  --module-inventory-bg: color-mix(in srgb, #4b7723 12%, var(--card));
+  --module-reports: #425ec0;
+  --module-reports-bg: color-mix(in srgb, #425ec0 12%, var(--card));
+  --module-messaging: #197348;
+  --module-messaging-bg: color-mix(in srgb, #197348 12%, var(--card));
+
   color-scheme: light;
   --status-warning-bg: #fff0cc;
   --status-warning-border: #b57412;
@@ -92,6 +109,23 @@
 }
 
 .dark {
+  --module-patients: #8fc4ff;
+  --module-patients-bg: color-mix(in srgb, #8fc4ff 12%, var(--card));
+  --module-agenda: #80d0cf;
+  --module-agenda-bg: color-mix(in srgb, #80d0cf 12%, var(--card));
+  --module-clinical: #c8a8ef;
+  --module-clinical-bg: color-mix(in srgb, #c8a8ef 12%, var(--card));
+  --module-cash: #ecc285;
+  --module-cash-bg: color-mix(in srgb, #ecc285 12%, var(--card));
+  --module-billing: #efa6c4;
+  --module-billing-bg: color-mix(in srgb, #efa6c4 12%, var(--card));
+  --module-inventory: #b6d98b;
+  --module-inventory-bg: color-mix(in srgb, #b6d98b 12%, var(--card));
+  --module-reports: #a8b9ff;
+  --module-reports-bg: color-mix(in srgb, #a8b9ff 12%, var(--card));
+  --module-messaging: #90ddb4;
+  --module-messaging-bg: color-mix(in srgb, #90ddb4 12%, var(--card));
+
   color-scheme: dark;
   --status-warning-bg: #493b25;
   --status-warning-border: #e4ad50;
@@ -152,9 +186,11 @@
   --fc-page-bg-color: var(--background);
   --fc-neutral-bg-color: var(--muted);
   --fc-today-bg-color: color-mix(in oklch, var(--primary) 6%, transparent);
-  --fc-non-business-color: color-mix(in oklch,
-      var(--muted-foreground) 9%,
-      transparent);
+  --fc-non-business-color: color-mix(
+    in oklch,
+    var(--muted-foreground) 9%,
+    transparent
+  );
   --fc-now-indicator-color: var(--destructive);
   --fc-highlight-color: color-mix(in oklch, var(--primary) 18%, transparent);
   --fc-button-bg-color: var(--background);
@@ -196,7 +232,6 @@
 
 /* ---------- Impresión (consentimientos y documentos) ---------- */
 @media print {
-
   aside,
   nav[aria-label="Secciones del paciente"],
   .no-print {
@@ -214,7 +249,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {
@@ -223,7 +257,6 @@
 }
 
 @media print {
-
   :root,
   .dark {
     color-scheme: light;
@@ -240,5 +273,58 @@
     --accent: #dcecea;
     --accent-foreground: #174e5b;
     --border: #ccd8d2;
+  }
+}
+tr[data-page-hidden="true"] {
+  display: none;
+}
+@media print {
+  tr[data-page-hidden="true"] {
+    display: table-row;
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [data-hover-card],
+  [data-slot="card"] {
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease;
+  }
+  [data-hover-card]:hover,
+  [data-slot="card"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px color-mix(in srgb, var(--primary) 12%, transparent);
+  }
+}
+
+@media print {
+  .clinical-paper {
+    box-shadow: none;
+    border-color: #ccd8d2;
+    background: white;
+    color: #0d2c48;
+  }
+  .clinical-paper section {
+    break-inside: avoid;
+  }
+  .clinical-paper h2 {
+    break-after: avoid;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* El hover anima el propio control, sin efectos ligados al puntero. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  button, a[class*="rounded"] {
+    transition: translate 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  }
+  button:not(:disabled):hover, a[class*="rounded"]:hover {
+    translate: 0 -2px;
+  }
+  button:not(:disabled):active, a[class*="rounded"]:active {
+    translate: 0 0;
   }
 }

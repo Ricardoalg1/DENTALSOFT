@@ -4,9 +4,18 @@ import { redirect, unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { errorMessage, keepValues, type FormState } from "@/lib/forms";
-import { DOCUMENT_TYPES, REGIMES, SEXES, type DocumentType, type Patient, type Regime, type Sex } from "@/lib/types";
+import {
+  DOCUMENT_TYPES,
+  REGIMES,
+  SEXES,
+  type DocumentType,
+  type Patient,
+  type Regime,
+  type Sex,
+} from "@/lib/types";
 
-const keys = <T extends string>(o: Record<T, string>) => Object.keys(o) as [T, ...T[]];
+const keys = <T extends string>(o: Record<T, string>) =>
+  Object.keys(o) as [T, ...T[]];
 
 /** Texto opcional: "" se envía como ausente. */
 const optional = (max: number) =>
@@ -17,7 +26,10 @@ const optional = (max: number) =>
     .transform((s) => s || undefined);
 
 const patientSchema = z.object({
-  documentType: z.enum(keys<DocumentType>(DOCUMENT_TYPES), "Selecciona el tipo de documento"),
+  documentType: z.enum(
+    keys<DocumentType>(DOCUMENT_TYPES),
+    "Selecciona el tipo de documento",
+  ),
   documentNumber: z
     .string()
     .trim()
@@ -34,9 +46,7 @@ const patientSchema = z.object({
     .transform((s) => s || undefined),
   address: optional(200),
   municipality: optional(80),
-  residenceZone: z
-    .enum(["U", "R", ""])
-    .transform((s) => s || undefined),
+  residenceZone: z.enum(["U", "R", ""]).transform((s) => s || undefined),
   regime: z.enum(keys<Regime>(REGIMES), "Selecciona el régimen"),
   insurer: optional(120),
   occupation: optional(80),
@@ -44,7 +54,7 @@ const patientSchema = z.object({
   guardianPhone: optional(30),
   guardianRelationship: optional(40),
   notes: optional(1000),
-  whatsappConsent: z.enum(["on", "off"]).transform(v => v === "on"),
+  whatsappConsent: z.enum(["on", "off"]).transform((v) => v === "on"),
   // Checkbox: solo viene en el formulario de edición.
   active: z
     .enum(["on", "off"])
@@ -54,37 +64,57 @@ const patientSchema = z.object({
 
 function parse(formData: FormData) {
   const raw = Object.fromEntries(formData);
-  if (formData.has("activePresent")) raw.active = formData.get("active") === "on" ? "on" : "off";
+  if (formData.has("activePresent"))
+    raw.active = formData.get("active") === "on" ? "on" : "off";
   raw.whatsappConsent = formData.get("whatsappConsent") === "on" ? "on" : "off";
   return patientSchema.safeParse(raw);
 }
 
-export async function createPatient(_: FormState, formData: FormData): Promise<FormState> {
+export async function createPatient(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const parsed = parse(formData);
   if (!parsed.success) {
-    return { fieldErrors: z.flattenError(parsed.error).fieldErrors, values: keepValues(formData) };
+    return {
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+      values: keepValues(formData),
+    };
   }
   let id: string;
   try {
-    const patient = await api<Patient>("/api/patients", { method: "POST", body: JSON.stringify(parsed.data) });
+    const patient = await api<Patient>("/api/patients", {
+      method: "POST",
+      body: JSON.stringify(parsed.data),
+    });
     id = patient.id;
   } catch (e) {
     unstable_rethrow(e);
     return { error: errorMessage(e), values: keepValues(formData) };
   }
-  redirect(`/app/pacientes/${id}`);
+  redirect(`/app/pacientes/${id}?notice=patient-created`);
 }
 
-export async function updatePatient(id: string, _: FormState, formData: FormData): Promise<FormState> {
+export async function updatePatient(
+  id: string,
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const parsed = parse(formData);
   if (!parsed.success) {
-    return { fieldErrors: z.flattenError(parsed.error).fieldErrors, values: keepValues(formData) };
+    return {
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+      values: keepValues(formData),
+    };
   }
   try {
-    await api<Patient>(`/api/patients/${id}`, { method: "PUT", body: JSON.stringify(parsed.data) });
+    await api<Patient>(`/api/patients/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(parsed.data),
+    });
   } catch (e) {
     unstable_rethrow(e);
     return { error: errorMessage(e), values: keepValues(formData) };
   }
-  redirect(`/app/pacientes/${id}`);
+  redirect(`/app/pacientes/${id}?notice=patient-updated`);
 }

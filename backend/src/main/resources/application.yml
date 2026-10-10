@@ -41,6 +41,14 @@ spring:
         store_data_at_delete: true
 
 occlus:
+  clinical-mail:
+    enabled: ${CLINICAL_MAIL_ENABLED:false}
+    host: ${CLINICAL_MAIL_HOST:}
+    port: ${CLINICAL_MAIL_PORT:587}
+    username: ${CLINICAL_MAIL_USERNAME:}
+    password: ${CLINICAL_MAIL_PASSWORD:}
+    from: ${CLINICAL_MAIL_FROM:}
+    ssl: ${CLINICAL_MAIL_SSL:false}
   platform:
     # En producción: false. Los clientes los crea el administrador desde /app/plataforma.
     self-registration: ${SELF_REGISTRATION:true}

@@ -11,6 +11,13 @@ services:
     restart: unless-stopped
     logging: *bounded-logs
     environment:
+      CLINICAL_MAIL_ENABLED: ${CLINICAL_MAIL_ENABLED:-false}
+      CLINICAL_MAIL_HOST: ${CLINICAL_MAIL_HOST:-}
+      CLINICAL_MAIL_PORT: ${CLINICAL_MAIL_PORT:-587}
+      CLINICAL_MAIL_USERNAME: ${CLINICAL_MAIL_USERNAME:-}
+      CLINICAL_MAIL_PASSWORD: ${CLINICAL_MAIL_PASSWORD:-}
+      CLINICAL_MAIL_FROM: ${CLINICAL_MAIL_FROM:-}
+      CLINICAL_MAIL_SSL: ${CLINICAL_MAIL_SSL:-false}
       DB_URL: ${DB_URL:?Configura la base de datos PostgreSQL}
       DB_USER: ${DB_USER:?Configura el rol restringido de aplicación}
       DB_PASSWORD: ${DB_PASSWORD:?Configura su contraseña}

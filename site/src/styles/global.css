@@ -140,3 +140,16 @@ button {
     --muted-foreground: #526675;
   }
 }
+
+/* El hover anima el propio control, sin efectos ligados al puntero. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  button, a[class*="rounded"] {
+    transition: translate 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  }
+  button:not(:disabled):hover, a[class*="rounded"]:hover {
+    translate: 0 -2px;
+  }
+  button:not(:disabled):active, a[class*="rounded"]:active {
+    translate: 0 0;
+  }
+}

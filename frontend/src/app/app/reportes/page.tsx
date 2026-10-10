@@ -4,10 +4,23 @@ import { redirect } from "next/navigation";
 import { Download } from "lucide-react";
 import { FormError } from "@/components/form-error";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { todayCO } from "@/lib/agenda-time";
 import { api, ApiError, getMe } from "@/lib/api";
 import { formatCOP, formatDate } from "@/lib/format";
@@ -37,7 +50,9 @@ function presets(today: string) {
   const prevY = m === 1 ? y - 1 : y;
   const prevM = m === 1 ? 12 : m - 1;
   const prevEnd = new Date(Date.UTC(y, m - 1, 0)).toISOString().slice(0, 10);
-  const minus29 = new Date(Date.parse(`${today}T00:00:00Z`) - 29 * 86_400_000).toISOString().slice(0, 10);
+  const minus29 = new Date(Date.parse(`${today}T00:00:00Z`) - 29 * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
   return [
     { label: "Este mes", from: monthStart, to: today },
     { label: "Mes anterior", from: `${prevY}-${pad(prevM)}-01`, to: prevEnd },
@@ -46,21 +61,31 @@ function presets(today: string) {
   ];
 }
 
-export default async function ReportsPage({ searchParams }: PageProps<"/app/reportes">) {
+export default async function ReportsPage({
+  searchParams,
+}: PageProps<"/app/reportes">) {
   const me = await getMe();
   if (me.role !== "ADMIN") redirect("/app");
 
   const sp = await searchParams;
   const today = todayCO();
   const quick = presets(today);
-  const from = typeof sp.from === "string" && ISO_DATE.test(sp.from) ? sp.from : quick[0].from;
-  const to = typeof sp.to === "string" && ISO_DATE.test(sp.to) ? sp.to : quick[0].to;
-  const siteId = typeof sp.siteId === "string" && sp.siteId ? sp.siteId : undefined;
+  const from =
+    typeof sp.from === "string" && ISO_DATE.test(sp.from)
+      ? sp.from
+      : quick[0].from;
+  const to =
+    typeof sp.to === "string" && ISO_DATE.test(sp.to) ? sp.to : quick[0].to;
+  const siteId =
+    typeof sp.siteId === "string" && sp.siteId ? sp.siteId : undefined;
 
   const query = new URLSearchParams({ from, to });
   if (siteId) query.set("siteId", siteId);
 
-  const [sites, receivables] = await Promise.all([api<Site[]>("/api/sites"), api<Receivables>("/api/reports/receivables")]);
+  const [sites, receivables] = await Promise.all([
+    api<Site[]>("/api/sites"),
+    api<Receivables>("/api/reports/receivables"),
+  ]);
   let report: Report | null = null;
   let error: string | undefined;
   try {
@@ -96,7 +121,10 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
                 key={p.label}
                 href={href(p.from, p.to)}
                 aria-current={selected ? "true" : undefined}
-                className={buttonVariants({ variant: selected ? "default" : "outline", size: "sm" })}
+                className={buttonVariants({
+                  variant: selected ? "default" : "outline",
+                  size: "sm",
+                })}
               >
                 {p.label}
               </Link>
@@ -106,11 +134,23 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
         <form className="flex flex-wrap items-end gap-3">
           <div className="grid gap-1.5">
             <Label htmlFor="from">Desde</Label>
-            <Input id="from" name="from" type="date" defaultValue={from} max={today} />
+            <Input
+              id="from"
+              name="from"
+              type="date"
+              defaultValue={from}
+              max={today}
+            />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="to">Hasta</Label>
-            <Input id="to" name="to" type="date" defaultValue={to} max={today} />
+            <Input
+              id="to"
+              name="to"
+              type="date"
+              defaultValue={to}
+              max={today}
+            />
           </div>
           {sites.length > 1 && (
             <div className="grid gap-1.5">
@@ -130,10 +170,16 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
               </select>
             </div>
           )}
-          <button type="submit" className={buttonVariants({ variant: "outline" })}>
+          <button
+            type="submit"
+            className={buttonVariants({ variant: "outline" })}
+          >
             Aplicar
           </button>
-          <a href={`/bff/reports/payments.csv?from=${from}&to=${to}`} className={cn(buttonVariants({ variant: "ghost" }), "ml-auto")}>
+          <a
+            href={`/bff/reports/payments.csv?from=${from}&to=${to}`}
+            className={cn(buttonVariants({ variant: "ghost" }), "ml-auto")}
+          >
             <Download /> Exportar pagos (CSV)
           </a>
         </form>
@@ -144,7 +190,10 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
       {report && (
         <>
           {/* Cifras principales */}
-          <section aria-label="Resumen" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <section
+            aria-label="Resumen"
+            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          >
             <StatTile
               label="Recaudado"
               value={formatCOP(report.revenue.total)}
@@ -163,7 +212,8 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
               label="Asistencia a citas"
               value={formatPercent(report.appointments.attendanceRate)}
               detail={`${report.appointments.byStatus.NO_SHOW} inasistencias de ${
-                report.appointments.byStatus.ATTENDED + report.appointments.byStatus.NO_SHOW
+                report.appointments.byStatus.ATTENDED +
+                report.appointments.byStatus.NO_SHOW
               } citas resueltas`}
             />
             <StatTile
@@ -177,7 +227,9 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
             <CardHeader>
               <CardTitle>Recaudo</CardTitle>
               <CardDescription>
-                Pagos vigentes por {report.revenue.byDay.length > 62 ? "semana" : "día"}. Los anulados no se suman.
+                Pagos vigentes por{" "}
+                {report.revenue.byDay.length > 62 ? "semana" : "día"}. Los
+                anulados no se suman.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -203,7 +255,9 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
                 />
                 {!report.site && report.revenue.bySite.length > 1 && (
                   <div className="grid gap-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">Por sede</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Por sede
+                    </h3>
                     <BarList
                       empty=""
                       rows={report.revenue.bySite.map((s) => ({
@@ -221,7 +275,10 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
             <Card>
               <CardHeader>
                 <CardTitle>Producción por profesional</CardTitle>
-                <CardDescription>Valor de los procedimientos marcados como realizados (todas las sedes).</CardDescription>
+                <CardDescription>
+                  Valor de los procedimientos marcados como realizados (todas
+                  las sedes).
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <BarList
@@ -278,17 +335,24 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
             <CardHeader>
               <CardTitle>Agenda</CardTitle>
               <CardDescription>
-                {report.appointments.total} citas en el periodo · inasistencia {formatPercent(report.appointments.noShowRate)}
+                {report.appointments.total} citas en el periodo · inasistencia{" "}
+                {formatPercent(report.appointments.noShowRate)}
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 overflow-x-auto">
               <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                {(Object.keys(APPOINTMENT_STATUS) as AppointmentStatus[]).map((s) => (
-                  <div key={s} className="flex gap-1.5">
-                    <dt className="text-muted-foreground">{APPOINTMENT_STATUS[s]}</dt>
-                    <dd className="font-medium tabular-nums">{report.appointments.byStatus[s]}</dd>
-                  </div>
-                ))}
+                {(Object.keys(APPOINTMENT_STATUS) as AppointmentStatus[]).map(
+                  (s) => (
+                    <div key={s} className="flex gap-1.5">
+                      <dt className="text-muted-foreground">
+                        {APPOINTMENT_STATUS[s]}
+                      </dt>
+                      <dd className="font-medium tabular-nums">
+                        {report.appointments.byStatus[s]}
+                      </dd>
+                    </div>
+                  ),
+                )}
               </dl>
               {report.appointments.byProfessional.length > 0 && (
                 <Table>
@@ -308,12 +372,22 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
                       return (
                         <TableRow key={p.professional.id}>
                           <TableCell>{p.professional.name}</TableCell>
-                          <TableCell className="text-right tabular-nums">{p.total}</TableCell>
-                          <TableCell className="text-right tabular-nums">{p.attended}</TableCell>
-                          <TableCell className="text-right tabular-nums">{p.noShow}</TableCell>
-                          <TableCell className="text-right tabular-nums">{p.cancelled}</TableCell>
                           <TableCell className="text-right tabular-nums">
-                            {formatPercent(resolved === 0 ? null : p.attended / resolved)}
+                            {p.total}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {p.attended}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {p.noShow}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {p.cancelled}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {formatPercent(
+                              resolved === 0 ? null : p.attended / resolved,
+                            )}
                           </TableCell>
                         </TableRow>
                       );
@@ -331,14 +405,17 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
         <CardHeader>
           <CardTitle>Cartera a hoy</CardTitle>
           <CardDescription>
-            Por cobrar {formatCOP(receivables.totalOwed)} ({receivables.debtorCount}{" "}
-            {receivables.debtorCount === 1 ? "paciente" : "pacientes"}) · anticipos de pacientes{" "}
-            {formatCOP(receivables.totalAdvances)}
+            Por cobrar {formatCOP(receivables.totalOwed)} (
+            {receivables.debtorCount}{" "}
+            {receivables.debtorCount === 1 ? "paciente" : "pacientes"}) ·
+            anticipos de pacientes {formatCOP(receivables.totalAdvances)}
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           {receivables.debtors.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Ningún paciente tiene saldo pendiente.</p>
+            <p className="text-sm text-muted-foreground">
+              Ningún paciente tiene saldo pendiente.
+            </p>
           ) : (
             <Table>
               <TableHeader>
@@ -355,16 +432,33 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
                 {receivables.debtors.map((d) => (
                   <TableRow key={d.patientId}>
                     <TableCell>
-                      <Link href={`/app/pacientes/${d.patientId}/tratamientos`} className="font-medium text-primary hover:underline">
+                      <Link
+                        href={`/app/pacientes/${d.patientId}/tratamientos`}
+                        className="font-medium text-primary hover:underline"
+                      >
                         {d.fullName}
                       </Link>
-                      <span className="block text-xs text-muted-foreground">{d.document}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {d.document}
+                      </span>
                     </TableCell>
-                    <TableCell className="tabular-nums">{d.phone ?? "—"}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatCOP(d.done)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatCOP(d.paid)}</TableCell>
-                    <TableCell className="text-right font-medium tabular-nums">{formatCOP(d.balance)}</TableCell>
-                    <TableCell>{d.lastPaymentAt ? formatDate(d.lastPaymentAt.slice(0, 10)) : "Sin pagos"}</TableCell>
+                    <TableCell className="tabular-nums">
+                      {d.phone ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatCOP(d.done)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatCOP(d.paid)}
+                    </TableCell>
+                    <TableCell className="text-right font-medium tabular-nums">
+                      {formatCOP(d.balance)}
+                    </TableCell>
+                    <TableCell>
+                      {d.lastPaymentAt
+                        ? formatDate(d.lastPaymentAt.slice(0, 10))
+                        : "Sin pagos"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -377,7 +471,15 @@ export default async function ReportsPage({ searchParams }: PageProps<"/app/repo
 }
 
 /** Cifra destacada: etiqueta, valor y un detalle de contexto. */
-function StatTile({ label, value, detail }: { label: string; value: string; detail: string }) {
+function StatTile({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
   return (
     <div className="grid gap-1 rounded-xl border p-4">
       <p className="text-sm text-muted-foreground">{label}</p>
