@@ -328,3 +328,25 @@ tr[data-page-hidden="true"] {
     translate: 0 0;
   }
 }
+
+@keyframes patient-section-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .patient-document-section { animation: patient-section-enter 300ms ease backwards; }
+  .patient-section-icon { transition: transform 180ms ease, background-color 180ms ease; }
+  .patient-document input, .patient-document select, .patient-document textarea {
+    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .patient-document-section:hover .patient-section-icon { transform: translateY(-2px); background-color: color-mix(in srgb, var(--primary) 18%, transparent); }
+}
+
+.patient-document div:has(> input:required) > label::after,
+.patient-document div:has(> select:required) > label::after {
+  content: " *";
+  color: var(--primary);
+}
+.patient-document input:not([type="checkbox"]), .patient-document select { min-height: 2.5rem; }

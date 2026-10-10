@@ -8,13 +8,7 @@ import { FormError } from "@/components/form-error";
 import { FormField } from "@/components/form-field";
 import { NativeSelect } from "@/components/native-select";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { FileText, Fingerprint, UserRound, MapPin, HeartPulse, UsersRound, NotebookPen, MessageCircle, Save, LoaderCircle, X, ShieldCheck } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import type { FormState } from "@/lib/forms";
 import {
@@ -45,8 +39,16 @@ export function PatientForm({ action, patient, cancelHref }: Props) {
     "";
 
   return (
-    <form action={formAction} className="grid gap-6">
-      <FormError message={state?.error} />
+    <form action={formAction} className="patient-document grid gap-0 overflow-hidden rounded-xl border bg-card shadow-sm">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-primary/15 bg-primary/5 px-6 py-7 sm:px-10">
+        <div className="flex items-center gap-4">
+          <span className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary"><FileText className="size-6" aria-hidden="true" /></span>
+          <div><p className="text-xs font-semibold uppercase tracking-widest text-primary">Registro de pacientes</p><h2 className="mt-1 text-xl font-semibold">{patient ? "Ficha del paciente" : "Ficha de ingreso"}</h2></div>
+        </div>
+        <span className="rounded-full border bg-background px-3 py-1 text-xs text-muted-foreground">{patient ? "Actualización" : "Nuevo registro"}</span>
+        <p className="w-full text-sm text-muted-foreground">Completa los datos de identificación, contacto y afiliación. Los campos con * son obligatorios.</p>
+      </header>
+      <div className="px-6 sm:px-10"><FormError message={state?.error} /></div>
 
       <Section title="Identificación">
         <NativeSelect
@@ -250,8 +252,10 @@ export function PatientForm({ action, patient, cancelHref }: Props) {
         </p>
       </Section>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-3 border-t bg-muted/30 px-6 py-6 sm:px-10">
+        <p className="flex w-full items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="size-4 shrink-0" aria-hidden="true" />Revisa la información antes de guardar la ficha.</p>
         <Button type="submit" size="lg" disabled={pending}>
+          {pending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Save className="size-4" aria-hidden="true" />}
           {pending
             ? "Guardando…"
             : patient
@@ -262,7 +266,7 @@ export function PatientForm({ action, patient, cancelHref }: Props) {
           href={cancelHref}
           className={buttonVariants({ variant: "outline", size: "lg" })}
         >
-          Cancelar
+          <X className="size-4" aria-hidden="true" /> Cancelar
         </Link>
       </div>
     </form>
@@ -278,15 +282,25 @@ function Section({
   description?: string;
   children: React.ReactNode;
 }) {
+  const sections = [
+    { title: "Identificación", icon: Fingerprint },
+    { title: "Datos personales", icon: UserRound },
+    { title: "Contacto y residencia", icon: MapPin },
+    { title: "Afiliación en salud", icon: HeartPulse },
+    { title: "Acudiente", icon: UsersRound },
+    { title: "Notas", icon: NotebookPen },
+    { title: "Recordatorios por WhatsApp", icon: MessageCircle },
+  ];
+  const index = sections.findIndex(section => section.title === title);
+  const Icon = sections[index]?.icon ?? FileText;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-      </CardHeader>
-      <CardContent className="grid gap-4 sm:grid-cols-2">
-        {children}
-      </CardContent>
-    </Card>
+    <fieldset className="patient-document-section min-w-0 border-b border-border/70 px-6 py-6 last:border-0 sm:px-10" style={{ animationDelay: `${Math.max(0, index) * 45}ms` }}>
+      <legend className="sr-only">{title}</legend>
+      <div className="mb-5 flex items-start gap-3">
+        <span className="patient-section-icon flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon className="size-4" aria-hidden="true" /></span>
+        <div className="flex-1"><div className="flex items-center justify-between gap-3"><h3 className="font-semibold">{title}</h3><span className="text-xs font-medium tabular-nums text-muted-foreground">{String(index + 1).padStart(2, "0")}</span></div>{description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}</div>
+      </div>
+      <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">{children}</div>
+    </fieldset>
   );
 }
