@@ -1,4 +1,6 @@
 "use client";
+import { ReferenceArt } from "@/components/app/reference-art";
+import { Package, CalendarX, Clock3 } from "lucide-react";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -41,12 +43,12 @@ export function InventoryPanel({ data, sites, role, today }: { data: InventoryOv
       <div className="grid gap-1.5"><Label htmlFor="inventory-search">Buscar insumo</Label><Input id="inventory-search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Nombre o código" /></div>
       <label className="flex items-center gap-2 pb-1 text-sm"><input type="checkbox" checked={showArchived} onChange={e => setShowArchived(e.target.checked)} />Mostrar inactivos</label>
     </div>
-    <div className="grid gap-3 sm:grid-cols-3">{[[low, "Insumos bajo el mínimo"], [expired, "Lotes vencidos"], [expiring, "Lotes que vencen en 30 días"]].map(([n, title]) => <Card key={title}><CardContent className="pt-4"><p className="text-2xl font-semibold">{n}</p><p className="text-sm text-muted-foreground">{title}</p></CardContent></Card>)}</div>
+    <div className="grid gap-3 sm:grid-cols-3">{[[low, "Insumos bajo el mínimo"], [expired, "Lotes vencidos"], [expiring, "Lotes que vencen en 30 días"]].map(([n, title], index) => <Card key={title}><CardContent className="flex items-center gap-5"><span className={`reference-icon reference-icon-${["orange", "purple", "green"][index]}`}>{index === 0 ? <Package /> : index === 1 ? <CalendarX /> : <Clock3 />}</span><div><p className="text-3xl font-semibold">{n}</p><p className="mt-1 text-sm text-muted-foreground">{title}</p></div></CardContent></Card>)}</div>
     {sites.length === 0 && <p className="text-sm text-muted-foreground">Crea una sede para registrar existencias.</p>}
     <div className="flex gap-2"><Button variant={tab === "stock" ? "default" : "outline"} onClick={() => setTab("stock")}>Existencias</Button><Button variant={tab === "movements" ? "default" : "outline"} onClick={() => setTab("movements")}>Historial</Button></div>
     {tab === "stock" ? <Card><CardHeader><CardTitle>Existencias · {siteNames[siteId] ?? "Sin sede"}</CardTitle></CardHeader><CardContent className="grid gap-4">
       <p className="text-xs text-muted-foreground">El saldo disponible excluye lotes vencidos. El mínimo del catálogo se aplica a cada sede.</p>
-      {items.length === 0 && <p className="text-sm text-muted-foreground">No hay insumos para mostrar.</p>}
+      {items.length === 0 && <div className="flex flex-wrap items-center gap-8"><ReferenceArt kind="inventory" className="max-w-60" /><p className="text-muted-foreground">No hay insumos para mostrar.</p></div>}
       {items.map(i => {
         const batches = stock.filter(s => s.itemId === i.id);
         const total = batches.reduce((sum, s) => sum + s.quantity, 0);

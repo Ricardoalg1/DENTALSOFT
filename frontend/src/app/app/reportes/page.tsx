@@ -1,3 +1,4 @@
+import { DollarSign, ChartColumn, CalendarDays, UsersRound } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -244,6 +245,7 @@ export default async function ReportsPage({
               </CardHeader>
               <CardContent className="grid gap-6">
                 <BarList
+                  variant="donut"
                   empty="Sin pagos en el periodo."
                   rows={report.revenue.byMethod.map((m) => ({
                     key: m.method,
@@ -299,7 +301,7 @@ export default async function ReportsPage({
                 <CardTitle>Producción por especialidad</CardTitle>
               </CardHeader>
               <CardContent>
-                <BarList
+                <BarList variant="donut"
                   empty="Sin procedimientos realizados en el periodo."
                   rows={report.production.byCategory.map((c) => ({
                     key: c.category,
@@ -480,8 +482,11 @@ function StatTile({
   value: string;
   detail: string;
 }) {
+  const index = ["Recaudado", "Producción", "Asistencia a citas", "Pacientes nuevos"].indexOf(label);
+  const Icon = [DollarSign, ChartColumn, CalendarDays, UsersRound][Math.max(0,index)];
   return (
-    <div className="grid gap-1 rounded-xl border p-4">
+    <div className="reference-kpi grid gap-1">
+      <span className={`reference-icon reference-icon-${["green", "blue", "purple", "orange"][Math.max(0,index)]} mb-2`}><Icon aria-hidden="true" /></span>
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="text-2xl font-semibold">{value}</p>
       <p className="text-xs text-muted-foreground">{detail}</p>

@@ -1,4 +1,5 @@
 "use client";
+import { UserRoundPlus } from "lucide-react";
 
 import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
@@ -16,8 +17,8 @@ export function CreateUserForm() {
     <form action={action} className="grid gap-4">
       <FormError message={state?.error} />
       {state?.ok && <p className="text-sm text-primary">Usuario creado.</p>}
-      <FormField name="fullName" label="Nombre completo" required defaultValue={v?.fullName} errors={e?.fullName} />
-      <FormField name="email" label="Correo" type="email" required defaultValue={v?.email} errors={e?.email} />
+      <FormField name="fullName" placeholder="Ej. Ana María López" label="Nombre completo" required defaultValue={v?.fullName} errors={e?.fullName} />
+      <FormField name="email" placeholder="Ej. correo@clinica.com" label="Correo" type="email" required defaultValue={v?.email} errors={e?.email} />
       <NativeSelect
         name="role"
         label="Rol"
@@ -28,6 +29,7 @@ export function CreateUserForm() {
       />
       <FormField
         name="password"
+        placeholder="Mínimo 8 caracteres"
         label="Contraseña inicial"
         type="password"
         autoComplete="new-password"
@@ -36,7 +38,7 @@ export function CreateUserForm() {
         errors={e?.password}
       />
       <Button type="submit" disabled={pending}>
-        {pending ? "Creando…" : "Agregar usuario"}
+        <UserRoundPlus aria-hidden="true" />{pending ? "Creando…" : "Agregar usuario"}
       </Button>
     </form>
   );

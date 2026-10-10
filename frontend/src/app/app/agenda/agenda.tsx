@@ -15,6 +15,7 @@ import type {
   EventSourceFuncArg,
 } from "@fullcalendar/core";
 import type { EventResizeDoneArg } from "@fullcalendar/interaction";
+import { EmptyState } from "@/components/app/reference-art";
 import { Plus } from "lucide-react";
 import { FormError } from "@/components/form-error";
 import { NativeSelect } from "@/components/native-select";
@@ -165,9 +166,7 @@ export function Agenda({ professionals, sites, schedules, presetPatient, default
 
   if (professionals.length === 0) {
     return (
-      <p className="text-muted-foreground">
-        No hay profesionales activos. Un administrador debe marcar en <strong>Equipo</strong> quién atiende pacientes.
-      </p>
+      <div className="grid gap-6"><div className="reference-panel"><p className="font-semibold">No hay profesionales activos.</p><p className="mt-1 text-muted-foreground">Un administrador debe marcar en <strong>Equipo</strong> quién atiende pacientes.</p></div><div className="reference-panel"><EmptyState kind="agenda" title="Tu agenda está lista para empezar" description="Aquí podrás ver tus citas, gestionar tu disponibilidad y arrastrar una cita para reprogramarla de forma fácil y rápida." /></div></div>
     );
   }
 

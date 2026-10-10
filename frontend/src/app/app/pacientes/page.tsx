@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/app/reference-art";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -72,7 +73,7 @@ export default async function PatientsPage({
 
       {/* Formulario GET: la búsqueda queda en la URL (se puede compartir o recargar). */}
       <form
-        className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3"
+        className="reference-search"
         role="search"
       >
         <Search className="size-4 text-muted-foreground" />
@@ -100,11 +101,9 @@ export default async function PatientsPage({
       <Card>
         <CardContent className="overflow-x-auto">
           {result.content.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              {q
-                ? "No hay pacientes que coincidan con la búsqueda."
-                : "Aún no hay pacientes registrados."}
-            </p>
+            <EmptyState kind="patients" title={q ? "No hay pacientes que coincidan con la búsqueda." : "Aún no hay pacientes registrados."} description={q ? "Intenta ajustar los filtros de búsqueda." : "Comienza agregando tu primer paciente para gestionar su información, historia clínica y más desde un solo lugar."}>
+              {!q && <Link href="/app/pacientes/nuevo" className={buttonVariants()}><Plus />Nuevo paciente</Link>}
+            </EmptyState>
           ) : (
             <Table pagination={false}>
               <TableHeader>

@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/app/reference-art";
 import type { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,12 +13,12 @@ export default async function SitesPage() {
   const isAdmin = me.role === "ADMIN";
 
   return (
-    <div className="grid max-w-5xl gap-6">
+    <div className="grid max-w-6xl gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Sedes</h1>
         <p className="text-muted-foreground">Consultorios o sucursales de tu clínica.</p>
       </div>
-      <div className={isAdmin ? "grid items-start gap-6 lg:grid-cols-[1fr_320px]" : "grid gap-6"}>
+      <div className={isAdmin ? "grid items-start gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(300px,1fr)]" : "grid gap-6"}>
         <Card>
           <CardContent className="overflow-x-auto">
             <Table>
@@ -40,6 +41,7 @@ export default async function SitesPage() {
                 ))}
               </TableBody>
             </Table>
+            {sites.length === 0 && <EmptyState kind="sites" title="Aún no tienes sedes registradas" description="Agrega tu primera sede para comenzar a gestionar tu clínica." />}
           </CardContent>
         </Card>
         {isAdmin && (

@@ -1,3 +1,4 @@
+import { Laptop, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,8 +27,8 @@ export async function SessionsCard() {
         <ul className="divide-y rounded-lg border text-sm">
           {sessions.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 p-2.5">
-              <span>
-                {device(s.userAgent)} <span className="text-muted-foreground">· desde {formatDateTime(s.createdAt)}</span>
+              <span className="flex flex-wrap items-center gap-2">
+                <Laptop className="size-4 text-primary" aria-hidden="true" />{device(s.userAgent)} <span className="text-muted-foreground">· desde {formatDateTime(s.createdAt)}</span>
               </span>
               {s.current ? (
                 <Badge variant="secondary">Esta sesión</Badge>
@@ -44,7 +45,7 @@ export async function SessionsCard() {
         {sessions.length > 1 && (
           <form action={revokeOtherSessions}>
             <Button type="submit" variant="outline" size="sm">
-              Cerrar todas las demás
+              <Trash2 aria-hidden="true" />Cerrar todas las demás
             </Button>
           </form>
         )}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CircleAlert, Info } from "lucide-react";
+import { CircleAlert, Info, UsersRound, FlaskConical, CircleCheck, Clock3, Pause, CircleX, ChartColumn, ChartPie } from "lucide-react";
 import { ActionForm } from "@/components/platform/action-form";
 import { EventList } from "@/components/platform/event-list";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -13,8 +13,12 @@ import { runEngine } from "./actions";
 export const metadata: Metadata = { title: "Plataforma" };
 
 function Kpi({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+  const icons = [UsersRound, FlaskConical, CircleCheck, Clock3, Pause, CircleX, ChartColumn, ChartPie];
+  const index = ["Clientes", "En prueba", "Activos", "En mora", "Suspendidos", "Cancelados", "Ingreso mensual recurrente", "Ingreso anual proyectado"].indexOf(label);
+  const Icon = icons[Math.max(0, index)];
   return (
-    <div className="rounded-xl border p-4">
+    <div className="reference-kpi">
+      <span className={`reference-icon reference-icon-${["teal", "blue", "green", "orange", "purple", "blue", "green", "blue"][Math.max(0,index)]} !size-9 mb-3`}><Icon className="!size-5" aria-hidden="true" /></span>
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}

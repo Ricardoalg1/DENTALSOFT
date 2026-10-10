@@ -1,4 +1,5 @@
 "use client";
+import { ChartColumn } from "lucide-react";
 import {
   Table,
   TableHeader,
@@ -52,9 +53,7 @@ export function RevenueChart({ days }: { days: Point[] }) {
 
   if (max === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
-        Sin recaudo en el periodo.
-      </p>
+      <div className="relative grid h-52 place-content-center gap-3 rounded-xl border-b text-center text-sm text-muted-foreground" style={{ backgroundImage: "repeating-linear-gradient(to top, transparent 0, transparent 39px, var(--border) 40px)" }}><ChartColumn className="mx-auto size-10 opacity-30" aria-hidden="true" /><p>Sin recaudo en el periodo.</p></div>
     );
   }
 

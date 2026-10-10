@@ -1,3 +1,4 @@
+import { Crown } from "lucide-react";
 import { PayButtons } from "@/components/app/pay-buttons";
 import { CardForm } from "@/components/app/card-form";
 import { Badge } from "@/components/ui/badge";
@@ -10,10 +11,10 @@ import type { ModuleKey } from "@/lib/types";
 export function SubscriptionCard({ state, modules }: { state: SubscriptionState; modules: ModuleKey[] }) {
   const s = state;
   return (
-    <Card>
+    <Card className="reference-subscription">
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2">
-          Plan {s.planName}
+          <span className="reference-icon reference-icon-blue"><Crown aria-hidden="true" /></span>Plan {s.planName}
           <Badge variant={STATUS_VARIANT[s.status]}>{STATUS_LABELS[s.status]}</Badge>
         </CardTitle>
         <CardDescription>

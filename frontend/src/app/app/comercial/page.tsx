@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/app/reference-art";
+import { FilePlus2, Phone, CalendarDays, Trophy, CircleX, List, ChartColumn } from "lucide-react";
 import {
   Table,
   TableHeader,
@@ -61,9 +63,9 @@ export default async function Page({
         </p>
       </header>
       <div className="grid gap-3 sm:grid-cols-5">
-        {Object.entries(statuses).map(([s, label]) => (
-          <div key={s} className="rounded-xl border p-4">
-            <p className="text-xs text-muted-foreground">{label}</p>
+        {Object.entries(statuses).map(([s, label], index) => (
+          <div key={s} className="reference-kpi">
+            <div className="flex items-center gap-3"><span className={`reference-icon reference-icon-${["blue", "orange", "purple", "green", "purple"][index]}`}>{(() => { const Icon = [FilePlus2, Phone, CalendarDays, Trophy, CircleX][index]; return <Icon aria-hidden="true" />; })()}</span><p className="text-xs text-muted-foreground">{label}</p></div>
             <p className="mt-2 text-2xl font-semibold">
               {data.counts.find((c) => c.status === s)?.total ?? 0}
             </p>
@@ -78,7 +80,7 @@ export default async function Page({
           Solicitud y notas eliminadas.
         </p>
       )}
-      <form className="flex flex-wrap gap-3">
+      <form className="reference-search">
         <input
           name="q"
           defaultValue={q}
@@ -107,8 +109,8 @@ export default async function Page({
           Filtrar
         </button>
       </form>
-      <section>
-        <h2 className="font-semibold">Solicitudes</h2>
+      <section className="reference-panel">
+        <h2 className="flex items-center gap-3 text-xl font-semibold"><List className="text-primary" />Solicitudes</h2>
         <p className="my-3 text-xs text-muted-foreground">
           {data.total} solicitudes coinciden con los filtros. Los totales por
           estado incluyen todas las solicitudes.
@@ -162,9 +164,7 @@ export default async function Page({
           </Table>
         </div>
         {!leads.length && (
-          <p className="py-6 text-sm text-muted-foreground">
-            No hay solicitudes para este filtro.
-          </p>
+          <EmptyState compact kind="commercial" title="No hay solicitudes para este filtro." description="Intenta ajustar los filtros o cambia el rango de búsqueda." />
         )}
         <nav
           className="mt-5 flex items-center gap-4 text-sm"
@@ -186,8 +186,8 @@ export default async function Page({
           )}
         </nav>
       </section>
-      <section>
-        <h2 className="font-semibold">Vistas de páginas · últimos 30 días</h2>
+      <section className="reference-panel">
+        <h2 className="flex items-center gap-3 text-xl font-semibold"><ChartColumn className="text-primary" />Vistas de páginas · últimos 30 días</h2>
         <p className="mt-2 text-xs text-muted-foreground">
           Conteos agregados, no visitantes únicos. Sin cookies de analítica. Las
           visitas automatizadas pueden afectar estos valores.
@@ -205,9 +205,7 @@ export default async function Page({
             ))}
           </ul>
         ) : (
-          <p className="mt-4 text-sm text-muted-foreground">
-            Sin métricas. Su recolección está desactivada por defecto.
-          </p>
+          <EmptyState compact kind="metrics" title="Sin métricas disponibles" description="Su recolección está desactivada por defecto." />
         )}
       </section>
     </div>

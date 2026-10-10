@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/app/reference-art";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -70,7 +71,7 @@ export default async function ClinicalNotesPage({
       </header>
       <form
         role="search"
-        className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-4"
+        className="reference-search"
       >
         <Search className="size-5 text-muted-foreground" />
         <Input
@@ -147,9 +148,7 @@ export default async function ClinicalNotesPage({
         ))}
       </div>
       {result.content.length === 0 && (
-        <p className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
-          No se encontraron documentos para estos filtros.
-        </p>
+        <div className="reference-panel"><EmptyState kind="history" title="No se encontraron documentos para estos filtros." /></div>
       )}
       <PaginationLinks
         page={result.page}

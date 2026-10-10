@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { IconInput } from "@/components/icon-input";
 import { Label } from "@/components/ui/label";
 
 type Props = React.ComponentProps<typeof Input> & {
@@ -15,7 +16,7 @@ export function FormField({ name, label, errors, id, ...inputProps }: Props) {
     <div className="grid gap-1.5">
       <Label htmlFor={inputId}>{label}</Label>
       {/* key: si el valor por defecto cambia (p. ej. tras un error), se remonta el input con el nuevo valor. */}
-      <Input
+      <IconInput
         key={String(inputProps.defaultValue ?? "")}
         id={inputId}
         name={name}

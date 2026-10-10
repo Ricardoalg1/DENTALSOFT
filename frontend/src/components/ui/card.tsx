@@ -1,3 +1,4 @@
+import { SectionIcon } from "@/components/app/section-icon";
 import * as React from "react"
 import { cn } from "cn"
 
@@ -32,7 +33,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+function CardTitle({ className, children, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
@@ -41,7 +42,10 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
         className
       )}
       {...props}
-    />
+    >
+      {typeof children === "string" && <SectionIcon title={children} />}
+      <span>{children}</span>
+    </div>
   )
 }
 

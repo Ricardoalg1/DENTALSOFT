@@ -1,3 +1,4 @@
+import { ShieldCheck } from "lucide-react";
 import { PlatformNav } from "@/components/platform/platform-nav";
 import { api } from "@/lib/api";
 import { requirePlatform } from "@/lib/guard";
@@ -10,7 +11,7 @@ export default async function PlatformLayout({ children }: { children: React.Rea
   return (
     <div className="grid max-w-6xl gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Plataforma</h1>
+        <h1 className="text-2xl font-semibold tracking-tight"><span className="reference-icon mr-4"><ShieldCheck aria-hidden="true" /></span>Plataforma</h1>
         <p className="text-muted-foreground">Clientes, suscripciones y actividad de todas las clínicas. Sin acceso a datos clínicos.</p>
       </div>
       <PlatformNav unread={unread.totalElements} />

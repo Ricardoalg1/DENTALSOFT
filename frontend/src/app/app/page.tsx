@@ -1,3 +1,5 @@
+import { ReferenceArt } from "@/components/app/reference-art";
+import type { CSSProperties } from "react";
 import {
   CalendarDays,
   UsersRound,
@@ -79,7 +81,7 @@ export default async function DashboardPage() {
     <div className="grid max-w-6xl gap-7">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">
-          Hola, {firstName}
+          Hola, {firstName} <span aria-hidden="true">👋</span>
         </h1>
         <p className="text-muted-foreground">
           Bienvenido al panel de {me.clinicName}.
@@ -98,19 +100,19 @@ export default async function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <AppointmentList
+          {today.length === 0 ? <div className="flex flex-wrap items-center justify-between gap-5"><p className="text-muted-foreground">No hay citas para hoy.</p><div className="flex items-center gap-5"><ReferenceArt kind="today" className="max-w-60" /><div className="max-w-60"><h3 className="font-semibold">Tu agenda de hoy está libre</h3><p className="mt-2 text-muted-foreground">¡Un gran día para seguir haciendo sonrisas posibles!</p></div></div></div> : <AppointmentList
             appointments={today}
             show="patient"
             showDate={false}
             empty="No hay citas para hoy."
-          />
+          />}
         </CardContent>
       </Card>
       <section className="grid gap-3">
-        <h2 className="text-sm font-medium text-muted-foreground">
+        <h2 className="text-xl font-semibold">
           Tus módulos
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="reference-modules grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
               href: "/app/pacientes",
@@ -140,7 +142,7 @@ export default async function DashboardPage() {
                 href={x.href}
                 data-hover-card
                 className="group relative grid gap-5 rounded-2xl border bg-card p-5"
-                style={{ borderTop: `3px solid ${color.color}` }}
+                style={{ borderTop: `3px solid ${color.color}`, "--module-tint": color.background } as CSSProperties}
               >
                 <div className="flex items-center justify-between">
                   <span

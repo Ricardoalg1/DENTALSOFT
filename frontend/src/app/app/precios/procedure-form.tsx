@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { FormError } from "@/components/form-error";
 import { NativeSelect } from "@/components/native-select";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { IconInput as Input } from "@/components/icon-input";
+import { Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   ODONTOGRAM_CONDITIONS,
@@ -56,10 +57,10 @@ export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
 
   return (
     <form onSubmit={onSubmit} className="grid gap-3">
-      <div className="grid gap-3 sm:grid-cols-[1fr_10rem]">
+      <div className="grid gap-3 sm:grid-cols-[1.6fr_1fr]">
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-name`}>Nombre</Label>
-          <Input id={`${p}-name`} name="name" required maxLength={150} defaultValue={procedure?.name} />
+          <Input id={`${p}-name`} name="name" placeholder="Ej. Profilaxis dental" required maxLength={150} defaultValue={procedure?.name} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-price`}>Precio (COP)</Label>
@@ -84,11 +85,11 @@ export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
         />
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-cups`}>Código CUPS</Label>
-          <Input id={`${p}-cups`} name="cupsCode" maxLength={10} defaultValue={procedure?.cupsCode ?? ""} placeholder="Para RIPS" />
+          <Input id={`${p}-cups`} name="cupsCode" maxLength={10} defaultValue={procedure?.cupsCode ?? ""} placeholder="Ej. 890203" />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-code`}>Código interno</Label>
-          <Input id={`${p}-code`} name="code" maxLength={20} defaultValue={procedure?.code ?? ""} />
+          <Input id={`${p}-code`} name="code" placeholder="Ej. OP-001" maxLength={20} defaultValue={procedure?.code ?? ""} />
         </div>
       </div>
       <NativeSelect
@@ -112,7 +113,7 @@ export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
       <FormError message={error} />
       {saved && <p className="text-sm text-primary">Guardado.</p>}
       <Button type="submit" disabled={pending} className="w-fit">
-        {pending ? "Guardando…" : procedure ? "Guardar cambios" : "Agregar procedimiento"}
+        <Plus aria-hidden="true" />{pending ? "Guardando…" : procedure ? "Guardar cambios" : "Agregar procedimiento"}
       </Button>
     </form>
   );

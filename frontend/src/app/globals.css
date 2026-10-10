@@ -350,3 +350,87 @@ tr[data-page-hidden="true"] {
   color: var(--primary);
 }
 .patient-document input:not([type="checkbox"]), .patient-document select { min-height: 2.5rem; }
+
+/* Interface issue des références fournies : surfaces blanches, marine et turquoise. */
+:root {
+ --background: #f8f9f6; --foreground: #092452; --card: #ffffff;
+ --card-foreground: #092452; --popover: #ffffff; --primary: #087e8e;
+ --muted: #f1f5f7; --muted-foreground: #657b9c; --border: #e2eaf0;
+ --input: #d4dfeb; --sidebar: #ffffff; --accent: #e6f3f4;
+ --module-patients: #087aff; --module-agenda: #00998f;
+ --module-clinical: #8b40f5; --module-cash: #ef8200;
+ --module-billing: #eb3783; --module-inventory: #528d20;
+ --module-reports: #4665ff; --module-messaging: #009e81;
+}
+.dark { --background: #0b1726; --foreground: #e6eefb; --card: #122237; --card-foreground: #e6eefb; --sidebar: #102034; --border: #283b54; --input: #354967; --muted: #1c2f45; --muted-foreground: #a0b3cc; --primary: #36b7c3; --accent: #173e48; }
+.reference-app { gap: 20px; padding: 18px 16px; background: radial-gradient(ellipse at top right, #eaf4fc55, transparent 42%), var(--background); }
+.reference-sidebar { border: 1px solid color-mix(in srgb, var(--border) 50%, transparent); border-radius: 20px; box-shadow: 0 8px 30px #15385804; }
+.reference-sidebar > div:first-child { padding: 3px 0 12px; }
+.reference-sidebar > div:first-child img { width: 112px; }
+.reference-sidebar > div:first-child p { margin-top: 20px; font-size: 13px; }
+.reference-sidebar nav { gap: 7px; }
+.reference-sidebar nav a { position: relative; min-height: 42px; gap: 14px; border-radius: 12px; padding: 7px 10px; font-size: 14px; }
+.reference-sidebar nav a > span:first-child { border-radius: 50%; width: 32px; height: 32px; }
+.reference-sidebar nav svg { width: 20px; height: 20px; }
+.reference-sidebar nav a[aria-current="page"] { background: color-mix(in srgb, var(--primary) 12%, var(--card)); font-weight: 600; }
+.reference-sidebar nav a[aria-current="page"]::before { content: ""; position: absolute; left: -6px; width: 3px; height: 30px; border-radius: 4px; background: var(--primary); }
+.reference-sidebar [role="switch"] { width: 100%; justify-content: space-between; }
+.reference-main { position: relative; border-radius: 22px; padding: 30px 24px; background: color-mix(in srgb, var(--card) 52%, transparent); }
+.reference-main > div, .reference-main > section { max-width: none; }
+.reference-main h1 { font-size: clamp(28px, 3vw, 40px); line-height: 1.2; font-weight: 700; letter-spacing: -1.2px; }
+.reference-main h1 + p { font-size: 17px; margin-top: 8px; }
+.reference-main [data-slot="card"] { border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 7px 22px #1b355608; --card-spacing: 24px; --tw-ring-color: transparent; }
+.reference-main [data-slot="card-title"] { display: flex; align-items: center; gap: 18px; font-size: 21px; font-weight: 650; }
+.reference-main [data-slot="card-description"] { line-height: 1.55; }
+.reference-main [data-slot="card-header"]:has(.reference-icon) [data-slot="card-description"] { padding-left: 70px; }
+.reference-icon { display: inline-flex; flex-shrink: 0; width: 52px; height: 52px; align-items: center; justify-content: center; border-radius: 18px; color: #088b98; background: #e7f6f6; }
+.reference-icon svg { width: 26px; height: 26px; }
+.reference-icon-blue { color: #0868ed; background: #e6f0ff; }
+.reference-icon-purple { color: #823cf0; background: #f1eaff; }
+.reference-icon-orange { color: #e97900; background: #fff2df; }
+.reference-icon-green { color: #089567; background: #e5f6ee; }
+.dark .reference-icon { background: color-mix(in srgb, currentColor 15%, var(--card)); }
+.reference-main input:not([type="checkbox"]):not([type="radio"]), .reference-main select { min-height: 44px; border-radius: 12px; background-color: var(--card); }
+.reference-main [data-slot="button"], .reference-main a[class*="bg-primary"] { min-height: 40px; border-radius: 12px; padding-inline: 20px; }
+.reference-main [data-slot="button"].bg-primary, .reference-main a.bg-primary { background-image: linear-gradient(135deg, #138b9b, #086a7d); color: white; box-shadow: inset 0 1px 3px #ffffff22; }
+.reference-main thead { background: var(--muted); }
+.reference-main th { height: 50px; font-weight: 600; color: var(--foreground); }
+.reference-main td { padding-block: 16px; }
+.reference-search { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 22px; border: 1px solid var(--border); background: var(--card); border-radius: 18px; box-shadow: 0 8px 25px #14335406; }
+.reference-search input { flex: 1; max-width: none; min-width: 180px; }
+.reference-empty { display: flex; min-height: 500px; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 40px 20px; }
+.reference-empty h2 { font-size: clamp(22px, 2vw, 29px); font-weight: 650; letter-spacing: -.6px; }
+.reference-empty p { max-width: 680px; font-size: 17px; line-height: 1.65; color: var(--muted-foreground); }
+.reference-art { width: 310px; max-width: 100%; height: auto; }
+.reference-empty-compact { min-height: 220px; padding: 20px; gap: 12px; }
+.reference-empty-compact .reference-art { width: 210px; }
+.reference-empty-compact h2 { font-size: 20px; }
+.reference-empty-compact p { font-size: 14px; }
+.dark .reference-art { border-radius: 24px; opacity: .85; }
+.reference-modules a { min-height: 195px; padding: 24px; overflow: hidden; box-shadow: 0 9px 24px #16325707; }
+.reference-modules a::after { content: ""; position: absolute; right: -60px; bottom: -60px; width: 170px; height: 145px; border-radius: 70% 30% 0 0; background: var(--module-tint); opacity: .7; pointer-events: none; }
+.reference-modules a h3 { font-size: 19px; }
+.reference-modules a > div:first-child > span { width: 62px; height: 62px; border-radius: 50%; }
+.reference-modules a > div:first-child > svg { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); padding: 10px; }
+.reference-kpi { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 15px; padding: 18px; background: var(--card); box-shadow: 0 6px 18px #15385805; }
+.reference-kpi::after { content: ""; position: absolute; bottom: -30px; right: -20px; width: 100px; height: 75px; border-radius: 70% 0 0 0; background: color-mix(in srgb, var(--primary) 7%, transparent); }
+.reference-kpi > p:nth-last-child(1) { position: relative; }
+.reference-main .reference-panel { border: 1px solid var(--border); border-radius: 18px; background: var(--card); padding: 24px; box-shadow: 0 7px 22px #1b355608; }
+@media (min-width: 768px) { .reference-sidebar { position: sticky; top: 16px; height: calc(100svh - 32px); overflow-y: auto; width: 224px; } }
+@media (max-width: 767px) { .reference-app { padding: 8px; gap: 10px; } .reference-main { padding: 20px 12px; } .reference-sidebar nav { grid-template-columns: repeat(2,minmax(0,1fr)); } .reference-sidebar nav a { font-size: 12px; } .reference-empty { min-height: 360px; } }
+@media print { .reference-sidebar { display: none; } .reference-app, .reference-main { padding: 0; background: white; } }
+
+.reference-main::before { content: ""; position: absolute; top: 0; right: 0; width: 340px; height: 180px; border-radius: 0 22px 0 90%; background: linear-gradient(135deg, #e9f8fa99, #e4efff99); pointer-events: none; }
+.reference-main > * { position: relative; }
+.dark .reference-main::before { background: linear-gradient(135deg, #12314155, #1e355c55); }
+.reference-topbar input { min-height: 24px !important; background: transparent !important; }
+.reference-subscription { background: linear-gradient(105deg, var(--card), color-mix(in srgb, var(--primary) 5%, var(--card))) !important; }
+.reference-main .reference-subscription [data-slot="badge"] { border-radius: 999px; padding: 7px 12px; }
+.reference-main .reference-input:focus-within > svg { color: var(--primary); }
+@media (prefers-reduced-motion: no-preference) { .reference-main > div { animation: patient-section-enter 240ms ease backwards; } }
+@media print { .reference-topbar, .reference-main::before { display: none; } }
+
+.patient-document div:has(> .reference-input > input:required) > label::after,
+.patient-document div:has(> div > select:required) > label::after { content: " *"; color: var(--primary); }
+.reference-main input[type="checkbox"] { accent-color: var(--primary); width: 17px; height: 17px; flex-shrink: 0; }
+.reference-main [data-slot="card-title"] > span:has(.reference-icon) { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }

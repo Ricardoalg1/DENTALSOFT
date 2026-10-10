@@ -1,4 +1,6 @@
 "use client";
+import { EmptyState } from "@/components/app/reference-art";
+import { SectionIcon } from "@/components/app/section-icon";
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
@@ -37,22 +39,22 @@ export function CashPanel({ sessions, sites, canManage }: { sessions: CashSessio
 
   return <div className="grid gap-6">
     <FormError message={error} />
-    {canManage && <section className="grid gap-4 rounded-xl border p-4">
-      <h2 className="font-semibold">Abrir caja</h2>
+    {canManage && <section className="reference-panel grid gap-4">
+      <h2 className="flex items-center gap-5 text-xl font-semibold"><SectionIcon title="Abrir caja" />Abrir caja</h2>
       {sites.length === 0 ? <p className="text-sm text-muted-foreground">Crea una sede antes de abrir caja.</p> : availableSites.length === 0 ? <p className="text-sm text-muted-foreground">Todas las sedes activas ya tienen una caja abierta.</p> : <form action={submitOpen} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         <NativeSelect name="siteId" id="cash-site" label="Sede" options={Object.fromEntries(availableSites.map(s => [s.id, s.name]))} value={selectedSiteId} onChange={e => setSiteId(e.target.value)} />
         <div className="grid gap-1.5"><Label htmlFor="opening">Base inicial (COP)</Label><Input id="opening" name="openingAmount" type="number" min="0" step="0.01" required defaultValue="0" /></div>
         <Button disabled={pending || !selectedSiteId}>Abrir turno</Button>
       </form>}
     </section>}
-    <section className="grid gap-3">
-      <h2 className="font-semibold">Turnos abiertos</h2>
-      {open.length === 0 && <p className="text-sm text-muted-foreground">No hay cajas abiertas.</p>}
+    <section className="reference-panel grid gap-3">
+      <h2 className="flex items-center gap-5 text-xl font-semibold"><SectionIcon title="Turnos abiertos" />Turnos abiertos</h2>
+      {open.length === 0 && <EmptyState compact kind="cash" title="No hay cajas abiertas." description="Cuando abras una caja, aquí verás los turnos en curso por sede." />}
       {open.map(s => <SessionCard key={s.id} session={s} canManage={canManage} pending={pending} onClose={form => submitClose(s.id, form)} />)}
     </section>
-    <section className="grid gap-3">
-      <h2 className="font-semibold">Turnos recientes</h2>
-      {sessions.filter(s => s.closedAt).length === 0 && <p className="text-sm text-muted-foreground">Aún no hay turnos cerrados.</p>}
+    <section className="reference-panel grid gap-3">
+      <h2 className="flex items-center gap-5 text-xl font-semibold"><SectionIcon title="Turnos recientes" />Turnos recientes</h2>
+      {sessions.filter(s => s.closedAt).length === 0 && <EmptyState compact kind="closed" title="Aún no hay turnos cerrados." description="Los turnos que cierres se mostrarán aquí con su fecha, sede y recaudos." />}
       {sessions.filter(s => s.closedAt).map(s => <SessionCard key={s.id} session={s} canManage={false} pending={pending} onClose={() => {}} />)}
     </section>
   </div>;

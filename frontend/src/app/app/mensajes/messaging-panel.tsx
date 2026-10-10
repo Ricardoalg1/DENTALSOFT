@@ -1,4 +1,5 @@
 "use client";
+import { FlaskConical, Play, Save, MessageSquare, Mail } from "lucide-react";
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -19,11 +20,11 @@ export function MessagingPanel({ data, admin }: { data: MessagingOverview; admin
   const reminders = data.messages.filter(m => m.kind === "REMINDER" && m.status === "SIMULATED" && m.simulated);
   const visible = data.messages.filter(m => (!onlyAttention || (m.needsAttention && !m.resolvedAt)) && `${m.patientName ?? ""} ${m.phone} ${m.body}`.toLowerCase().includes(search.toLowerCase()));
   return <div className="mx-auto grid max-w-5xl gap-6">
-    <header><h1 className="text-2xl font-semibold tracking-tight">Mensajes y recordatorios</h1><p className="text-muted-foreground">Gestiona las respuestas de pacientes y los recordatorios de la agenda.</p></header>
-    <div className="rounded-xl border p-4 text-sm"><p className="font-medium">{data.channel.simulated ? "Modo simulado" : "WhatsApp conectado"}</p><p className="mt-1 text-muted-foreground">{data.channel.message}</p><p className="mt-2">Automatización: {data.channel.schedulerEnabled ? "activa" : "apagada; utiliza el botón para ejecutar un ciclo"} · IA: {data.channel.aiAvailable && data.settings.aiEnabled && !data.channel.simulated ? "activa para clasificación" : "reglas locales"}</p></div>
-    <div className="flex flex-wrap items-center justify-between gap-3"><p className="font-medium">{data.attentionCount} mensajes requieren atención</p><Button disabled={pending} onClick={() => {
+    <header><h1 className="flex items-center gap-5 text-2xl font-semibold tracking-tight"><span className="reference-icon reference-icon-green"><MessageSquare aria-hidden="true" /></span>Mensajes y recordatorios</h1><p className="text-muted-foreground">Gestiona las respuestas de pacientes y los recordatorios de la agenda.</p></header>
+    <div className="reference-panel flex gap-5 text-sm"><span className="reference-icon reference-icon-blue"><FlaskConical aria-hidden="true" /></span><div><p className="font-medium">{data.channel.simulated ? "Modo simulado" : "WhatsApp conectado"}</p><p className="mt-1 text-muted-foreground">{data.channel.message}</p><p className="mt-2">Automatización: {data.channel.schedulerEnabled ? "activa" : "apagada; utiliza el botón para ejecutar un ciclo"} · IA: {data.channel.aiAvailable && data.settings.aiEnabled && !data.channel.simulated ? "activa para clasificación" : "reglas locales"}</p></div></div>
+    <div className="reference-panel flex flex-wrap items-center justify-between gap-3"><p className="flex items-center gap-3 font-medium"><Mail className="text-primary" aria-hidden="true" />{data.attentionCount} mensajes requieren atención</p><Button disabled={pending} onClick={() => {
       setError(undefined); setNotice(undefined); start(async () => { const r = await runMessaging(); if (!r.ok) setError(r.error); else { setNotice(`${r.queued ?? 0} recordatorios nuevos. Revisa el historial para ver el resultado del ciclo.`); router.refresh(); } });
-    }}>{pending ? "Procesando…" : data.channel.simulated ? "Ejecutar ciclo simulado" : "Enviar recordatorios y procesar respuestas"}</Button></div>
+    }}><Play aria-hidden="true" />{pending ? "Procesando…" : data.channel.simulated ? "Ejecutar ciclo simulado" : "Enviar recordatorios y procesar respuestas"}</Button></div>
     <FormError message={error} />{notice && <p role="status" className="text-sm text-primary">{notice}</p>}
     {admin && <Card><CardHeader><CardTitle>Configuración de la clínica</CardTitle></CardHeader><CardContent>
       <form className="grid gap-4" onSubmit={e => {
@@ -34,7 +35,7 @@ export function MessagingPanel({ data, admin }: { data: MessagingOverview; admin
         <div className="grid max-w-xs gap-1.5"><Label htmlFor="hours-before">Horas antes de la cita</Label><Input id="hours-before" name="hoursBefore" type="number" min={2} max={72} step={1} required defaultValue={data.settings.hoursBefore} /></div>
         <label className="flex items-center gap-2 text-sm"><input name="aiEnabled" type="checkbox" defaultChecked={data.settings.aiEnabled} />Usar Claude para clasificar respuestas libres cuando el servicio esté configurado</label>
         <p className="text-xs text-muted-foreground">Solo reciben recordatorios los pacientes activos que autorizaron WhatsApp. Las clasificaciones de IA se revisan en recepción; las solicitudes de reprogramación no cambian la agenda automáticamente.</p>
-        <Button className="w-fit" disabled={pending}>Guardar configuración</Button>
+        <Button className="w-fit" disabled={pending}><Save aria-hidden="true" />Guardar configuración</Button>
       </form>
     </CardContent></Card>}
     {data.channel.simulated && <Card><CardHeader><CardTitle>Simular respuesta de un paciente</CardTitle></CardHeader><CardContent>
@@ -45,7 +46,7 @@ export function MessagingPanel({ data, admin }: { data: MessagingOverview; admin
       }}>
         <NativeSelect name="reminder" label="Recordatorio" options={Object.fromEntries(reminders.map(m => [m.id, `${m.patientName || m.phone} · ${m.appointmentStartsAt ? formatDateTime(m.appointmentStartsAt) : "Sin fecha"}`]))} placeholder="Selecciona un recordatorio simulado" required />
         <div className="grid gap-1.5"><Label htmlFor="simulated-reply">Respuesta</Label><Input id="simulated-reply" name="reply" required maxLength={2000} placeholder="CONFIRMO, CANCELAR, REPROGRAMAR, BAJA o una pregunta" /></div>
-        <Button className="w-fit" disabled={pending || reminders.length === 0}>Procesar respuesta simulada</Button>
+        <Button className="w-fit" disabled={pending || reminders.length === 0}><Play aria-hidden="true" />Procesar respuesta simulada</Button>
       </form>
       {reminders.length === 0 && <p className="mt-3 text-xs text-muted-foreground">Activa recordatorios, autoriza WhatsApp en un paciente con celular colombiano y agenda una cita dentro del plazo configurado. Luego ejecuta un ciclo simulado.</p>}
     </CardContent></Card>}

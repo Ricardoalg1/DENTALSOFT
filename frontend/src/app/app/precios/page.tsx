@@ -1,3 +1,4 @@
+import { ReferenceArt } from "@/components/app/reference-art";
 import type { Metadata } from "next";
 import { TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +41,8 @@ export default async function PricesPage() {
       )}
 
       {isAdmin && procedures.length === 0 && (
-        <Card>
+        <Card className="relative lg:pr-80">
+          <ReferenceArt kind="prices" className="hidden lg:block absolute right-6 top-6 !w-72" />
           <CardHeader>
             <CardTitle>Empieza con una lista de ejemplo</CardTitle>
             <CardDescription>

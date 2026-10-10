@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogOut, UserCog } from "lucide-react";
+import { LogOut, UserCog, Search, Bell, ChevronDown } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { ForcedPasswordScreen, SuspendedScreen } from "@/components/app/blocked-screen";
 import { Nav } from "@/components/app/nav";
@@ -28,8 +28,8 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
     return <SuspendedScreen clinicName={me.clinicName} message={me.subscription?.inactiveMessage ?? null} payment={payment} />;
   }
   return (
-    <div className="flex min-h-svh flex-col md:flex-row">
-      <aside className="flex shrink-0 flex-col gap-6 border-b bg-sidebar p-4 md:w-60 md:border-r md:border-b-0">
+    <div className="reference-app flex min-h-svh flex-col md:flex-row">
+      <aside className="reference-sidebar flex shrink-0 flex-col gap-6 bg-sidebar p-4 md:w-60">
         <div>
           <Logo />
           <p className="mt-1 truncate text-xs text-muted-foreground">
@@ -71,7 +71,11 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           </form>
         </div>
       </aside>
-      <main className="min-w-0 flex-1 p-4 md:p-8">
+      <main className="reference-main min-w-0 flex-1 p-4 md:p-8">
+        <div className="reference-topbar mb-7 flex flex-wrap items-center justify-between gap-4">
+          <form action="/app/pacientes" role="search" className="flex max-w-lg flex-1 items-center gap-3 rounded-xl border bg-card px-4 py-2 shadow-sm"><Search className="size-4 text-muted-foreground" aria-hidden="true" /><input name="q" aria-label="Buscar pacientes" placeholder="Buscar pacientes por nombre o documento…" className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none" /><button type="submit" className="text-xs font-medium text-primary">Buscar</button></form>
+          <div className="flex items-center gap-4">{me.platformAdmin && <Link href="/app/plataforma/notificaciones" aria-label="Notificaciones de plataforma" className="rounded-full border bg-card p-3"><Bell className="size-5" aria-hidden="true" /></Link>}<Link href="/app/cuenta" className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-full bg-foreground font-medium text-background">{me.fullName.trim().slice(0,1)}</span><span className="hidden text-sm sm:block"><span className="block font-medium">{me.fullName}</span><span className="text-xs text-muted-foreground">{ROLE_LABELS[me.role]}</span></span><ChevronDown className="size-4" aria-hidden="true" /></Link></div>
+        </div>
         <SubscriptionBanners me={me} />
         {children}
       </main>
