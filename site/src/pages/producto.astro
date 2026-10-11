@@ -14,16 +14,16 @@ import "../styles/landing.css";
 export const prerender = true;
 
 const trust: [string, string][] = [
-  ["shield", "Información segura y separada por clínica"],
-  ["cloud", "Acceso desde cualquier dispositivo"],
-  ["support", "Soporte en español y acompañamiento"],
-  ["cog", "Configuración flexible"],
+  ["shield", "Datos seguros"],
+  ["cloud", "Desde cualquier dispositivo"],
+  ["support", "Soporte en español"],
+  ["cog", "Flexible"],
 ];
 ---
 
 <Layout
   title="Producto en detalle"
-  description="Agenda, historias clínicas, mensajes, inventario, reportes y planes de Occlus, explicados con vistas de ejemplo."
+  description="Agenda, historias, mensajes, inventario y reportes."
 >
   <div class="landing">
     <div class="mx-auto max-w-[1600px] px-3 pb-6 pt-3 sm:px-4">
@@ -56,7 +56,7 @@ const trust: [string, string][] = [
                 <span class="shimmer">Más sonrisas.</span>
               </h1>
               <p class="rise mt-6 max-w-md text-[1.02rem] leading-8 text-muted-foreground" style="--d:2">
-                Occlus conecta la agenda, las historias clínicas y la operación de tu equipo. Todo en un mismo lugar, para que puedas concentrarte en tus pacientes.
+                Agenda, historias clínicas y operación en un solo lugar.
               </p>
               <div class="rise mt-8 flex flex-wrap gap-3" style="--d:3">
                 <a href="/demo" class="btn btn-lg btn-solid-deep btn-glow">Solicitar demo <Icon name="arrow" class="size-4" /></a>
@@ -78,10 +78,10 @@ const trust: [string, string][] = [
         <section id="producto" class="tile p-6 sm:p-8 lg:col-span-4" data-reveal aria-labelledby="mods-title">
           <p class="eyebrow">Todo en un mismo lugar</p>
           <h2 id="mods-title" class="tile-title mt-3 text-[clamp(1.6rem,2.4vw,2.25rem)]">
-            Un software completo para la gestión de tu clínica
+            Todo para gestionar tu clínica
           </h2>
           <p class="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
-            Organiza tu agenda, atiende a tus pacientes, controla tus insumos y lleva un seguimiento claro de tu operación.
+            Agenda, pacientes, insumos y reportes.
           </p>
           <div class="mt-8"><ModuleGrid /></div>
         </section>
@@ -91,11 +91,11 @@ const trust: [string, string][] = [
           <div class="feature-grid gap-5 @md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] @md:items-center">
             <div>
               <p class="eyebrow">Agenda</p>
-              <h3 class="tile-title mt-3">Una agenda que fluye con tu equipo</h3>
+              <h3 class="tile-title mt-3">Agenda fluida</h3>
               <p class="mt-3 text-sm leading-7 text-muted-foreground">
-                Coordina citas, profesionales y sedes desde una vista clara y moderna. Arrastra, reprograma y mantén todo bajo control.
+                Citas, profesionales y sedes en una vista clara.
               </p>
-              <a href="/demo" class="tile-link mt-5">Conoce la agenda <Icon name="arrow" class="size-4" /></a>
+              <a href="/demo" class="tile-link mt-5">Ver agenda <Icon name="arrow" class="size-4" /></a>
             </div>
             <CalendarMock />
           </div>
@@ -106,9 +106,9 @@ const trust: [string, string][] = [
           <div class="feature-grid gap-5 @md:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] @md:items-center">
             <div>
               <p class="eyebrow">Historias clínicas</p>
-              <h3 class="tile-title mt-3">Cada historia, en un solo lugar</h3>
+              <h3 class="tile-title mt-3">Historias en un lugar</h3>
               <p class="mt-3 text-sm leading-7 text-muted-foreground">
-                Consulta evoluciones, odontograma, imágenes, archivos y consentimientos con acceso rápido y seguro.
+                Evoluciones, odontograma y consentimientos.
               </p>
               <a href="/demo" class="tile-link mt-5">Ver historias clínicas <Icon name="arrow" class="size-4" /></a>
             </div>
@@ -123,9 +123,9 @@ const trust: [string, string][] = [
               <p class="eyebrow">Mensajes y recordatorios</p>
               <h3 class="tile-title mt-3">Pacientes más puntuales</h3>
               <p class="mt-3 text-sm leading-7 text-muted-foreground">
-                Envía recordatorios por WhatsApp, confirma citas y automatiza la comunicación con tus pacientes.
+                Recordatorios y confirmación de citas.
               </p>
-              <a href="/demo" class="tile-link mt-5">Configurar recordatorios <Icon name="arrow" class="size-4" /></a>
+              <a href="/demo" class="tile-link mt-5">Ver recordatorios <Icon name="arrow" class="size-4" /></a>
             </div>
             <div class="peek"><PhoneMock /></div>
           </div>
@@ -138,7 +138,7 @@ const trust: [string, string][] = [
               <p class="eyebrow">Inventario</p>
               <h3 class="tile-title mt-3">Insumos bajo control</h3>
               <p class="mt-3 text-sm leading-7 text-muted-foreground">
-                Registra existencias, movimientos y lotes. Consulta los vencimientos y evita interrupciones en tu operación.
+                Existencias, lotes y vencimientos.
               </p>
               <a href="/demo" class="tile-link mt-5">Ver inventario <Icon name="arrow" class="size-4" /></a>
             </div>
@@ -153,7 +153,7 @@ const trust: [string, string][] = [
               <p class="eyebrow">Reportes</p>
               <h3 class="tile-title mt-3">Decisiones con datos reales</h3>
               <p class="mt-3 text-sm leading-7 text-muted-foreground">
-                Visualiza tu producción, recaudo, asistencia y mucho más, con reportes claros y exportables.
+                Producción, recaudo y asistencia.
               </p>
               <a href="/demo" class="tile-link mt-5">Ver reportes <Icon name="arrow" class="size-4" /></a>
             </div>
@@ -166,9 +166,9 @@ const trust: [string, string][] = [
           <div class="feature-grid gap-6 @lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] @lg:items-center">
             <div>
               <p class="eyebrow">Planes</p>
-              <h3 class="tile-title mt-3">Un plan para cada etapa de tu clínica</h3>
+              <h3 class="tile-title mt-3">Un plan para cada clínica</h3>
               <p class="mt-3 text-sm leading-7 text-muted-foreground">
-                Elige el plan que se adapta al tamaño de tu equipo y crece sin complicaciones.
+                Elige según el tamaño de tu equipo.
               </p>
               <a href="/planes" class="tile-link mt-5">Ver todos los planes <Icon name="arrow" class="size-4" /></a>
             </div>
@@ -181,7 +181,7 @@ const trust: [string, string][] = [
           <ChairIllustration />
           <div class="relative ml-auto max-w-[13rem] pt-2 text-right sm:max-w-[15rem]">
             <p class="eyebrow !text-[#8fdcdc]">Más que un software</p>
-            <h2 id="band-title" class="mt-3 text-2xl font-semibold leading-tight tracking-tight text-white">Un mismo lugar para tu operación.</h2>
+            <h2 id="band-title" class="mt-3 text-2xl font-semibold leading-tight tracking-tight text-white">Todo en un lugar.</h2>
           </div>
         </section>
 
@@ -199,14 +199,14 @@ const trust: [string, string][] = [
         <section class="cta-card tile !border-0 p-8 sm:p-10 lg:col-span-3" data-reveal style="--i:2" aria-labelledby="cta-title">
           <p class="eyebrow !text-[#8fdcdc]">Tu clínica, en sintonía</p>
           <h2 id="cta-title" class="mt-3 text-2xl font-semibold leading-tight tracking-tight sm:text-[1.7rem]">
-            ¿Listo para llevar tu clínica al siguiente nivel?
+            ¿Listo para empezar?
           </h2>
           <a href="/demo" class="btn btn-white btn-lg mt-7">Solicitar demo <Icon name="arrow" class="size-4" /></a>
         </section>
       </div>
 
       <p class="sample-note mx-auto mt-5 max-w-3xl px-4 text-center">
-        Vistas ilustrativas con datos de ejemplo. La emisión electrónica con un proveedor, los envíos por WhatsApp y el asistente IA requieren configuración y activación: revisamos su disponibilidad y alcance contigo.
+        Vistas ilustrativas con datos de ejemplo. Algunas funciones requieren configuración y activación.
       </p>
     </div>
   </div>

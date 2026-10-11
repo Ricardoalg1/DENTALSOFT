@@ -1,155 +1,226 @@
 ---
-import "../styles/global.css";
-import Logo from "../components/Logo.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
-import { THEME_INIT_SCRIPT } from "../../../shared/theme";
+import '../styles/global.css';
+import Logo from '../components/Logo.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import { THEME_INIT_SCRIPT } from '../../../shared/theme';
 interface Props {
-  title?: string;
-  description?: string;
-  noindex?: boolean;
+	title?: string;
+	description?: string;
+	noindex?: boolean;
 }
 const {
-  title = "Menos pendientes. Más sonrisas.",
-  description = "Agenda, historias clínicas, presupuestos e inventario para organizar tu clínica odontológica.",
-  noindex = false,
+	title = 'Menos pendientes. Más sonrisas.',
+	description = 'Agenda, historias clínicas, presupuestos e inventario para organizar tu clínica odontológica.',
+	noindex = false,
 } = Astro.props;
 const canonical = new URL(
-  Astro.url.pathname,
-  Astro.site ?? "https://occlus.lat",
+	Astro.url.pathname,
+	Astro.site ?? 'https://occlus.lat',
 );
-const appUrl = import.meta.env.PUBLIC_APP_URL ?? "http://localhost:3000";
+const appUrl = import.meta.env.PUBLIC_APP_URL ?? 'http://localhost:3000';
 const pageTitle = `${title} · Occlus`;
 const nav: [string, string][] = [
-  ["/producto", "Producto"],
-  ["/planes", "Planes"],
-  ["/blog", "Recursos"],
-  ["/demo", "Contacto"],
+	['/', 'Inicio'],
+	['/producto', 'Producto'],
+	['/planes', 'Planes'],
+	['/blog', 'Recursos'],
+	['/demo', 'Contacto'],
 ];
 const path = Astro.url.pathname;
-const isActive = (href: string) => path === href || path.startsWith(href + "/");
+const isActive = (href: string) => path === href || path.startsWith(href + '/');
 ---
 
 <!doctype html>
 <html lang="es-CO">
-  <head
-    ><script is:inline set:html={THEME_INIT_SCRIPT}></script><meta charset="UTF-8" /><meta
-      name="viewport"
-      content="width=device-width,initial-scale=1"
-    /><title>{pageTitle}</title><meta
-      name="description"
-      content={description}
-    /><link rel="canonical" href={canonical} /><link
-      rel="icon"
-      type="image/svg+xml"
-      href="/favicon.svg"
-    /><meta property="og:type" content="website" /><meta
-      property="og:locale"
-      content="es_CO"
-    /><meta property="og:site_name" content="Occlus" /><meta
-      property="og:title"
-      content={pageTitle}
-    /><meta property="og:description" content={description} /><meta
-      property="og:url"
-      content={canonical}
-    /><meta
-      property="og:image"
-      content={new URL("/social.png", canonical)}
-    /><meta name="twitter:card" content="summary_large_image" />{
-      noindex && <meta name="robots" content="noindex,nofollow" />
-    }</head
-  ><body
-    ><a
-      href="#contenido"
-      class="sr-only focus:not-sr-only focus:block focus:bg-card focus:p-4"
-      >Ir al contenido</a
-    ><header class="sticky top-0 z-40 bg-background/80 backdrop-blur-md">
-      <div class="wrap-wide flex flex-wrap items-center justify-between gap-5 py-4">
-        <Logo /><nav
-          aria-label="Navegación principal"
-          class="hidden items-center gap-9 md:flex"
-        >
-          {nav.map(([href, label]) => <a class="nav-link" href={href} aria-current={isActive(href) ? "page" : undefined}>{label}</a>)}
-        </nav><div class="flex flex-wrap items-center gap-4">
-          <ThemeToggle />
-          <a href={`${appUrl}/ingresar`} class="text-sm font-medium">Ingresar</a
-          ><a href="/demo" class="btn"
-            >Solicitar demo <span aria-hidden="true">↗</span></a>
-        </div><details class="w-full md:hidden">
-          <summary class="cursor-pointer text-sm font-semibold"
-            >Explorar Occlus</summary
-          ><nav
-            class="mt-4 flex flex-wrap gap-6 pb-2"
-            aria-label="Navegación móvil"
-          >
-            {nav.map(([href, label]) => <a href={href}>{label}</a>)}
-          </nav>
-        </details>
-      </div>
-    </header><main id="contenido"><slot /></main><footer class="mt-6 border-t border-border">
-      <div class="wrap-wide flex flex-wrap items-center justify-between gap-x-8 gap-y-5 py-8">
-        <Logo /><nav class="flex flex-wrap gap-x-9 gap-y-2" aria-label="Explora">
-          {nav.map(([href, label]) => <a class="foot-link text-sm" href={href}>{label}</a>)}
-        </nav><span class="hidden h-7 w-px bg-border lg:block" aria-hidden="true"></span><nav class="flex flex-wrap gap-x-8 gap-y-2" aria-label="Información">
-          <a class="foot-link" href="/privacidad">Privacidad</a><a class="foot-link" href="/condiciones">Condiciones</a><a class="foot-link" href={`${appUrl}/ingresar`}>Acceso a tu clínica</a>
-        </nav>
-      </div><div class="wrap-wide flex flex-wrap justify-between gap-3 border-t border-border py-5 text-xs text-muted-foreground">
-        <span>© Occlus · SINE SAS</span><span>Software para equipos odontológicos</span>
-      </div>
-    </footer><script>
-      // Solo métricas agregadas; la configuración y la clave permanecen en el servidor.
-      void fetch("/site-api/config")
-        .then((r) => r.json())
-        .then((config) => {
-          if (config.analyticsEnabled)
-            void fetch("/site-api/events", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ path: window.location.pathname }),
-              keepalive: true,
-            }).catch(() => {});
-        })
-        .catch(() => {});
-    </script><script>
-      // Revelado al entrar en pantalla, contadores y giro suave del portátil. Sin JS todo se ve igual.
-      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const cop = new Intl.NumberFormat("es-CO");
-      function count(el: HTMLElement) {
-        if (reduce) return;
-        const to = Number(el.dataset.count);
-        const money = el.dataset.format === "cop";
-        const t0 = performance.now();
-        const tick = (t: number) => {
-          const p = Math.min(1, (t - t0) / 1300);
-          const v = Math.round(to * (1 - Math.pow(1 - p, 3)));
-          el.textContent = money ? `$ ${cop.format(v)}` : String(v);
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-      const io = new IntersectionObserver(
-        (entries) => {
-          for (const e of entries) {
-            if (!e.isIntersecting) continue;
-            const el = e.target as HTMLElement;
-            el.classList.add("is-in");
-            el.querySelectorAll<HTMLElement>("[data-count]").forEach(count);
-            io.unobserve(el);
-          }
-        },
-        { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
-      );
-      document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
-      document.querySelectorAll<HTMLElement>(".hero [data-count]").forEach((el) => setTimeout(() => count(el), 700));
-      // Portátil: sigue al puntero con suavidad (solo con ratón).
-      const lap = document.querySelector<HTMLElement>(".lp");
-      const zone = lap?.closest<HTMLElement>(".hero-x, .hero");
-      if (lap && zone && !reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
-        zone.addEventListener("pointermove", (e) => {
-          const r = zone.getBoundingClientRect();
-          lap.style.setProperty("--ry", `${-4 + ((e.clientX - r.left) / r.width - 0.5) * 6}deg`);
-          lap.style.setProperty("--rx", `${1.5 - ((e.clientY - r.top) / r.height - 0.5) * 5}deg`);
-        });
-        zone.addEventListener("pointerleave", () => { lap.style.removeProperty("--ry"); lap.style.removeProperty("--rx"); });
-      }
-    </script></body>
+	<head
+		><script is:inline set:html={THEME_INIT_SCRIPT} /><meta
+			charset="UTF-8"
+		/><meta
+			name="viewport"
+			content="width=device-width,initial-scale=1"
+		/><title>{pageTitle}</title><meta
+			name="description"
+			content={description}
+		/><link rel="canonical" href={canonical} /><link
+			rel="icon"
+			type="image/svg+xml"
+			href="/favicon.svg"
+		/><meta property="og:type" content="website" /><meta
+			property="og:locale"
+			content="es_CO"
+		/><meta property="og:site_name" content="Occlus" /><meta
+			property="og:title"
+			content={pageTitle}
+		/><meta property="og:description" content={description} /><meta
+			property="og:url"
+			content={canonical}
+		/><meta
+			property="og:image"
+			content={new URL('/social.png', canonical)}
+		/><meta name="twitter:card" content="summary_large_image" />{
+			noindex && <meta name="robots" content="noindex,nofollow" />
+		}</head
+	><body
+		><a
+			href="#contenido"
+			class="sr-only focus:not-sr-only focus:block focus:bg-card focus:p-4"
+			>Ir al contenido</a
+		><header class="sticky top-0 z-40 bg-background/80 backdrop-blur-md">
+			<div
+				class="wrap-wide flex flex-wrap items-center justify-between gap-5 py-4"
+			>
+				<Logo /><nav
+					aria-label="Navegación principal"
+					class="hidden items-center gap-9 md:flex"
+				>
+					{
+						nav.map(([href, label]) => (
+							<a
+								class="nav-link"
+								href={href}
+								aria-current={
+									isActive(href) ? 'page' : undefined
+								}
+							>
+								{label}
+							</a>
+						))
+					}
+				</nav><div class="flex flex-wrap items-center gap-4">
+					<ThemeToggle />
+					<a href={`${appUrl}/ingresar`} class="text-sm font-medium"
+						>Ingresar</a
+					><a href="/demo" class="btn"
+						>Solicitar demo <span aria-hidden="true">↗</span></a
+					>
+				</div><details class="w-full md:hidden">
+					<summary class="cursor-pointer text-sm font-semibold"
+						>Explorar Occlus</summary
+					><nav
+						class="mt-4 flex flex-wrap gap-6 pb-2"
+						aria-label="Navegación móvil"
+					>
+						{nav.map(([href, label]) => <a href={href}>{label}</a>)}
+					</nav>
+				</details>
+			</div>
+		</header><main id="contenido"><slot /></main><footer
+			class="mt-6 border-t border-border"
+		>
+			<div
+				class="wrap-wide flex flex-wrap items-center justify-between gap-x-8 gap-y-5 py-8"
+			>
+				<Logo /><nav
+					class="flex flex-wrap gap-x-9 gap-y-2"
+					aria-label="Explora"
+				>
+					{
+						nav.map(([href, label]) => (
+							<a class="foot-link text-sm" href={href}>
+								{label}
+							</a>
+						))
+					}
+				</nav><span
+					class="hidden h-7 w-px bg-border lg:block"
+					aria-hidden="true"></span><nav
+					class="flex flex-wrap gap-x-8 gap-y-2"
+					aria-label="Información"
+				>
+					<a class="foot-link" href="/privacidad">Privacidad</a><a
+						class="foot-link"
+						href="/condiciones">Condiciones</a
+					><a class="foot-link" href={`${appUrl}/ingresar`}
+						>Acceso a tu clínica</a
+					>
+				</nav>
+			</div><div
+				class="wrap-wide flex flex-wrap justify-between gap-3 border-t border-border py-5 text-xs text-muted-foreground"
+			>
+				<span>© Occlus · SINE SAS</span><span
+					>Software para equipos odontológicos</span
+				>
+			</div>
+		</footer><script>
+			// Solo métricas agregadas; la configuración y la clave permanecen en el servidor.
+			void fetch('/site-api/config')
+				.then((r) => r.json())
+				.then((config) => {
+					if (config.analyticsEnabled)
+						void fetch('/site-api/events', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								path: window.location.pathname,
+							}),
+							keepalive: true,
+						}).catch(() => {});
+				})
+				.catch(() => {});
+		</script><script>
+			// Revelado al entrar en pantalla, contadores y giro suave del portátil. Sin JS todo se ve igual.
+			const reduce = matchMedia(
+				'(prefers-reduced-motion: reduce)',
+			).matches;
+			const cop = new Intl.NumberFormat('es-CO');
+			function count(el: HTMLElement) {
+				if (reduce) return;
+				const to = Number(el.dataset.count);
+				const money = el.dataset.format === 'cop';
+				const t0 = performance.now();
+				const tick = (t: number) => {
+					const p = Math.min(1, (t - t0) / 1300);
+					const v = Math.round(to * (1 - Math.pow(1 - p, 3)));
+					el.textContent = money ? `$ ${cop.format(v)}` : String(v);
+					if (p < 1) requestAnimationFrame(tick);
+				};
+				requestAnimationFrame(tick);
+			}
+			const io = new IntersectionObserver(
+				(entries) => {
+					for (const e of entries) {
+						if (!e.isIntersecting) continue;
+						const el = e.target as HTMLElement;
+						el.classList.add('is-in');
+						el.querySelectorAll<HTMLElement>(
+							'[data-count]',
+						).forEach(count);
+						io.unobserve(el);
+					}
+				},
+				{ threshold: 0.12, rootMargin: '0px 0px -6% 0px' },
+			);
+			document
+				.querySelectorAll('[data-reveal]')
+				.forEach((el) => io.observe(el));
+			document
+				.querySelectorAll<HTMLElement>('.hero [data-count]')
+				.forEach((el) => setTimeout(() => count(el), 700));
+			// Portátil: sigue al puntero con suavidad (solo con ratón).
+			const lap = document.querySelector<HTMLElement>('.lp');
+			const zone = lap?.closest<HTMLElement>('.hero-x, .hero');
+			if (
+				lap &&
+				zone &&
+				!reduce &&
+				matchMedia('(hover: hover) and (pointer: fine)').matches
+			) {
+				zone.addEventListener('pointermove', (e) => {
+					const r = zone.getBoundingClientRect();
+					lap.style.setProperty(
+						'--ry',
+						`${-4 + ((e.clientX - r.left) / r.width - 0.5) * 6}deg`,
+					);
+					lap.style.setProperty(
+						'--rx',
+						`${1.5 - ((e.clientY - r.top) / r.height - 0.5) * 5}deg`,
+					);
+				});
+				zone.addEventListener('pointerleave', () => {
+					lap.style.removeProperty('--ry');
+					lap.style.removeProperty('--rx');
+				});
+			}
+		</script></body
+	>
 </html>

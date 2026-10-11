@@ -3,7 +3,6 @@ import Layout from "../layouts/PublicLayout.astro";
 import Icon from "../components/Icon.astro";
 import Laptop from "../components/ui/Laptop.astro";
 import LaptopAgenda from "../components/ui/LaptopAgenda.astro";
-import Scene from "../components/ui/Scene.astro";
 import Faq from "../components/ui/Faq.astro";
 import CtaBand from "../components/ui/CtaBand.astro";
 import { plans, money } from "../../../shared/site-content";
@@ -20,10 +19,10 @@ const rows: [string, string, (boolean | "extra")[]][] = [
   ["receipt", "Facturación electrónica y RIPS", [false, false, "extra", true]],
   ["chat", "Mensajes por WhatsApp", [false, false, "extra", true]],
 ];
-const ideal: [string, string, "chair" | "team" | "sites", string, string][] = [
-  ["user", "Clínicas pequeñas", "chair", "ESTANDAR", "Para empezar con orden"],
-  ["team", "Clínicas en crecimiento", "team", "CRECIMIENTO", "Para coordinar al equipo"],
-  ["chart", "Clínicas con múltiples sedes", "sites", "EXPANSION", "Para operar con visión"],
+const ideal: [string, string, string, string, string][] = [
+  ["user", "Clínicas que inician", "/clinicas_iniciales.png", "ESTANDAR", "Para empezar con orden"],
+  ["team", "Clínicas en crecimiento", "/clinicas_en_crecimiento.png", "CRECIMIENTO", "Para coordinar al equipo"],
+  ["chart", "Clínicas con múltiples sedes", "/clinica_multiples_sedes.png", "EXPANSION", "Para operar con visión"],
 ];
 const faq: [string, string][] = [
   ["¿Puedo cambiar de plan más adelante?", "Sí. Cuando tu equipo crezca o necesites más módulos, acordamos el cambio con nuestro equipo; el nuevo valor rige desde tu próxima renovación."],
@@ -132,9 +131,9 @@ const faq: [string, string][] = [
       <p class="eyebrow" data-reveal>Ideal para</p>
       <h2 class="h-section mt-3" data-reveal style="--i:1">Acompañamos cada etapa de crecimiento.</h2>
       <div class="mt-9 grid gap-5 md:grid-cols-3">
-        {ideal.map(([icon, title, kind, plan, sub], i) => (
+        {ideal.map(([icon, title, img, plan, sub], i) => (
           <a href={`/demo?plan=${plan}`} class="soft hover block overflow-hidden p-3" data-reveal style={`--i:${i}`}>
-            <Scene kind={kind} />
+            <img src={img} alt={title} loading="lazy" class="aspect-[3/2] w-full rounded-xl object-cover" />
             <div class="flex items-center gap-3 px-2 pb-2 pt-4">
               <span class="ico-disc size-11"><Icon name={icon} class="" /></span>
               <span class="min-w-0 flex-1"><b class="block text-[0.95rem]">{title}</b><small class="text-muted-foreground">{sub}</small></span>
