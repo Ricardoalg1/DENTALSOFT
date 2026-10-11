@@ -27,7 +27,7 @@ services:
       SITE_PUBLIC_API_KEY: ${SITE_PUBLIC_API_KEY:?Configura la clave compartida del sitio}
       OCCLUS_PLATFORM_ADMIN_IDS: ${OCCLUS_PLATFORM_ADMIN_IDS:?Configura el usuario comercial autorizado}
       # Los clientes los crea el administrador desde el panel: sin registro público.
-      SELF_REGISTRATION: "false"
+      SELF_REGISTRATION: ${SELF_REGISTRATION:-false}
       SUBSCRIPTIONS_SCHEDULER: ${SUBSCRIPTIONS_SCHEDULER:-true}
       SUBSCRIPTION_GRACE_DAYS: ${SUBSCRIPTION_GRACE_DAYS:-7}
       PAYMENTS_SIMULATED: "false"
@@ -73,7 +73,7 @@ services:
     logging: *bounded-logs
     environment:
       API_URL: http://backend:8080
-      SELF_REGISTRATION: "false"
+      SELF_REGISTRATION: ${SELF_REGISTRATION:-false}
       PUBLIC_SITE_URL: https://${PUBLIC_DOMAIN:?Configura el dominio}
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/bff/health',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -98,6 +98,7 @@ services:
       SITE_URL: https://${PUBLIC_DOMAIN}
       SITE_PUBLIC_API_KEY: ${SITE_PUBLIC_API_KEY}
       SITE_OWNER_NAME: ${SITE_OWNER_NAME:-SINE SAS}
+      SITE_OWNER_NIT: ${SITE_OWNER_NIT:-}
       SITE_CONTACT_NAME: ${SITE_CONTACT_NAME:-Ricardo Algarin}
       SITE_CONTACT_EMAIL: ${SITE_CONTACT_EMAIL:?Configura el correo público de privacidad}
       SITE_RETENTION_DAYS: ${SITE_RETENTION_PUBLIC_DAYS:-}

@@ -84,7 +84,9 @@ export async function api<T>(
     );
   }
   if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  // Algunas respuestas correctas (p. ej. 201 Created de acciones) no traen cuerpo.
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 /** Usuario actual; `cache` evita repetir la llamada dentro de un mismo render. */

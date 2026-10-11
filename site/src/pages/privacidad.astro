@@ -3,78 +3,149 @@ import Layout from "../layouts/PublicLayout.astro";
 import { env } from "../lib/server";
 export const prerender = false;
 const owner = env("SITE_OWNER_NAME") || "SINE SAS";
+const nit = env("SITE_OWNER_NIT");
 const name = env("SITE_CONTACT_NAME") || "Ricardo Algarin";
 const email = env("SITE_CONTACT_EMAIL");
 const days = env("SITE_RETENTION_DAYS");
+const updated = "10 de octubre de 2026";
+
+const datos: [string, string, string][] = [
+  ["Solicitudes comerciales (formulario y chat Occlu)", "Nombre, correo, teléfono (opcional), clínica, tamaño del equipo, plan de interés y mensaje.", "Responder tu consulta, coordinar una demostración y hacer seguimiento comercial."],
+  ["Usuarios de la plataforma", "Nombre, correo, rol, registro profesional y firma (si el usuario los carga), registros de acceso y sesiones.", "Autenticar, controlar permisos, firmar documentos clínicos y proteger la cuenta."],
+  ["Clínicas clientes", "Razón social, datos de contacto, sedes, plan, suscripción y datos de facturación.", "Prestar el servicio, facturar y cobrar la suscripción."],
+  ["Datos de pacientes de cada clínica", "Identificación, contacto, historia clínica, odontograma, imágenes, consentimientos, citas, tratamientos y pagos.", "Los define la clínica. Occlus solo los almacena y procesa por cuenta de ella."],
+];
+const conserva: [string, string][] = [
+  ["Solicitudes comerciales", days ? `${days} días desde la última actualización comercial, o hasta que solicites su eliminación.` : "Plazo por definir por el responsable antes de la publicación; hasta entonces no se eliminan automáticamente."],
+  ["Historias clínicas y soportes de atención", "Las conserva la clínica (responsable) por el tiempo que ordena la normatividad de salud, hoy 15 años (5 en archivo de gestión y 10 en archivo central, Res. 1995 de 1999 y Res. 839 de 2017). Occlus no las elimina antes de ese plazo por iniciativa propia."],
+  ["Registros contables y de facturación", "El tiempo que exija la ley comercial y tributaria (por regla general 10 años)."],
+  ["Registros de acceso y auditoría", "Se conservan mientras sirvan para la seguridad y la trazabilidad de la información clínica."],
+  ["Copias de seguridad", "Rotación automática; las eliminaciones se reflejan en las copias cuando estas vencen (hasta 35 días)."],
+];
+const terceros: [string, string][] = [
+  ["Amazon Web Services (AWS)", "Alojamiento de la aplicación, la base de datos y los archivos."],
+  ["Meta (WhatsApp Business)", "Envío de recordatorios, solo si la clínica lo activa."],
+  ["Dataico", "Facturación electrónica ante la DIAN, solo si la clínica lo activa."],
+  ["Wompi y ePayco", "Procesamiento de pagos de la suscripción."],
+];
+const derechos = [
+  "Conocer, actualizar y rectificar tus datos personales.",
+  "Solicitar prueba de la autorización que nos diste.",
+  "Ser informado sobre el uso que se ha dado a tus datos.",
+  "Presentar quejas ante la Superintendencia de Industria y Comercio (SIC) por infracciones a la ley.",
+  "Revocar la autorización y solicitar la supresión de tus datos cuando no se respeten los principios y garantías legales, y no exista un deber legal o contractual de conservarlos.",
+  "Acceder de forma gratuita a tus datos personales.",
+];
 ---
 
-<Layout title="Privacidad"
-  ><article class="mx-auto max-w-3xl space-y-6 px-6 py-16">
-    <p class="eyebrow">Información de contacto comercial</p><h1
-      class="text-4xl font-semibold tracking-tight"
-    >
-      Privacidad de tu solicitud
-    </h1><p class="text-sm text-muted-foreground">
-      Versión de preparación · 8 de octubre de 2026
-    </p><h2 class="text-xl font-semibold">Responsable</h2><p>
-      {owner}, a través de Occlus. Contacto: {name}.
-    </p><h2 class="text-xl font-semibold">Datos y finalidad</h2><p
-      class="leading-8 text-muted-foreground"
-    >
-      Recopilamos nombre, correo, clínica, tamaño de equipo, plan de interés y,
-      si los proporcionas, teléfono y mensaje. Registramos la fecha de
-      autorización para responder la consulta, coordinar una demo y documentar
-      el seguimiento comercial. No incluyas datos clínicos ni información de
-      pacientes.
-    </p><h2 class="text-xl font-semibold">Acceso y conservación</h2><p
-      class="leading-8 text-muted-foreground"
-    >
-      El equipo comercial autorizado accede a estas solicitudes. Las notas de
-      seguimiento se eliminan junto con la solicitud cuando se atiende una
-      petición de eliminación verificada.
-    </p>{
-      days ? (
-        <p>
-          El plazo operativo configurado es de {days} días desde la última
-          actualización comercial. Debe coincidir con la configuración de
-          conservación del servidor.
-        </p>
-      ) : (
-        <p class="text-muted-foreground">
-          El plazo de conservación está pendiente de definición por el
-          responsable antes de la publicación.
-        </p>
-      )
-    }<h2 class="text-xl font-semibold">Métricas del sitio</h2><p
-      class="leading-8 text-muted-foreground"
-    >
-      Si se habilitan, se cuentan vistas por página y día. No usamos cookies de
-      analítica ni guardamos identificadores de visitantes, IP o consultas de
-      URL en estas métricas. La infraestructura puede procesar datos técnicos
-      necesarios para atender y proteger las solicitudes.
-    </p><h2 class="text-xl font-semibold">Contacto y solicitudes</h2>{
-      email ? (
-        <p>
-          Para consultar, corregir o solicitar la eliminación de tu información
-          y retirar la autorización, escribe a{" "}
-          <a class="underline text-primary" href={`mailto:${email}`}>
-            {email}
-          </a>
-          . Verificaremos la identidad del solicitante antes de modificar o
-          eliminar información.
-        </p>
-      ) : (
-        <p>
-          El correo público de privacidad está pendiente de configuración. El
-          formulario no recibirá solicitudes en producción hasta que este canal
-          esté configurado.
-        </p>
-      )
-    }<p class="border-t pt-6 text-sm leading-7 text-muted-foreground">
-      Este aviso cubre el formulario comercial del sitio. El tratamiento de
-      datos clínicos dentro de la aplicación requiere los acuerdos y políticas
-      de cada clínica. El responsable debe completar y revisar esta versión
-      antes de su publicación.
+<Layout title="Política de privacidad" description="Política de tratamiento de datos personales de Occlus, conforme a la Ley 1581 de 2012.">
+  <article class="mx-auto max-w-3xl space-y-8 px-6 py-16 leading-8">
+    <header class="space-y-3">
+      <p class="eyebrow">Habeas data</p>
+      <h1 class="text-4xl font-semibold tracking-tight">Política de tratamiento de datos personales</h1>
+      <p class="text-sm text-muted-foreground">Última actualización: {updated}</p>
+    </header>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">1. Responsable</h2>
+      <p>
+        {owner}{nit && <> (NIT {nit})</>}, que opera la plataforma Occlus, es responsable del tratamiento de los datos descritos en la sección 4 como «comerciales», de usuarios y de clínicas. Contacto: {name}{email && <>, <a class="text-primary underline" href={`mailto:${email}`}>{email}</a></>}.
+      </p>
+      {!email && <p class="text-muted-foreground">El correo de atención de titulares está pendiente de configuración.</p>}
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">2. Marco legal</h2>
+      <p class="text-muted-foreground">
+        Esta política se rige por el artículo 15 de la Constitución, la Ley 1581 de 2012, el Decreto 1377 de 2013 (compilado en el Decreto 1074 de 2015) y la Ley 2300 de 2023 sobre contacto comercial. Para historias clínicas aplican, además, la Ley 23 de 1981, la Resolución 1995 de 1999, la Resolución 839 de 2017 y la Ley 2015 de 2020.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">3. Nuestro papel frente a los datos de pacientes</h2>
+      <p class="text-muted-foreground">
+        Cada clínica que usa Occlus es la <strong>responsable</strong> de los datos de sus pacientes: decide para qué se recogen y obtiene su autorización. Occlus actúa como <strong>encargado</strong>: los almacena y procesa por cuenta de la clínica, bajo sus instrucciones y con las medidas de seguridad de la sección 9. Si eres paciente y quieres ejercer tus derechos, dirígete primero a tu clínica; nosotros colaboramos con ella para atender tu solicitud.
+      </p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-xl font-semibold">4. Datos que tratamos y para qué</h2>
+      <ul class="space-y-4">
+        {datos.map(([t, d, f]) => (
+          <li class="rounded-xl border p-4 text-sm leading-7">
+            <p class="font-semibold">{t}</p>
+            <p class="text-muted-foreground"><b class="font-medium text-foreground">Datos:</b> {d}</p>
+            <p class="text-muted-foreground"><b class="font-medium text-foreground">Finalidad:</b> {f}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">5. Datos sensibles y de menores</h2>
+      <p class="text-muted-foreground">
+        Los datos de salud son sensibles. Su suministro es facultativo y solo se tratan dentro de la clínica que atiende al paciente, con su autorización o la de su representante legal. Cuando el paciente es menor de edad, la clínica debe obtener la autorización de sus padres o representantes y velar por el interés superior del menor. <b>No incluyas datos clínicos ni de pacientes en el formulario comercial ni en el chat de Occlu.</b>
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">6. Tus derechos</h2>
+      <p class="text-muted-foreground">Como titular tienes derecho a:</p>
+      <ul class="list-disc space-y-1 pl-6 text-muted-foreground">{derechos.map((d) => <li>{d}</li>)}</ul>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">7. Cómo ejercerlos</h2>
+      <p class="text-muted-foreground">
+        Escribe al correo de contacto indicando tu nombre, un medio para responderte y lo que solicitas. Verificaremos tu identidad antes de modificar o eliminar información. Responderemos las <b>consultas</b> en máximo 10 días hábiles (prorrogables por 5 más) y los <b>reclamos</b> de corrección, actualización, supresión o revocatoria en máximo 15 días hábiles (prorrogables por 8 más), informándote el motivo de la prórroga. Si no estás conforme con la respuesta, puedes acudir a la Superintendencia de Industria y Comercio, una vez agotado este trámite.
+      </p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-xl font-semibold">8. Cuánto tiempo conservamos los datos</h2>
+      <dl class="divide-y rounded-xl border text-sm">
+        {conserva.map(([t, d]) => (
+          <div class="grid gap-1 p-4 sm:grid-cols-[14rem_1fr]"><dt class="font-medium">{t}</dt><dd class="text-muted-foreground">{d}</dd></div>
+        ))}
+      </dl>
+      <p class="text-sm text-muted-foreground">Cuando la finalidad termina y no hay deber legal de conservar, eliminamos los datos o los anonimizamos.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">9. Seguridad</h2>
+      <p class="text-muted-foreground">
+        Aplicamos medidas técnicas y administrativas razonables: conexión cifrada (HTTPS), información separada por clínica con control de acceso a nivel de base de datos, permisos por rol, sesiones que pueden revocarse, auditoría de cambios en la información clínica y copias de seguridad. Ningún sistema es infalible; si ocurre un incidente que afecte tus datos, lo gestionaremos y lo informaremos a la autoridad y a los afectados cuando corresponda.
+      </p>
+    </section>
+
+    <section class="space-y-3">
+      <h2 class="text-xl font-semibold">10. Terceros y transferencias</h2>
+      <p class="text-muted-foreground">Para prestar el servicio usamos proveedores que actúan como encargados o subencargados. Algunos pueden procesar datos fuera de Colombia, en países que ofrecen niveles adecuados de protección o con las garantías que exige la ley:</p>
+      <ul class="space-y-1 text-sm">{terceros.map(([t, d]) => <li><b>{t}.</b> <span class="text-muted-foreground">{d}</span></li>)}</ul>
+      <p class="text-sm text-muted-foreground">No vendemos datos personales.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">11. Cookies y métricas</h2>
+      <p class="text-muted-foreground">
+        La aplicación usa una cookie de sesión necesaria para iniciar sesión, y recuerda tu preferencia de tema. No usamos cookies de publicidad. Si se habilitan métricas del sitio, solo cuentan vistas por página y día, sin identificar visitantes, IP ni consultas de URL. El chat de Occlu guarda la conversación únicamente en la pestaña de tu navegador hasta que la cierras, salvo que decidas enviar tus datos a un asesor.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">12. Contacto comercial</h2>
+      <p class="text-muted-foreground">
+        Solo te contactaremos con fines comerciales si nos diste tu autorización, por los medios y en los horarios permitidos por la Ley 2300 de 2023. Puedes pedir que dejemos de contactarte en cualquier momento.
+      </p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">13. Cambios</h2>
+      <p class="text-muted-foreground">Publicaremos aquí cualquier cambio sustancial, con su fecha. Si afecta la finalidad del tratamiento, volveremos a pedir tu autorización cuando la ley lo exija.</p>
+    </section>
+
+    <p class="border-t pt-6 text-sm text-muted-foreground">
+      Este texto fue preparado como base para el cumplimiento de la Ley 1581 de 2012 y debe ser revisado y aprobado por el responsable y su asesoría jurídica antes de su publicación.
     </p>
-  </article></Layout
->
+  </article>
+</Layout>

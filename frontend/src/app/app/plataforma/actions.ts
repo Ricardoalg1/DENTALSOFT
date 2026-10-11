@@ -291,7 +291,7 @@ const announceSchema = z.object({
   clinicId: z.preprocess((v) => (v === "" ? undefined : v), uuid.optional()),
   title: z.string().trim().min(2, "Título requerido").max(120),
   body: z.string().trim().min(2, "Mensaje requerido").max(1000),
-  level: z.enum(["INFO", "WARNING", "CRITICAL"]),
+  level: z.enum(["INFO", "WARNING"]),
   endsOn: optional(10),
 });
 

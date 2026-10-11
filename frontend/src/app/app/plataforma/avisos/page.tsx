@@ -95,7 +95,7 @@ export default async function AnnouncementsPage() {
               <Label htmlFor="body">Mensaje</Label>
               <Textarea id="body" name="body" rows={4} required maxLength={1000} />
             </div>
-            <NativeSelect name="level" label="Importancia" defaultValue="INFO" options={SEVERITY_LABELS} />
+            <NativeSelect name="level" label="Importancia" defaultValue="INFO" options={{ INFO: SEVERITY_LABELS.INFO, WARNING: SEVERITY_LABELS.WARNING }} />
             <FormField name="endsOn" label="Visible hasta (opcional)" type="date" />
           </ActionForm>
         </CardContent>

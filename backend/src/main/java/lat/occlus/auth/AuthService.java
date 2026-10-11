@@ -39,6 +39,7 @@ public class AuthService {
     private final Entitlements entitlements;
     private final PlatformGate platformGate;
     private final PlatformProperties platform;
+    private final LoginThrottle throttle;
 
     /**
      * Registro de una clínica de prueba. Solo si {@code occlus.platform.self-registration} está
@@ -59,11 +60,17 @@ public class AuthService {
 
     /** El login busca por correo entre todas las clínicas: única consulta en modo sistema. */
     public TokenResponse login(LoginRequest req) {
-        var user = TenantContext.callAsSystem(() -> users.findByEmail(AppUser.normalizeEmail(req.email())))
+        var key = AppUser.normalizeEmail(req.email());
+        throttle.check(key);
+        var user = TenantContext.callAsSystem(() -> users.findByEmail(key))
                 .filter(AppUser::isActive)
-                .filter(u -> passwordEncoder.matches(req.password(), u.getPasswordHash()))
-                .orElseThrow(() -> new BadCredentialsException("invalid credentials"));
-        return toResponse(user);
+                .filter(u -> passwordEncoder.matches(req.password(), u.getPasswordHash()));
+        if (user.isEmpty()) {
+            throttle.failed(key);
+            throw new BadCredentialsException("invalid credentials");
+        }
+        throttle.succeeded(key);
+        return toResponse(user.get());
     }
 
     @Transactional

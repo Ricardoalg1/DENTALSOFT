@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { LogOut, UserCog, Search, Inbox, ChevronDown } from "lucide-react";
+import { FileText, LogOut, UserCog, Search, Inbox, ChevronDown } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { ForcedPasswordScreen, SuspendedScreen } from "@/components/app/blocked-screen";
+import { AgreementScreen } from "@/components/app/agreement-screen";
 import { Nav } from "@/components/app/nav";
 import { NotificationBell } from "@/components/app/notification-bell";
 import { SubscriptionBanners } from "@/components/app/subscription-banners";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { platformAccess } from "@/lib/marketing";
 import { unstable_rethrow } from "next/navigation";
 import { api, getMe } from "@/lib/api";
+import type { AgreementStatus } from "@/lib/agreement";
 import type { SubscriptionState } from "@/lib/platform";
 import { ROLE_LABELS, canCollect, canReadClinical } from "@/lib/types";
 
@@ -27,6 +29,14 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           })
         : null;
     return <SuspendedScreen clinicName={me.clinicName} message={me.subscription?.inactiveMessage ?? null} payment={payment} />;
+  }
+  // Acuerdo de encargo de tratamiento de datos: la clínica debe aceptarlo antes de usar la aplicación.
+  if (!me.platformAdmin) {
+    const agreement = await api<AgreementStatus>("/api/agreement").catch((e) => {
+      unstable_rethrow(e);
+      return null; // si la consulta falla, no se bloquea el trabajo de la clínica
+    });
+    if (agreement && !agreement.accepted) return <AgreementScreen clinicName={me.clinicName} canAccept={me.role === "ADMIN"} />;
   }
   return (
     <div className="reference-app flex min-h-svh flex-col md:flex-row">
@@ -59,6 +69,12 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
             className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <UserCog className="size-4" /> Mi cuenta
+          </Link>
+          <Link
+            href="/app/acuerdo"
+            className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <FileText className="size-4" /> Acuerdo de datos
           </Link>
           <form action={logout}>
             <Button
