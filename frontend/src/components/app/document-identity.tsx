@@ -1,0 +1,8 @@
+import Image from "next/image";
+import { api } from "@/lib/api";
+import type { DocumentBranding } from "@/lib/documents";
+export function BrandHeader({ brand }: { brand: DocumentBranding }) {
+ return <div className="flex flex-wrap items-center justify-between gap-5 rounded-xl border border-primary/10 bg-primary/5 p-5"><div>{brand.logoId && <Image src={`/bff/document-assets/${brand.logoId}`} width={150} height={90} unoptimized alt={`Logo de ${brand.name}`} className="max-h-24 w-auto max-w-40 object-contain" />}</div><div className="text-right"><p className="text-lg font-semibold text-foreground">{brand.name}</p>{brand.nit && <p className="text-xs text-muted-foreground">NIT {brand.nit}</p>}<p className="mt-1 text-sm text-muted-foreground">{brand.address}</p><p className="text-sm text-muted-foreground">{[brand.phone,brand.email].filter(Boolean).join(" · ")}</p></div></div>;
+}
+export async function ClinicDocumentHeader() { const brand = await api<DocumentBranding>("/api/clinic/document-branding");return <BrandHeader brand={brand} />; }
+export function ProfessionalSignature({ name, registration, signatureId }: { name: string; registration: string; signatureId: string | null }) {return <div className="mt-5 max-w-sm"><div className="flex min-h-20 items-end border-b border-primary/30 pb-2">{signatureId && <Image src={`/bff/document-assets/${signatureId}`} alt={`Firma de ${name}`} width={220} height={80} unoptimized className="max-h-24 w-auto max-w-full object-contain" />}</div><p className="mt-2 font-medium">{name}</p>{registration && <p className="text-xs text-muted-foreground">Registro profesional: {registration}</p>}<p className="text-xs text-muted-foreground">Firma del profesional</p></div>;}

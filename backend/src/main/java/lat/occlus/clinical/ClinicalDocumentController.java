@@ -16,6 +16,10 @@ public class ClinicalDocumentController {
     private final ClinicalDocumentService documents;
     private final ClinicalDocumentAudit audit;
     private final ClinicalMailService mail;
+    private final ClinicalNoteService notes;
+    private final DocumentBrandingService branding;
+    @GetMapping("/api/clinical-notes/{id}/document-signature")
+    DocumentBrandingService.Evidence signature(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id) {var me=AuthUser.from(jwt);var note=notes.get(me.clinicId(),id);if(note.status()!=ClinicalDtos.NoteStatus.SIGNED)throw new lat.occlus.shared.web.ConflictException("La evolución no está firmada");var evidence=branding.evidence(me.clinicId(),id);return evidence==null?new DocumentBrandingService.Evidence(note.dentist().name(),"",null):evidence;}
     @GetMapping("/api/clinical-export/status")
     Map<String,Boolean> status() { return Map.of("emailEnabled",mail.available()); }
     @GetMapping("/api/patients/{id}/clinical-document.pdf")

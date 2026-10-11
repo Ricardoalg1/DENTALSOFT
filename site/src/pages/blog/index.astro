@@ -1,37 +1,62 @@
 ---
 import Layout from "../../layouts/PublicLayout.astro";
+import Icon from "../../components/Icon.astro";
+import Laptop from "../../components/ui/Laptop.astro";
+import LaptopResources from "../../components/ui/LaptopResources.astro";
+import FeatureStrip from "../../components/ui/FeatureStrip.astro";
+import ArticleCover from "../../components/ui/ArticleCover.astro";
+import CtaBand from "../../components/ui/CtaBand.astro";
 import { articles } from "../../../../shared/site-content";
 export const prerender = true;
+const strip: [string, string][] = [
+  ["book", "Contenidos prácticos"],
+  ["clinical", "Pensados para clínicas odontológicas"],
+  ["spark", "Ideas claras, sin tecnicismos"],
+];
 ---
 
 <Layout
   title="Recursos"
   description="Ideas prácticas para coordinar agenda, insumos y presupuestos de tu clínica."
-  ><section class="section">
-    <p class="eyebrow">Ideas para tu equipo</p><h1
-      class="mt-4 max-w-2xl text-4xl font-semibold tracking-tight md:text-5xl"
-    >
-      Un poco más de orden, cada día.
-    </h1><div class="mt-12 grid gap-6 md:grid-cols-3">
-      {
-        articles.map((a) => (
-          <article class="flex flex-col rounded-3xl border border-border bg-card p-8">
-            <>
-              <span class="eyebrow">{a.category}</span>
-              <h2 class="mt-5 text-2xl font-semibold tracking-tight">
-                <a href={`/blog/${a.slug}`}>{a.title}</a>
-              </h2>
-              <p class="my-6 text-sm leading-7 text-muted-foreground">{a.summary}</p>
-              <a
-                href={`/blog/${a.slug}`}
-                class="mt-auto text-sm font-semibold text-primary"
-              >
-                Leer artículo →
-              </a>
-            </>
-          </article>
-        ))
-      }
-    </div>
-  </section></Layout
 >
+  <section class="hero-x hero">
+    <span class="deco fill" style="left:-10rem;top:4rem;width:22rem;height:22rem"></span>
+    <div class="wrap-wide grid items-center gap-10 lg:grid-cols-[minmax(0,0.98fr)_minmax(0,1.02fr)]">
+      <div>
+        <p class="eyebrow rise" style="--d:0">Conocimiento que te acompaña</p>
+        <h1 class="h-display rise mt-5" style="--d:1">
+          Recursos para una<br />clínica <span class="grad-text">más ordenada.</span>
+        </h1>
+        <p class="lead rise mt-6 max-w-md" style="--d:2">Ideas prácticas para coordinar agenda, insumos y presupuestos de tu clínica.</p>
+      </div>
+      <div class="rise lg:-mr-8" style="--d:3"><Laptop><LaptopResources /></Laptop></div>
+    </div>
+  </section>
+
+  <FeatureStrip items={strip} />
+
+  <section class="sec">
+    <div class="wrap-wide">
+      <p class="eyebrow" data-reveal>Aprende y crece</p>
+      <h2 class="h-section mt-3" data-reveal style="--i:1">Artículos destacados.</h2>
+      <div class="mt-10 grid gap-6 md:grid-cols-3">
+        {articles.map((a, i) => (
+          <article class="soft hover flex flex-col p-4" data-reveal style={`--i:${i}`}>
+            <a href={`/blog/${a.slug}`} class="block" aria-label={a.title}><ArticleCover category={a.category} index={i} /></a>
+            <div class="flex flex-1 flex-col px-2 pb-3 pt-5">
+              <span class="tag self-start">{a.category}</span>
+              <h3 class="mt-4 text-xl font-semibold leading-snug tracking-tight"><a href={`/blog/${a.slug}`}>{a.title}</a></h3>
+              <p class="mt-3 text-sm leading-7 text-muted-foreground">{a.summary}</p>
+              <a href={`/blog/${a.slug}`} class="link-arrow mt-auto pt-5">Leer artículo <Icon name="arrow" class="size-4" /></a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand eyebrow="Tu clínica, con más posibilidades" title="Hablemos de tu clínica.">
+    <a href="/planes" class="btn btn-ghost-light btn-lg">Ver planes</a>
+    <a href="/demo" class="btn btn-light btn-lg">Solicitar demo <Icon name="arrow" class="size-4" /></a>
+  </CtaBand>
+</Layout>

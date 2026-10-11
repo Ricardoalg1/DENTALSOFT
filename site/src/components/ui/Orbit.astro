@@ -1,0 +1,17 @@
+---
+import Icon from "../Icon.astro";
+const nodes: [string, string, string][] = [
+  ["phone", "WhatsApp", "Recordatorios y confirmaciones de cita."],
+  ["receipt", "Facturación electrónica", "Con un proveedor autorizado."],
+  ["chart", "Reportes y análisis", "Decisiones con datos reales."],
+  ["support", "Soporte", "Acompañamiento en español."],
+];
+---
+
+<div class="orbit" data-reveal="zoom">
+  <span class="orbit-ring" aria-hidden="true"></span>
+  <div class="orbit-core"><img src="/logo_light.png" alt="Occlus" width="96" height="96" class="dark:hidden" /><img src="/logo_dark.png" alt="Occlus" width="96" height="96" class="hidden dark:block" /></div>
+  {nodes.map(([icon, title, text]) => (
+    <div class="orbit-node soft hover"><span class="ico-disc size-11"><Icon name={icon} class="" /></span><span><b>{title}</b><small>{text}</small></span></div>
+  ))}
+</div>

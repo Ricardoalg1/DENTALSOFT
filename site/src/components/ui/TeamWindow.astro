@@ -1,0 +1,28 @@
+---
+import Icon from "../Icon.astro";
+import Side from "./Side.astro";
+const members: [string, string, string, string, string][] = [
+  ["AT", "Dra. Ana Torres", "Administradora", "Sede principal", "#2a9d8f"],
+  ["JP", "Dr. Juan Pérez", "Odontólogo", "Sede Norte", "#3d85d6"],
+  ["CR", "Camila Ruiz", "Recepción", "Sede principal", "#8a6fd6"],
+  ["LM", "Luis Mendoza", "Auxiliar", "Sede Norte", "#d9638a"],
+];
+---
+
+<div class="win anim" role="img" aria-label="Vista ilustrativa de la gestión de equipo con roles y sedes de ejemplo">
+  <div class="win-ui">
+    <Side active="Equipo" />
+    <div class="pane">
+      <div class="win-title"><h4>Equipo</h4><span class="btn-xs"><Icon name="plus" class="size-3" />Invitar usuario</span></div>
+      <div style="display:grid;gap:0.6em">
+        {members.map(([ini, name, role, site, color], k) => (
+          <div class="member" style={`--k:${k}`}>
+            <span class="avatar" style={`--bg:${color}`}>{ini}</span>
+            <b>{name}</b><span class="role">{role}</span>
+            <span class="chip gray">{site}</span><span class="dots">⋮</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>

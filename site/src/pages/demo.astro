@@ -1,6 +1,12 @@
 ---
 import Layout from "../layouts/PublicLayout.astro";
 import DemoForm from "../components/DemoForm.astro";
+import Icon from "../components/Icon.astro";
+import Laptop from "../components/ui/Laptop.astro";
+import LaptopAgenda from "../components/ui/LaptopAgenda.astro";
+import Orbit from "../components/ui/Orbit.astro";
+import Faq from "../components/ui/Faq.astro";
+import CtaBand from "../components/ui/CtaBand.astro";
 import { plans } from "../../../shared/site-content";
 import { z } from "zod";
 import { submitDemo, validOrigin } from "../lib/server";
@@ -67,35 +73,109 @@ if (Astro.request.method === "POST") {
     }
 }
 Astro.response.headers.set("Cache-Control", "no-store");
+const appUrl = import.meta.env.PUBLIC_APP_URL ?? "http://localhost:3000";
+const steps: [string, string][] = [
+  ["Solicita tu demo", "Completa el formulario en un minuto."],
+  ["Hablamos contigo", "Conocemos tu clínica y tus necesidades."],
+  ["Te mostramos Occlus", "Una demo personalizada, sin compromiso."],
+];
+const contact: [string, string, string, string][] = [
+  ["calendar", "Agenda una demo", "Completa el formulario.", "#solicitud"],
+  ["shield", "Aviso de privacidad", "Cómo cuidamos tus datos.", "/privacidad"],
+  ["receipt", "Condiciones comerciales", "Alcances y condiciones.", "/condiciones"],
+  ["support", "Soporte para clientes", "Ingresa a tu clínica.", `${appUrl}/ingresar`],
+];
+const faq: [string, string][] = [
+  ["¿La demo tiene algún costo?", "No. La demo es una conversación para conocer tu clínica y mostrarte Occlus. En este sitio no se realizan cobros."],
+  ["¿Cuánto dura la demo?", "Acordamos la duración contigo según lo que necesites revisar: agenda, historias clínicas, inventario o la operación de tu equipo."],
+  ["¿Necesito tener una clínica en funcionamiento?", "No necesariamente. Si estás por abrir, revisamos contigo cómo organizar la agenda, las historias y los insumos desde el principio."],
+  ["¿Puedo invitar a mi equipo?", "Sí. Puedes invitar a quienes toman decisiones o usarán Occlus a diario; coordinamos la demo para que puedan asistir."],
+  ["¿Qué pasa después de la demo?", "Acordamos el plan, la configuración y el alcance para tu operación. Solicitar la demo no te compromete a contratar."],
+];
 ---
 
-<Layout title="Solicitar demo" noindex={Astro.request.method === "POST"}
-  ><section class="section grid max-w-6xl gap-12 lg:grid-cols-2">
-    <div>
-      <p class="eyebrow">Hablemos de tu clínica</p><h1
-        class="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl"
-      >
-        Descubre una forma más clara de trabajar.
-      </h1><p class="mt-6 text-lg leading-8 text-muted-foreground">
-        Cuéntanos cómo trabaja tu equipo. Exploraremos contigo los flujos de
-        Occlus y el plan que acompaña tu operación.
-      </p><ol class="mt-9 space-y-5 text-sm text-primary">
-        <li>01 · Cuéntanos qué necesitas.</li><li>
-          02 · Revisamos los flujos en una demo.
-        </li><li>03 · Acordamos alcance y configuración.</li>
-      </ol>
-    </div><div
-      class="rounded-3xl border border-border bg-card p-6 md:p-8"
-    >
-      {
-        ok ? (
-          <p role="status" class="rounded-xl bg-accent p-6">
-            Recibimos tu solicitud.
-          </p>
-        ) : (
-          <DemoForm values={values} plan={plan} error={error} />
-        )
-      }
+<Layout title="Solicitar demo" noindex={Astro.request.method === "POST"}>
+  <section class="hero-x hero">
+    <span class="deco fill" style="left:-10rem;top:4rem;width:22rem;height:22rem"></span>
+    <div class="wrap-wide grid items-center gap-10 lg:grid-cols-[minmax(0,0.98fr)_minmax(0,1.02fr)]">
+      <div>
+        <p class="eyebrow rise" style="--d:0">Tu clínica, en sintonía</p>
+        <h1 class="h-display rise mt-5" style="--d:1">Hablemos<br /><span class="grad-text">de tu clínica.</span></h1>
+        <p class="lead rise mt-6 max-w-md" style="--d:2">Conoce cómo Occlus puede simplificar tu día a día.</p>
+      </div>
+      <div class="rise lg:-mr-8" style="--d:3"><Laptop><LaptopAgenda clinic="Clínica Dental" /></Laptop></div>
     </div>
-  </section></Layout
->
+  </section>
+
+  <!-- ===================== FORMULARIO + PASOS ===================== -->
+  <section id="solicitud" class="sec">
+    <div class="wrap-wide grid items-start gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16">
+      <div class="soft p-6 sm:p-9" data-reveal="left">
+        <p class="eyebrow">Solicita una demo</p>
+        <h2 class="mt-3 text-2xl font-semibold tracking-tight sm:text-[1.7rem]">Cuéntanos un poco de tu clínica</h2>
+        <div class="mt-7">
+          {
+            ok ? (
+              <p role="status" class="rounded-xl bg-accent p-6">Recibimos tu solicitud.</p>
+            ) : (
+              <DemoForm values={values} plan={plan} error={error} />
+            )
+          }
+        </div>
+      </div>
+      <div class="lg:pt-6" data-reveal="right">
+        <p class="eyebrow">Un proceso simple</p>
+        <h2 class="h-section mt-3">Así de fácil.</h2>
+        <ol class="steps mt-9">
+          {steps.map(([title, text], i) => (
+            <li class="step">
+              <span class="step-n">{i + 1}</span>
+              <span><b class="block text-lg tracking-tight">{title}</b><span class="text-sm text-muted-foreground">{text}</span></span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONTACTO ===================== -->
+  <section class="sec pt-0">
+    <div class="wrap-wide grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {contact.map(([icon, title, text, href], i) => (
+        <a href={href} class="soft hover flex flex-col gap-4 p-6" data-reveal style={`--i:${i}`}>
+          <span class="ico-disc size-14"><Icon name={icon} class="" /></span>
+          <span><b class="block text-[1.02rem] tracking-tight">{title}</b><span class="mt-1 block text-sm text-muted-foreground">{text}</span></span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- ===================== INTEGRACIONES ===================== -->
+  <section class="sec">
+    <span class="deco fill" style="left:-9rem;top:3rem;width:18rem;height:18rem"></span>
+    <div class="wrap-wide grid items-center gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+      <div data-reveal="right">
+        <p class="eyebrow">Todo conectado</p>
+        <h2 class="h-section mt-3">Integraciones<br />que potencian<br />tu clínica.</h2>
+        <p class="lead mt-5 max-w-sm text-[0.95rem]">Conecta lo que tu clínica necesita y lleva tu gestión más lejos. Cada integración requiere configuración y activación: revisamos su alcance contigo.</p>
+      </div>
+      <Orbit />
+    </div>
+  </section>
+
+  <!-- ===================== PREGUNTAS ===================== -->
+  <section class="sec">
+    <div class="wrap-wide grid gap-10 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)]">
+      <div data-reveal="right">
+        <p class="eyebrow">Preguntas frecuentes</p>
+        <h2 class="h-section mt-3">¿Tienes<br />dudas?</h2>
+        <p class="lead mt-4 text-[0.95rem]">Aquí algunas respuestas rápidas.</p>
+      </div>
+      <Faq items={faq} />
+    </div>
+  </section>
+
+  <CtaBand eyebrow="Tu próximo paso" title="Dale a tu clínica el orden que merece." text="Descubre cómo Occlus puede hacer tu día más simple.">
+    <a href="#solicitud" class="btn btn-light btn-lg">Solicitar demo <Icon name="arrow" class="size-4" /></a>
+  </CtaBand>
+</Layout>

@@ -1,3 +1,5 @@
+import { DocumentSettings } from "@/components/app/document-settings";
+import type { DocumentBranding, DocumentProfile } from "@/lib/documents";
 import type { Metadata } from "next";
 import { ChangePasswordForm } from "@/components/app/change-password-form";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +18,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/cuen
   const changed = (await searchParams).cambiada === "1";
   const sub = me.subscription;
   const billing = me.role === "ADMIN" ? await api<SubscriptionState>("/api/subscription") : null;
+  const [brand, profile] = await Promise.all([api<DocumentBranding>("/api/clinic/document-branding"),api<DocumentProfile>("/api/users/me/document-profile")]);
   return (
     <div className="grid max-w-3xl gap-6">
       <div>
@@ -58,6 +61,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/cuen
         </Card>
       )}
 
+      <DocumentSettings brand={brand} profile={profile} admin={me.role === "ADMIN"} />
       <SessionsCard />
 
       <Card>

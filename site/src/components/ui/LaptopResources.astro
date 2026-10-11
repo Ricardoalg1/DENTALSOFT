@@ -1,0 +1,26 @@
+---
+import Icon from "../Icon.astro";
+import Side from "./Side.astro";
+import { articles } from "../../../../shared/site-content";
+const colors = ["#3d85d6", "#2a9d8f", "#8a6fd6"];
+---
+
+<div class="lp-ui" role="img" aria-label="Vista ilustrativa de la sección de recursos de Occlus">
+  <Side active="Recursos" items={[["calendar", "Agenda"], ["clinical", "Historias"], ["wallet", "Caja"], ["box", "Inventario"], ["book", "Recursos"], ["chart", "Reportes"]]} />
+  <div class="pane">
+    <b style="font-size:1.25em;letter-spacing:-0.02em">Recursos</b>
+    <div class="search" style="flex:none"><Icon name="search" class="" />Buscar recursos…</div>
+    <div style="display:flex;gap:0.5em;font-size:0.72em">
+      <span class="chip info">Todos</span><span class="chip gray">Artículos</span><span class="chip gray">Guías</span>
+    </div>
+    <div style="display:grid;gap:0.5em">
+      {articles.slice(0, 3).map((a, k) => (
+        <div class="row-appt" style={`--k:${k};grid-template-columns:3em 1fr auto`}>
+          <span class="avatar" style={`--bg:${colors[k]};border-radius:0.6em;width:2.8em;height:2.2em`}><Icon name="book" class="" /></span>
+          <span><b>{a.title}</b><small>{a.category}</small></span>
+          <span style="color:#8a9aa6">›</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>

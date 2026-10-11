@@ -11,6 +11,7 @@ export function PatientTabs({ patientId, clinical, treatments }: { patientId: st
     { href: base, label: "Resumen", active: pathname === base || pathname === `${base}/editar` },
     ...(clinical
       ? [
+          { href: `${base}/formulas`, label: "Fórmulas médicas", active: pathname.startsWith(`${base}/formulas`) },
           { href: `${base}/historia`, label: "Historia clínica", active: pathname.startsWith(`${base}/historia`) },
           { href: `${base}/odontograma`, label: "Odontograma", active: pathname.startsWith(`${base}/odontograma`) },
           { href: `${base}/archivos`, label: "Archivos", active: pathname.startsWith(`${base}/archivos`) },

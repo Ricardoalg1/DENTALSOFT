@@ -1,0 +1,20 @@
+---
+import { plans, money } from "../../../../shared/site-content";
+const shown = plans.slice(0, 3);
+---
+
+<div class="plans">
+  {shown.map((p) => {
+    const hot = p.id === "CRECIMIENTO";
+    return (
+      <div class:list={["plan", hot && "hot"]}>
+        {hot && <span class="ribbon">Más popular</span>}
+        <b>{p.name}</b>
+        <small>{p.users}</small>
+        <span class="price">${money(p.monthly ?? 0)}</span>
+        <small>COP/mes</small>
+        <a href={`/demo?plan=${p.id}`} class="btn-plan">Comenzar</a>
+      </div>
+    );
+  })}
+</div>

@@ -8,7 +8,7 @@ interface Props {
 const { values, plan, error } = Astro.props;
 ---
 
-<form method="POST" action="/demo" class="grid gap-5">
+<form method="POST" action="/demo" class="form-x grid gap-5">
   <div class="grid gap-5 sm:grid-cols-2">
     <label class="text-sm font-medium"
       >Tu nombre<input
@@ -110,10 +110,10 @@ const { values, plan, error } = Astro.props;
         {error}
       </p>
     )
-  }<button class="btn" type="submit">Solicitar mi demo →</button><p
+  }<button class="btn btn-lg w-full" type="submit">Solicitar mi demo →</button><p
     class="text-xs leading-6 text-muted-foreground"
   >
-    Registramos tu solicitud. Este formulario no realiza cobros ni envía
+    Registramos tu solicitud y te contactamos. Este formulario no realiza cobros ni envía
     mensajes automáticos.
   </p>
 </form>

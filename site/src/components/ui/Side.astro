@@ -1,0 +1,10 @@
+---
+import Icon from "../Icon.astro";
+interface Props { active?: string; items?: [string, string][] }
+const { active = "Agenda", items = [["calendar", "Agenda"], ["clinical", "Historias"], ["wallet", "Caja"], ["box", "Inventario"], ["chart", "Reportes"], ["team", "Equipo"]] } = Astro.props;
+---
+
+<aside class="side">
+  <div class="side-brand"><Icon name="tooth" class="" />OCCLUS</div>
+  {items.map(([icon, label]) => <div class:list={["side-item", label === active && "on"]}><Icon name={icon} class="" />{label}</div>)}
+</aside>

@@ -1,0 +1,24 @@
+---
+import Icon from "../Icon.astro";
+interface Props { category: string; index?: number }
+const { category, index = 0 } = Astro.props;
+const byCat: Record<string, [string, string, string]> = {
+  Agenda: ["#cfe6f7", "#e5f2f1", "calendar"],
+  Inventario: ["#d4efe6", "#e9f4ef", "box"],
+  Presupuestos: ["#ece4f8", "#e5f2f1", "wallet"],
+};
+const fallback: [string, string, string][] = [["#cfe6f7", "#e5f2f1", "clinical"], ["#d4efe6", "#eef6f1", "chart"], ["#ece4f8", "#e5f2f1", "team"]];
+const [c1, c2, icon] = byCat[category] ?? fallback[index % fallback.length];
+---
+
+<div class="cover" style={`--c1:${c1};--c2:${c2}`} aria-hidden="true">
+  <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice">
+    <circle cx="260" cy="40" r="90" fill="#fff" fill-opacity=".45"></circle>
+    <circle cx="50" cy="180" r="70" fill="#2a7f8b" fill-opacity=".12"></circle>
+    <circle cx="150" cy="30" r="10" fill="#2a7f8b" fill-opacity=".25"></circle>
+    <circle cx="285" cy="160" r="6" fill="#2a7f8b" fill-opacity=".3"></circle>
+    <rect x="40" y="48" width="100" height="10" rx="5" fill="#fff" fill-opacity=".7"></rect>
+    <rect x="40" y="68" width="70" height="8" rx="4" fill="#fff" fill-opacity=".55"></rect>
+  </svg>
+  <span class="absolute inset-0 grid place-items-center text-primary"><span class="grid size-20 place-items-center rounded-3xl bg-white/80 shadow-lg backdrop-blur"><Icon name={icon} class="size-9" /></span></span>
+</div>

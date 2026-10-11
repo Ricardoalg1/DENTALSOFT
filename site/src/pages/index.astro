@@ -1,298 +1,131 @@
 ---
 import Layout from "../layouts/PublicLayout.astro";
 import Icon from "../components/Icon.astro";
+import Laptop from "../components/ui/Laptop.astro";
+import LaptopAgenda from "../components/ui/LaptopAgenda.astro";
+import FeatureStrip from "../components/ui/FeatureStrip.astro";
+import AgendaWindow from "../components/ui/AgendaWindow.astro";
+import InventoryWindow from "../components/ui/InventoryWindow.astro";
+import TeamWindow from "../components/ui/TeamWindow.astro";
+import CtaBand from "../components/ui/CtaBand.astro";
 export const prerender = true;
-const features = [
-  [
-    "calendar",
-    "Una agenda que fluye",
-    "Coordina citas, profesionales y sedes. Dale a recepción una visión clara del día.",
-  ],
-  [
-    "clinical",
-    "Cada historia, en su lugar",
-    "Reúne evoluciones, odontograma y archivos con acceso según el rol del equipo.",
-  ],
-  [
-    "wallet",
-    "De la propuesta al pago",
-    "Organiza tratamientos y presupuestos. Registra cobros y movimientos de caja.",
-  ],
-  [
-    "box",
-    "Insumos bajo control",
-    "Consulta existencias, registra consumos y revisa lotes y fechas de vencimiento.",
-  ],
-  [
-    "chart",
-    "Datos para decidir",
-    "Revisa la actividad de tu clínica y los ingresos para planear el siguiente paso.",
-  ],
-  [
-    "team",
-    "Tu equipo, conectado",
-    "Define roles y organiza sedes con información compartida dentro de tu clínica.",
-  ],
+
+const strip: [string, string][] = [
+  ["calendar", "Agenda"],
+  ["clinical", "Historia clínica"],
+  ["wallet", "Caja"],
+  ["box", "Inventario"],
+  ["chart", "Reportes"],
+];
+const pillars: [string, string, string][] = [
+  ["calendar", "Agenda simple", "Coordina citas sin esfuerzo."],
+  ["clinical", "Historias en su lugar", "Toda la información, siempre accesible."],
+  ["chart", "Decisiones con datos", "Conoce el estado de tu clínica en tiempo real."],
 ];
 ---
 
-<Layout
-  ><section class="section grid items-center gap-12 lg:grid-cols-[1fr_1.05fr]">
-    <div>
-      <p
-        class="eyebrow inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-2"
-      >
-        <span class="size-1.5 rounded-full bg-primary"></span>Tu clínica, en
-        sintonía
-      </p><h1
-        class="mt-7 text-5xl font-semibold leading-[1.06] tracking-[-.045em] sm:text-6xl lg:text-7xl"
-      >
-        Menos pendientes.<br /><span class="text-primary">Más sonrisas.</span>
-      </h1><p class="mt-7 max-w-lg text-lg leading-8 text-muted-foreground">
-        Occlus conecta la agenda, las historias clínicas y la operación de tu
-        equipo. Todo encuentra su lugar, para que puedas concentrarte en tus
-        pacientes.
-      </p><div class="mt-9 flex flex-wrap gap-3">
-        <a href="/demo" class="btn"
-          >Conoce Occlus <Icon name="arrow" class="size-4" /></a
-        ><a href="/planes" class="btn btn-outline">Explorar planes</a>
-      </div><p class="mt-5 text-xs text-muted-foreground">
-        Desde $99.000 COP al mes · Para equipos de 1 a 5 usuarios
-      </p>
-    </div><div class="relative">
-      <div
-        class="absolute -left-4 -top-5 size-36 rounded-full bg-brand-glow blur-2xl"
-        aria-hidden="true"
-      >
-      </div><div
-        class="relative overflow-hidden rounded-[2rem] border border-border bg-card shadow-2xl shadow-brand-deep/10"
-      >
-        <div
-          class="flex items-center justify-between border-b border-border bg-brand-deep px-5 py-4 text-white"
-        >
-          <span class="text-sm font-semibold">O · Occlus</span><span
-            class="text-[10px] text-teal-100">Clínica de ejemplo</span>
-        </div><div class="grid grid-cols-[44px_1fr] sm:grid-cols-[120px_1fr]">
-          <div
-            class="border-r border-border bg-muted px-3 py-5 text-xs text-muted-foreground"
-          >
-            <div class="mb-4 flex gap-2 rounded-lg bg-primary p-2 text-primary-foreground">
-              <Icon name="calendar" class="size-4" /><span
-                class="hidden sm:inline">Agenda</span>
-            </div>{
-              [
-                ["clinical", "Historias"],
-                ["wallet", "Caja"],
-                ["box", "Inventario"],
-                ["chart", "Reportes"],
-              ].map(([icon, title]) => (
-                <div class="mb-4 flex items-center gap-2 p-2">
-                  <>
-                    <Icon name={icon} class="size-4" />
-                    <span class="hidden sm:inline">{title}</span>
-                  </>
-                </div>
-              ))
-            }
-          </div><div class="p-4 sm:p-6">
-            <div class="flex items-start justify-between">
-              <div>
-                <p class="text-xs text-muted-foreground">
-                  Así se ve un día organizado
-                </p><h2 class="mt-1 text-lg font-semibold">
-                  Agenda del equipo
-                </h2>
-              </div><span class="rounded-lg border px-2 py-1 text-[10px]"
-                >Vista diaria</span>
-            </div><div class="mt-5 grid grid-cols-3 gap-2">
-              {
-                [
-                  ["08", "Citas"],
-                  ["03", "Profesionales"],
-                  ["02", "Sedes"],
-                ].map(([v, l]) => (
-                  <div class="rounded-xl bg-muted p-3">
-                    <>
-                      <strong class="text-xl font-semibold">{v}</strong>
-                      <p class="mt-1 text-[10px] text-muted-foreground">{l}</p>
-                    </>
-                  </div>
-                ))
-              }
-            </div><div class="mt-5 space-y-3">
-              {
-                [
-                  ["09:00", "Valoración inicial", "Confirmada", "bg-accent"],
-                  [
-                    "10:00",
-                    "Control de tratamiento",
-                    "En atención",
-                    "bg-muted",
-                  ],
-                  ["11:30", "Seguimiento", "Programada", "bg-muted"],
-                ].map(([time, title, status, color]) => (
-                  <div
-                    class:list={[
-                      "flex items-center gap-3 rounded-xl border border-border p-3",
-                      color,
-                    ]}
-                  >
-                    <>
-                      <span class="text-[10px] text-muted-foreground">{time}</span>
-                      <div class="min-w-0 flex-1">
-                        <>
-                          <p class="text-xs font-semibold">{title}</p>
-                          <p class="mt-1 text-[10px] text-muted-foreground">
-                            Paciente de ejemplo
-                          </p>
-                        </>
-                      </div>
-                      <span class="hidden rounded-full bg-card px-2 py-1 text-[9px] text-primary sm:block">
-                        {status}
-                      </span>
-                    </>
-                  </div>
-                ))
-              }
-            </div><div
-              class="mt-5 flex items-center gap-2 text-[10px] text-muted-foreground"
-            >
-              <Icon name="shield" class="size-3" />Acceso según el rol del
-              equipo
-            </div>
-          </div>
+<Layout>
+  <!-- ===================== HERO ===================== -->
+  <section class="hero-x hero">
+    <span class="deco fill" style="left:-10rem;top:5rem;width:24rem;height:24rem"></span>
+    <span class="deco fill" style="right:-12rem;bottom:-8rem;width:26rem;height:26rem"></span>
+    <div class="wrap-wide grid items-center gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+      <div>
+        <p class="eyebrow rise" style="--d:0">Tu clínica, en sintonía</p>
+        <h1 class="h-display rise mt-5" style="--d:1">
+          Menos pendientes.<br /><span class="grad-text">Más sonrisas.</span>
+        </h1>
+        <p class="lead rise mt-6 max-w-md" style="--d:2">
+          El software de gestión para clínicas dentales que simplifica tu día a día.
+        </p>
+        <div class="rise mt-8 flex flex-wrap gap-3" style="--d:3">
+          <a href="/demo" class="btn btn-lg">Solicitar demo <Icon name="arrow" class="size-4" /></a>
+          <a href="/producto" class="btn btn-lg btn-outline">Conoce Occlus</a>
         </div>
-      </div><p class="mt-4 text-center text-[10px] text-muted-foreground">
-        Vista ilustrativa · Datos de ejemplo
-      </p>
+      </div>
+      <div class="rise lg:-mr-10" style="--d:3"><Laptop><LaptopAgenda /></Laptop></div>
     </div>
-  </section><div class="border-y border-border bg-card/60">
-    <div
-      class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-6 text-sm text-primary"
-    >
-      <span class="font-semibold">Un mismo lugar para tu operación</span>{
-        [
-          "Agenda",
-          "Historia clínica",
-          "Presupuestos",
-          "Caja",
-          "Inventario",
-        ].map((t) => (
-          <span class="flex items-center gap-2">
-            <Icon name="check" class="size-4" />
-            {t}
-          </span>
-        ))
-      }
+  </section>
+
+  <FeatureStrip items={strip} />
+
+  <!-- ===================== TODO EN UN SOLO LUGAR ===================== -->
+  <section class="sec">
+    <span class="deco fill" style="left:-9rem;bottom:-4rem;width:18rem;height:18rem"></span>
+    <div class="wrap-wide grid items-center gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)]">
+      <div data-reveal="right">
+        <p class="eyebrow">Todo en un solo lugar</p>
+        <h2 class="h-section mt-4">Una clínica<br />más ordenada.</h2>
+        <p class="lead mt-5 max-w-sm text-[0.95rem]">
+          Las herramientas esenciales para que tu equipo trabaje mejor, cada día.
+        </p>
+      </div>
+      <ul class="grid gap-4 sm:grid-cols-3">
+        {pillars.map(([icon, title, text], i) => (
+          <li class="soft hover p-6" data-reveal style={`--i:${i + 1}`}>
+            <span class="ico-disc size-14"><Icon name={icon} class="" /></span>
+            <h3 class="h-card mt-6">{title}</h3>
+            <p class="mt-2 text-[0.82rem] leading-6 text-muted-foreground">{text}</p>
+          </li>
+        ))}
+      </ul>
     </div>
-  </div><section id="producto" class="section">
-    <div class="flex flex-wrap items-end justify-between gap-6">
-      <div>
-        <p class="eyebrow">Todo encuentra su lugar</p><h2
-          class="mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-tight md:text-5xl"
-        >
-          El día a día de tu clínica,<br />con un poco más de calma.
-        </h2>
-      </div><p class="max-w-sm text-sm leading-7 text-muted-foreground">
-        Herramientas prácticas para coordinar el trabajo clínico, administrativo
-        y de recepción.
-      </p>
-    </div><div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {
-        features.map(([icon, title, text]) => (
-          <article class="rounded-2xl border border-border bg-card p-7">
-            <>
-              <div class="grid size-12 place-items-center rounded-xl bg-accent text-primary">
-                <Icon name={icon} />
-              </div>
-              <h3 class="mt-6 text-xl font-semibold tracking-tight">{title}</h3>
-              <p class="mt-3 text-sm leading-7 text-muted-foreground">{text}</p>
-            </>
-          </article>
-        ))
-      }
+    <div class="mt-10 text-center" data-reveal style="--i:3">
+      <a href="/producto" class="btn btn-outline btn-lg">Ver el producto en detalle <Icon name="arrow" class="size-4" /></a>
     </div>
-  </section><section class="mx-auto max-w-7xl px-6 pb-20">
-    <div
-      class="grid gap-10 rounded-[2rem] bg-accent p-8 md:grid-cols-2 md:p-12"
-    >
-      <div>
-        <p class="eyebrow">Una clínica. Un equipo.</p><h2
-          class="mt-4 text-3xl font-semibold tracking-tight"
-        >
-          Crece con una operación más clara.
-        </h2><p class="mt-5 text-sm leading-7 text-muted-foreground">
-          Desde un consultorio hasta un equipo con varias sedes, Occlus te ayuda
-          a organizar la información y los permisos de tu clínica.
-        </p><a href="/planes" class="btn mt-7"
-          >Encuentra tu plan <Icon name="arrow" class="size-4" /></a>
-      </div><ol class="space-y-5">
-        {
-          [
-            [
-              "01",
-              "Cuéntanos cómo trabajas",
-              "Conocemos el tamaño del equipo y lo que necesitas organizar.",
-            ],
-            [
-              "02",
-              "Revisa los flujos en una demo",
-              "Exploramos agenda, historia clínica y gestión con ejemplos.",
-            ],
-            [
-              "03",
-              "Define el siguiente paso",
-              "Acordamos plan, configuración y alcance para tu operación.",
-            ],
-          ].map(([number, title, text]) => (
-            <li class="flex gap-4 rounded-2xl bg-card/60 p-5">
-              <>
-                <span class="text-xs font-semibold text-primary">
-                  {number}
-                </span>
-                <div>
-                  <>
-                    <h3 class="font-semibold">{title}</h3>
-                    <p class="mt-2 text-sm leading-6 text-muted-foreground">{text}</p>
-                  </>
-                </div>
-              </>
-            </li>
-          ))
-        }
-      </ol>
-    </div>
-  </section><section class="mx-auto max-w-7xl px-6 pb-20">
-    <div class="grid gap-8 md:grid-cols-2">
-      <div>
-        <p class="eyebrow">Complementos e integraciones</p><h2
-          class="mt-4 text-3xl font-semibold tracking-tight"
-        >
-          Conecta lo que tu clínica necesita.
-        </h2>
-      </div><div>
-        <p class="text-sm leading-7 text-muted-foreground">
-          La emisión electrónica a través de un proveedor, los envíos por
-          WhatsApp y el asistente IA requieren configuración y activación.
-          Revisamos su disponibilidad y alcance contigo antes de incorporarlos a
-          tu operación.
-        </p><a
-          href="/demo"
-          class="mt-5 inline-flex gap-2 text-sm font-semibold text-primary"
-          >Conversar sobre integraciones <Icon
-            name="arrow"
-            class="size-4"
-          /></a>
+  </section>
+
+  <!-- ===================== AGENDA ===================== -->
+  <section class="sec">
+    <span class="deco ring" style="right:-17rem;top:6rem;width:26rem;height:26rem"></span>
+    <span class="deco fill" style="left:-7rem;bottom:0;width:16rem;height:16rem"></span>
+    <div class="wrap-wide feature-row">
+      <div data-reveal="left"><AgendaWindow /></div>
+      <div class="feature-text" data-reveal="right">
+        <p class="eyebrow">Agenda</p>
+        <h2 class="h-section mt-4">Tu día, más simple.</h2>
+        <p class="lead mt-5 max-w-sm text-[0.98rem]">Organiza citas, profesionales y sedes en un solo lugar.</p>
+        <a href="/producto#agenda" class="link-arrow mt-7">Conocer más <Icon name="arrow" class="size-4" /></a>
       </div>
     </div>
-  </section><section class="bg-primary px-6 py-16 text-center text-primary-foreground">
-    <p class="eyebrow !text-inherit">Tu próximo paso</p><h2
-      class="mx-auto mt-4 max-w-2xl text-4xl font-semibold tracking-tight"
-    >
-      Dale a tu clínica el orden que merece.
-    </h2><p class="mx-auto mt-5 max-w-xl text-sm leading-7 opacity-90">
-      Conoce Occlus y descubre cómo encaja en la rutina de tu equipo.
-    </p><a href="/demo" class="btn mt-7 bg-card text-primary hover:bg-accent"
-      >Solicitar mi demo <Icon name="arrow" class="size-4" /></a>
-  </section></Layout
->
+  </section>
+
+  <!-- ===================== INVENTARIO ===================== -->
+  <section class="sec">
+    <span class="deco fill" style="right:-8rem;bottom:-3rem;width:20rem;height:20rem"></span>
+    <div class="wrap-wide feature-row flip">
+      <div data-reveal="right"><InventoryWindow /></div>
+      <div class="feature-text" data-reveal="left">
+        <p class="eyebrow">Inventario</p>
+        <h2 class="h-section mt-4">Control total<br />de tus insumos.</h2>
+        <p class="lead mt-5 max-w-sm text-[0.98rem]">Registra consumos, revisa existencias y evita faltantes.</p>
+        <a href="/producto#inventario" class="link-arrow mt-7">Conocer más <Icon name="arrow" class="size-4" /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EQUIPO ===================== -->
+  <section class="sec">
+    <span class="deco fill" style="left:-9rem;top:0;width:18rem;height:18rem"></span>
+    <div class="wrap-wide feature-row">
+      <div data-reveal="left"><TeamWindow /></div>
+      <div class="feature-text" data-reveal="right">
+        <p class="eyebrow">Tu equipo</p>
+        <h2 class="h-section mt-4">Crece con un<br />equipo conectado.</h2>
+        <p class="lead mt-5 max-w-sm text-[0.98rem]">Define roles, gestiona sedes y mantén todo en orden.</p>
+        <a href="/producto" class="link-arrow mt-7">Conocer más <Icon name="arrow" class="size-4" /></a>
+      </div>
+    </div>
+  </section>
+
+  <p class="wrap pb-6 text-center text-[0.72rem] leading-6 text-muted-foreground">
+    Vistas ilustrativas con datos de ejemplo. La emisión electrónica con un proveedor, los envíos por WhatsApp y el asistente IA requieren configuración y activación.
+  </p>
+
+  <CtaBand
+    title="Dale a tu clínica el orden que merece."
+    text="Conoce Occlus y descubre una forma más simple de gestionar tu clínica."
+  >
+    <a href="/demo" class="btn btn-light btn-lg">Solicitar demo <Icon name="arrow" class="size-4" /></a>
+  </CtaBand>
+</Layout>

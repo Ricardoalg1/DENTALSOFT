@@ -1,0 +1,15 @@
+---
+const bars = [22, 34, 28, 52, 40, 66, 58, 88, 62, 70, 94, 100];
+---
+
+<div class="mock mock-card rep anim" role="img" aria-label="Vista ilustrativa de un reporte de producción mensual con datos de ejemplo">
+  <div class="rep-head"><span>Producción mensual</span><span class="rep-pill">Este año ⌄</span></div>
+  <div class="rep-chart">
+    <span class="rep-axis" aria-hidden="true"><span>50</span><span>40</span><span>30</span><span>20</span><span>10</span><span>0</span></span>
+    {bars.map((h, k) => <i style={`height:${h}%;--k:${k}`}></i>)}
+  </div>
+  <div class="rep-kpis">
+    <div class="rep-kpi">Recaudado<b data-count="12480000" data-format="cop">$ 12.480.000</b><em>↗ 18%</em></div>
+    <div class="rep-kpi">Pacientes atendidos<b data-count="186">186</b><em>↗ 12%</em></div>
+  </div>
+</div>

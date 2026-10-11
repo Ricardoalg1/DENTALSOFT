@@ -1,0 +1,41 @@
+---
+interface Props { kind: "chair" | "team" | "sites" }
+const { kind } = Astro.props;
+---
+
+<div class="scene" aria-hidden="true">
+  <svg viewBox="0 0 320 152" preserveAspectRatio="xMidYMid slice">
+    <circle cx="270" cy="30" r="64" fill="#fff" fill-opacity=".45"></circle>
+    <ellipse cx="160" cy="146" rx="150" ry="16" fill="#2a7f8b" fill-opacity=".14"></ellipse>
+    {kind === "chair" && (
+      <g>
+        <rect x="150" y="96" width="16" height="44" rx="7" fill="#7ab3b8"></rect>
+        <ellipse cx="158" cy="140" rx="46" ry="7" fill="#7ab3b8"></ellipse>
+        <path d="M110 98c0-9 7-14 18-14h60c9 0 14 5 14 13v4c0 6-5 10-12 10h-66c-9 0-14-5-14-13Z" fill="#fff"></path>
+        <path d="M188 88 224 36c5-7 15-6 19 2l6 16c3 6 0 11-5 15l-44 34c-5 3-10 1-12-5l-6-14c-1-4-1-6 2-8Z" fill="#cfe9ea"></path>
+        <rect x="222" y="22" width="34" height="18" rx="9" transform="rotate(-24 239 31)" fill="#fff"></rect>
+        <path d="M96 100 66 124c-5 4-3 10 3 10h16c5 0 8-2 12-6l12-14Z" fill="#cfe9ea"></path>
+        <path d="M270 14c-18 0-32 12-36 32" fill="none" stroke="#7ab3b8" stroke-width="5" stroke-linecap="round"></path>
+        <ellipse cx="232" cy="52" rx="19" ry="7" transform="rotate(-18 232 52)" fill="#fff"></ellipse>
+      </g>
+    )}
+    {kind === "team" && (
+      <g>
+        <circle cx="110" cy="62" r="20" fill="#7ab3b8"></circle><path d="M72 128c0-24 17-38 38-38s38 14 38 38Z" fill="#7ab3b8"></path>
+        <circle cx="210" cy="62" r="20" fill="#2a7f8b" fill-opacity=".75"></circle><path d="M172 128c0-24 17-38 38-38s38 14 38 38Z" fill="#2a7f8b" fill-opacity=".75"></path>
+        <circle cx="160" cy="52" r="24" fill="#fff"></circle><path d="M116 134c0-28 20-44 44-44s44 16 44 44Z" fill="#fff"></path>
+        <circle cx="160" cy="52" r="24" fill="none" stroke="#2a7f8b" stroke-opacity=".25"></circle>
+      </g>
+    )}
+    {kind === "sites" && (
+      <g>
+        <rect x="60" y="70" width="64" height="70" rx="6" fill="#fff"></rect>
+        <rect x="132" y="38" width="76" height="102" rx="6" fill="#cfe9ea"></rect>
+        <rect x="216" y="82" width="52" height="58" rx="6" fill="#fff"></rect>
+        {[0, 1, 2].map((r) => [0, 1].map((c) => <rect x={146 + c * 30} y={52 + r * 26} width="14" height="14" rx="3" fill="#2a7f8b" fill-opacity=".45"></rect>))}
+        {[0, 1].map((r) => [0, 1].map((c) => <rect x={72 + c * 26} y={84 + r * 26} width="12" height="12" rx="3" fill="#2a7f8b" fill-opacity=".3"></rect>))}
+        {[0, 1].map((c) => <rect x={228 + c * 22} y="96" width="10" height="10" rx="3" fill="#2a7f8b" fill-opacity=".3"></rect>)}
+      </g>
+    )}
+  </svg>
+</div>

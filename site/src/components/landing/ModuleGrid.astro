@@ -1,0 +1,26 @@
+---
+import Icon from "../Icon.astro";
+const modules: [string, string, string, string][] = [
+  ["calendar", "Agenda inteligente", "tint-blue", "Agenda inteligente"],
+  ["user", "Pacientes y contactos", "tint-teal", "Pacientes y contactos"],
+  ["clinical", "Historias clínicas", "tint-violet", "Historias clínicas"],
+  ["cart", "Tratamientos y caja", "tint-orange", "Tratamientos y caja"],
+  ["receipt", "Facturación y RIPS", "tint-violet", "Facturación y RIPS"],
+  ["box", "Inventario y sedes", "tint-teal", "Inventario y sedes"],
+  ["chart", "Reportes y estadísticas", "tint-blue", "Reportes y estadísticas"],
+  ["chat", "Mensajes y recordatorios", "tint-teal", "Mensajes y recordatorios"],
+  ["team", "Gestión de equipo", "tint-blue", "Gestión de equipo"],
+  ["cog", "Configuración flexible", "tint-orange", "Configuración flexible"],
+];
+---
+
+<ul class="grid grid-cols-3 gap-x-2 gap-y-8 sm:grid-cols-5">
+  {modules.map(([icon, label, tint, html], i) => (
+    <li data-reveal style={`--i:${i + 2}`}>
+      <div class:list={["mod", tint]} style={`--i:${i}`} aria-label={label}>
+        <span class="mod-ico"><Icon name={icon} class="" /></span>
+        <span set:html={html} />
+      </div>
+    </li>
+  ))}
+</ul>

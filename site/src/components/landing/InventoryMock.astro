@@ -1,0 +1,20 @@
+---
+import Icon from "../Icon.astro";
+const items: [string, string, string, string, string, string, string][] = [
+  ["Anestésico 2%", "Caja · Lote A123", "15", "ok", "En stock", "tint-orange", "box"],
+  ["Guantes nitrilo", "Caja · Lote G456", "3", "low", "Stock bajo", "tint-orange", "box"],
+  ["Resina compuesta", "Caja · Lote R789", "0", "out", "Vencido", "tint-blue", "layers"],
+];
+---
+
+<div class="mock mock-card inv anim" role="img" aria-label="Vista ilustrativa del inventario de insumos con existencias de ejemplo">
+  <div class="inv-head"><span>Insumos</span><span class="inv-btn">+ Nuevo insumo</span></div>
+  {items.map(([name, sub, qty, kind, label, tint, icon], k) => (
+    <div class="inv-row" style={`--k:${k}`}>
+      <span class:list={["inv-ico", tint]}><Icon name={icon} class="" /></span>
+      <div><b>{name}</b><small>{sub}</small></div>
+      <span class={`qty ${kind}`}>{qty}</span>
+      <span class={`stock ${kind}`}>{label}</span>
+    </div>
+  ))}
+</div>

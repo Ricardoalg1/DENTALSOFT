@@ -1,3 +1,4 @@
+import { ClinicDocumentHeader, ProfessionalSignature } from "@/components/app/document-identity";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { FileText, ShieldCheck, ShieldAlert, ArrowLeft } from "lucide-react";
@@ -31,6 +32,7 @@ export default async function NoteDocument({
   }
   if (note.status !== "SIGNED")
     redirect(`/app/pacientes/${note.patient.id}/historia/${note.id}`);
+  const signature = await api<{name: string;registration: string;signatureId: string|null}>(`/api/clinical-notes/${note.id}/document-signature`);
   const fields = [
     ["Motivo de consulta", note.reason],
     ["Enfermedad actual", note.currentIllness],
@@ -68,7 +70,8 @@ export default async function NoteDocument({
         emailEnabled={false}
       />
       <article className="clinical-paper rounded-sm border bg-card p-6 shadow-lg sm:p-12">
-        <header className="mb-8 border-b-2 border-primary pb-6">
+        <ClinicDocumentHeader />
+        <header className="mt-6 mb-8 border-b-2 border-primary pb-6">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             {me.clinicName} · Occlus
           </p>
@@ -110,6 +113,7 @@ export default async function NoteDocument({
             </p>
           </section>
         ))}
+        <ProfessionalSignature {...signature} />
         <footer className="mt-10 grid gap-2 border-t pt-5 text-xs text-muted-foreground">
           <p>Firmada el {note.signedAt && formatDateTime(note.signedAt)}</p>
           <p className="flex items-center gap-2">

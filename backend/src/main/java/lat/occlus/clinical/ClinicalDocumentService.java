@@ -1,6 +1,5 @@
 package lat.occlus.clinical;
 
-import java.io.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -8,9 +7,6 @@ import lat.occlus.clinic.ClinicRepository;
 import lat.occlus.shared.security.AuthUser;
 import lat.occlus.shared.web.*;
 import lombok.RequiredArgsConstructor;
-import org.apache.pdfbox.pdmodel.*;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +16,9 @@ public class ClinicalDocumentService {
     private final ClinicalNoteService notes;
     private final ClinicalBackgroundService backgrounds;
     private final ClinicRepository clinics;
-    public record Document(String clinic, UUID patientId, String patient, String identification, LocalDate birthDate,
+    private final DocumentBrandingService branding;
+    private final BrandedPdfRenderer renderer;
+    public record Document(UUID clinicId, DocumentBrandingService.Branding branding, Map<UUID,DocumentBrandingService.Evidence> signatures, String clinic, UUID patientId, String patient, String identification, LocalDate birthDate,
                            Instant generatedAt, ClinicalDtos.BackgroundResponse background, List<ClinicalDtos.NoteResponse> notes) {}
 
     @Transactional(readOnly=true)
@@ -36,21 +34,17 @@ public class ClinicalDocumentService {
             if (!Boolean.TRUE.equals(note.integrityOk())) throw new ConflictException("La evolución no supera la comprobación de integridad");
             content = List.of(note);
         }
-        return new Document(clinic.getName(), patientId, patient.fullName(), patient.getDocumentType()+" "+patient.getDocumentNumber(), patient.getBirthDate(), Instant.now(), backgrounds.get(me.clinicId(), patientId), content);
+        var signatures=new HashMap<UUID,DocumentBrandingService.Evidence>();
+        for(var n:content){var evidence=branding.evidence(me.clinicId(),n.id());if(evidence!=null)signatures.put(n.id(),evidence);}
+        return new Document(me.clinicId(),branding.branding(me.clinicId()),signatures,clinic.getName(), patientId, patient.fullName(), patient.getDocumentType()+" "+patient.getDocumentNumber(), patient.getBirthDate(), Instant.now(), backgrounds.get(me.clinicId(), patientId), content);
     }
 
     public byte[] pdf(Document data) {
-        try (var pdf = new PDDocument(); var out = new ByteArrayOutputStream();
-             var fontData = getClass().getResourceAsStream("/fonts/NotoSans-Regular.ttf")) {
-            if (fontData == null) throw new IOException("Font unavailable");
-            var font = PDType0Font.load(pdf, fontData);
-            pdf.getDocumentInformation().setTitle("Historia clínica odontológica");
-            pdf.getDocumentInformation().setAuthor(data.clinic());
+        var signatureMarkers=new HashMap<String,UUID>();
             var lines = new ArrayList<String>();
-            lines.add("OCCLUS | " + data.clinic());
             lines.add("HISTORIA CLÍNICA ODONTOLÓGICA");
             lines.add(data.patient()); lines.add(data.identification());
-            lines.add("Nacimiento: " + data.birthDate());
+            lines.add("Nacimiento: " + data.birthDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
             lines.add("Copia generada: " + time(data.generatedAt()));
             lines.add("Documento confidencial. Incluye evoluciones firmadas y antecedentes actuales.");
             lines.add("No incluye imágenes, odontograma ni consentimientos adjuntos.");
@@ -72,6 +66,8 @@ public class ClinicalDocumentService {
                 if(note.diagnosisType()!=null) lines.add("Tipo diagnóstico: " + diagnosisLabel(note.diagnosisType()));
                 for(var dx:note.diagnosisRelated()) lines.add("Relacionado: " + dx.display()+" "+dx.description());
                 field(lines,"Procedimientos",note.procedures()); field(lines,"Plan e indicaciones",note.plan());
+                var evidence=data.signatures().get(note.id());
+                if(evidence!=null){var marker="FIRMA | "+note.id();lines.add(marker);lines.add(evidence.name()+" | Registro: "+evidence.registration());if(evidence.signatureId()!=null)signatureMarkers.put(marker,evidence.signatureId());}
                 lines.add("Firmada: " + time(note.signedAt())); lines.add("Integridad SHA-256: " + note.contentHash());
                 for(var addendum:note.addenda()) {
                     lines.add("NOTA ACLARATORIA | " + addendum.author().name()+" | "+time(addendum.createdAt()));
@@ -79,28 +75,7 @@ public class ClinicalDocumentService {
                 }
             }
             if(data.notes().isEmpty()) lines.add("Sin evoluciones firmadas registradas.");
-            float y = 0;
-            PDPageContentStream stream = null;
-            int number = 0;
-            try {
-                for (String text : lines) {
-                    for (String line : wrap(text, font, 499)) {
-                        if (stream == null || y < 58) {
-                            if(stream!=null) stream.close();
-                            var page = new PDPage(PDRectangle.A4); pdf.addPage(page);
-                            stream = new PDPageContentStream(pdf,page); y=790; number++;
-                            stream.setNonStrokingColor(0.05f,0.17f,0.28f);
-                            write(stream,font,8,48,30,"OCCLUS · Documento confidencial · Página "+number);
-                            stream.setStrokingColor(0.15f,0.43f,0.47f); stream.moveTo(48,808); stream.lineTo(547,808); stream.stroke();
-                        }
-                        write(stream,font,10,48,y,line); y-=15;
-                    }
-                }
-            } finally { if(stream!=null) stream.close(); }
-            pdf.save(out); return out.toByteArray();
-        } catch (IOException | IllegalArgumentException e) {
-            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,"No se pudo generar el documento PDF; no se modificó la historia.");
-        }
+        return renderer.render(data.clinicId(),data.branding(),lines,signatureMarkers);
     }
     private static String conditionLabel(MedicalCondition value) { return switch(value) {
         case HYPERTENSION -> "Hipertensión arterial";
@@ -136,29 +111,4 @@ public class ClinicalDocumentService {
     }; }
     private static void field(List<String> lines,String title,String text) { if(text!=null && !text.isBlank()) { lines.add(title+":"); lines.add(text); } }
     private static String time(Instant value) { return value==null?"—":DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.of("America/Bogota")).format(value); }
-    private static void write(PDPageContentStream stream, PDType0Font font, int size,float x,float y,String text) throws IOException {
-        stream.beginText(); stream.setFont(font,size); stream.newLineAtOffset(x,y); stream.showText(text); stream.endText();
-    }
-    private static List<String> wrap(String text,PDType0Font font,float width) throws IOException {
-        var output=new ArrayList<String>();
-        for(String paragraph:text.replace("\t","    ").split("\\R",-1)) {
-            var clean=new StringBuilder();
-            paragraph.codePoints().filter(c->!Character.isISOControl(c)).forEach(clean::appendCodePoint);
-            var line=new StringBuilder();
-            for(String word:clean.toString().split("(?<=\\s)")) {
-                if(line.length()>0 && font.getStringWidth(line+word)/1000*10>width) {
-                    output.add(line.toString().stripTrailing()); line.setLength(0);
-                }
-                for(int code:word.codePoints().toArray()) {
-                    var character=new String(Character.toChars(code));
-                    if(line.length()>0 && font.getStringWidth(line+character)/1000*10>width) {
-                        output.add(line.toString()); line.setLength(0);
-                    }
-                    line.append(character);
-                }
-            }
-            output.add(line.toString().stripTrailing());
-        }
-        return output;
-    }
 }

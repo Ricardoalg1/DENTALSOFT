@@ -1,0 +1,32 @@
+---
+import Side from "./Side.astro";
+// [hora, iniciales, tratamiento, paciente, estado, clase del estado, color]. Datos de ejemplo.
+interface Props { rows?: [string, string, string, string, string, string, string][]; clinic?: string }
+const {
+  clinic = "Clínica Central",
+  rows = [
+    ["09:00", "AT", "Valoración inicial", "Ana Torres", "Confirmada", "ok", "#2a9d8f"],
+    ["10:00", "JP", "Control de tratamiento", "Juan Pérez", "En atención", "info live", "#3d85d6"],
+    ["11:30", "CR", "Limpieza dental", "Camila Ruiz", "Programada", "gray", "#8a6fd6"],
+    ["14:00", "LM", "Urgencia", "Luis Mendoza", "Programada", "gray", "#d9638a"],
+  ],
+} = Astro.props;
+---
+
+<div class="lp-ui" role="img" aria-label="Vista ilustrativa de la agenda del día de Occlus, con datos de ejemplo">
+  <Side active="Agenda" items={[["calendar", "Agenda"], ["clinical", "Historias"], ["wallet", "Caja"], ["box", "Inventario"], ["chart", "Reportes"]]} />
+  <div class="pane">
+    <div class="pane-top"><span>{clinic} ⌄</span><span class="avatar" style="--bg:#0d2c48">OR</span></div>
+    <div class="pane-top"><b>Agenda de hoy</b><span class="pill-sm">‹ &nbsp;Mar, 13 de oct&nbsp; ›</span></div>
+    <div style="display:grid;gap:0.55em">
+      {rows.map(([time, ini, what, who, status, kind, color], k) => (
+        <div class="row-appt" style={`--k:${k}`}>
+          <time>{time}</time>
+          <span class="avatar" style={`--bg:${color}`}>{ini}</span>
+          <span><b>{what}</b><small>{who}</small></span>
+          <span class={`chip ${kind}`}>{status}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>

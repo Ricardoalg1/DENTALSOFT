@@ -19,6 +19,14 @@ const canonical = new URL(
 );
 const appUrl = import.meta.env.PUBLIC_APP_URL ?? "http://localhost:3000";
 const pageTitle = `${title} · Occlus`;
+const nav: [string, string][] = [
+  ["/producto", "Producto"],
+  ["/planes", "Planes"],
+  ["/blog", "Recursos"],
+  ["/demo", "Contacto"],
+];
+const path = Astro.url.pathname;
+const isActive = (href: string) => path === href || path.startsWith(href + "/");
 ---
 
 <!doctype html>
@@ -54,17 +62,14 @@ const pageTitle = `${title} · Occlus`;
       href="#contenido"
       class="sr-only focus:not-sr-only focus:block focus:bg-card focus:p-4"
       >Ir al contenido</a
-    ><header class="border-b border-border bg-background">
-      <div
-        class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-5"
-      >
+    ><header class="sticky top-0 z-40 bg-background/80 backdrop-blur-md">
+      <div class="wrap-wide flex flex-wrap items-center justify-between gap-5 py-4">
         <Logo /><nav
           aria-label="Navegación principal"
-          class="hidden items-center gap-8 text-sm md:flex"
+          class="hidden items-center gap-9 md:flex"
         >
-          <a href="/#producto">Producto</a><a href="/planes">Planes</a><a
-            href="/blog">Recursos</a>
-        </nav><div class="flex flex-wrap items-center gap-3">
+          {nav.map(([href, label]) => <a class="nav-link" href={href} aria-current={isActive(href) ? "page" : undefined}>{label}</a>)}
+        </nav><div class="flex flex-wrap items-center gap-4">
           <ThemeToggle />
           <a href={`${appUrl}/ingresar`} class="text-sm font-medium">Ingresar</a
           ><a href="/demo" class="btn"
@@ -76,45 +81,19 @@ const pageTitle = `${title} · Occlus`;
             class="mt-4 flex flex-wrap gap-6 pb-2"
             aria-label="Navegación móvil"
           >
-            <a href="/#producto">Producto</a><a href="/planes">Planes</a><a
-              href="/blog">Recursos</a>
+            {nav.map(([href, label]) => <a href={href}>{label}</a>)}
           </nav>
         </details>
       </div>
-    </header><main id="contenido"><slot /></main><footer
-      class="bg-brand-deep px-6 py-14 text-teal-100"
-    >
-      <div class="mx-auto grid max-w-7xl gap-8 md:grid-cols-[2fr_1fr_1fr]">
-        <div>
-          <Logo light /><p
-            class="mt-5 max-w-sm text-sm leading-7 opacity-90/70"
-          >
-            Más orden para tu clínica.<br />Más tiempo para tus pacientes.
-          </p>
-        </div><nav class="space-y-3 text-sm" aria-label="Producto">
-          <p
-            class="mb-5 text-xs font-semibold uppercase tracking-widest text-teal-300"
-          >
-            Explora
-          </p><a class="block" href="/planes">Planes</a><a
-            class="block"
-            href="/blog">Recursos</a
-          ><a class="block" href="/demo">Conocer Occlus</a>
-        </nav><nav class="space-y-3 text-sm" aria-label="Información">
-          <p
-            class="mb-5 text-xs font-semibold uppercase tracking-widest text-teal-300"
-          >
-            Información
-          </p><a class="block" href="/privacidad">Privacidad</a><a
-            class="block"
-            href="/condiciones">Condiciones comerciales</a
-          ><a class="block" href={`${appUrl}/ingresar`}>Acceso a tu clínica</a>
+    </header><main id="contenido"><slot /></main><footer class="mt-6 border-t border-border">
+      <div class="wrap-wide flex flex-wrap items-center justify-between gap-x-8 gap-y-5 py-8">
+        <Logo /><nav class="flex flex-wrap gap-x-9 gap-y-2" aria-label="Explora">
+          {nav.map(([href, label]) => <a class="foot-link text-sm" href={href}>{label}</a>)}
+        </nav><span class="hidden h-7 w-px bg-border lg:block" aria-hidden="true"></span><nav class="flex flex-wrap gap-x-8 gap-y-2" aria-label="Información">
+          <a class="foot-link" href="/privacidad">Privacidad</a><a class="foot-link" href="/condiciones">Condiciones</a><a class="foot-link" href={`${appUrl}/ingresar`}>Acceso a tu clínica</a>
         </nav>
-      </div><div
-        class="mx-auto mt-12 flex max-w-7xl flex-wrap justify-between gap-3 border-t border-white/10 pt-6 text-xs text-teal-100/60"
-      >
-        <span>© Occlus · SINE SAS</span><span
-          >Software para equipos odontológicos</span>
+      </div><div class="wrap-wide flex flex-wrap justify-between gap-3 border-t border-border py-5 text-xs text-muted-foreground">
+        <span>© Occlus · SINE SAS</span><span>Software para equipos odontológicos</span>
       </div>
     </footer><script>
       // Solo métricas agregadas; la configuración y la clave permanecen en el servidor.
@@ -130,5 +109,47 @@ const pageTitle = `${title} · Occlus`;
             }).catch(() => {});
         })
         .catch(() => {});
+    </script><script>
+      // Revelado al entrar en pantalla, contadores y giro suave del portátil. Sin JS todo se ve igual.
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const cop = new Intl.NumberFormat("es-CO");
+      function count(el: HTMLElement) {
+        if (reduce) return;
+        const to = Number(el.dataset.count);
+        const money = el.dataset.format === "cop";
+        const t0 = performance.now();
+        const tick = (t: number) => {
+          const p = Math.min(1, (t - t0) / 1300);
+          const v = Math.round(to * (1 - Math.pow(1 - p, 3)));
+          el.textContent = money ? `$ ${cop.format(v)}` : String(v);
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (!e.isIntersecting) continue;
+            const el = e.target as HTMLElement;
+            el.classList.add("is-in");
+            el.querySelectorAll<HTMLElement>("[data-count]").forEach(count);
+            io.unobserve(el);
+          }
+        },
+        { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+      );
+      document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
+      document.querySelectorAll<HTMLElement>(".hero [data-count]").forEach((el) => setTimeout(() => count(el), 700));
+      // Portátil: sigue al puntero con suavidad (solo con ratón).
+      const lap = document.querySelector<HTMLElement>(".lp");
+      const zone = lap?.closest<HTMLElement>(".hero-x, .hero");
+      if (lap && zone && !reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        zone.addEventListener("pointermove", (e) => {
+          const r = zone.getBoundingClientRect();
+          lap.style.setProperty("--ry", `${-4 + ((e.clientX - r.left) / r.width - 0.5) * 6}deg`);
+          lap.style.setProperty("--rx", `${1.5 - ((e.clientY - r.top) / r.height - 0.5) * 5}deg`);
+        });
+        zone.addEventListener("pointerleave", () => { lap.style.removeProperty("--ry"); lap.style.removeProperty("--rx"); });
+      }
     </script></body>
 </html>

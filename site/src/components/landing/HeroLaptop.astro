@@ -1,0 +1,111 @@
+---
+import Icon from "../Icon.astro";
+// Panel de ejemplo: datos ilustrativos. Todo está en `em`, así escala con el ancho del portátil.
+const nav: [string, string][] = [
+  ["home", "Inicio"],
+  ["user", "Pacientes"],
+  ["calendar", "Agenda"],
+  ["clinical", "Historias clínicas"],
+  ["wallet", "Caja"],
+  ["box", "Inventario"],
+  ["chart", "Reportes"],
+  ["receipt", "Facturación y RIPS"],
+  ["tag", "Lista de precios"],
+  ["team", "Equipo"],
+];
+const rows: [string, string, string, string, string, string, string][] = [
+  ["09:00", "AT", "Ana María Torres", "Control de rutina", "live", "En sala", "#7fb7b9"],
+  ["09:30", "LC", "Luis Cano", "Valoración inicial", "info", "Confirmada", "#e0a36b"],
+  ["10:00", "CP", "Carolina Pérez", "Profilaxis", "info", "Confirmada", "#a78bd9"],
+  ["10:30", "DR", "David Ruiz", "Control de tratamiento", "wait", "En atención", "#6a9bd8"],
+  ["11:00", "SR", "Sofía Restrepo", "Limpieza dental", "info", "Programada", "#d9638a"],
+];
+const bars = [38, 52, 44, 70, 58, 86, 100];
+---
+
+<div class="laptop-wrap relative" data-tilt>
+  <div class="laptop">
+    <div class="laptop-lid">
+      <span class="laptop-cam"></span>
+      <div class="dash" role="img" aria-label="Vista ilustrativa del panel de Occlus con datos de ejemplo">
+        <div class="dash-in">
+          <aside class="dash-side">
+            <div class="dash-brand"><Icon name="tooth" class="" />OCCLUS</div>
+            {nav.map(([icon, label], i) => (
+              <div class:list={["dash-nav", i === 0 && "on"]}><Icon name={icon} class="" />{label}</div>
+            ))}
+          </aside>
+          <div class="dash-main">
+            <div class="dash-top">
+              <div class="dash-search"><Icon name="search" class="" />Buscar…</div>
+              <Icon name="bell" class="" />
+              <span class="dash-avatar">EO</span>
+              <span class="dash-who"><b>Equipo Occlus</b><span>Administrador</span></span>
+            </div>
+            <div class="dash-hello">
+              <h4>Hola, Equipo</h4>
+              <p>Bienvenido al panel de tu clínica.</p>
+            </div>
+            <div class="dash-cols">
+              <div class="dash-card">
+                <div class="dash-row"><h5>Citas de hoy</h5><span class="dash-pill">+ Nueva cita</span></div>
+                <div class="dash-kpis">
+                  <div class="dash-kpi"><b data-count="12">12</b><span>Citas de hoy</span></div>
+                  <div class="dash-kpi"><b data-count="5">5</b><span>En atención</span></div>
+                  <div class="dash-kpi"><b data-count="3">3</b><span>Finalizadas</span></div>
+                  <div class="dash-kpi"><b data-count="4">4</b><span>Pendientes</span></div>
+                </div>
+                <div class="dash-table">
+                  <h5>Próximas citas</h5>
+                  {rows.map(([time, ini, name, what, kind, status, color], k) => (
+                    <div class="dash-trow row-in" style={`--k:${k}`}>
+                      <time>{time}</time>
+                      <span class="dash-person"><i style={`background:${color}`}>{ini}</i>{name}</span>
+                      <em>{what}</em>
+                      <span class={`chip ${kind}`}>{status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div class="dash-stack">
+                <div class="dash-card">
+                  <h5>Pacientes nuevos</h5>
+                  <div class="dash-big"><span data-count="8">8</span></div>
+                  <div class="dash-sub">Este mes</div>
+                  <div class="dash-bars" aria-hidden="true">
+                    {bars.map((h, k) => <i style={`height:${h}%;--k:${k}`}></i>)}
+                  </div>
+                </div>
+                <div class="dash-card">
+                  <h5>Ingresos del mes</h5>
+                  <div class="dash-big"><span data-count="3280000" data-format="cop">$ 3.280.000</span></div>
+                  <div class="dash-sub">+12% vs. mes anterior</div>
+                  <svg class="dash-line" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#1f9d6b" stop-opacity=".28"></stop>
+                        <stop offset="1" stop-color="#1f9d6b" stop-opacity="0"></stop>
+                      </linearGradient>
+                    </defs>
+                    <path class="ar" d="M0 30 C8 28 12 22 20 24 S34 14 42 18 S58 8 66 12 S84 4 100 2 V34 H0Z"></path>
+                    <path class="ln" pathLength="1" vector-effect="non-scaling-stroke" d="M0 30 C8 28 12 22 20 24 S34 14 42 18 S58 8 66 12 S84 4 100 2"></path>
+                  </svg>
+                </div>
+                <div class="dash-card dash-row">
+                  <div>
+                    <h5>Mensajes</h5>
+                    <div class="dash-big"><span data-count="2">2</span></div>
+                    <div class="dash-sub" style="color:#6a7c89">Sin responder</div>
+                  </div>
+                  <span class="wa-badge"><Icon name="phone" class="" /></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="laptop-base"></div>
+  </div>
+  <div class="laptop-glow" aria-hidden="true"></div>
+</div>

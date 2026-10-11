@@ -1,0 +1,28 @@
+---
+import Side from "./Side.astro";
+const events: [number, number, string, string, string][] = [
+  [1, 0.9, "Valoración inicial", "Ana Torres", "#2fa37a"],
+  [2, 0.9, "Control de tratamiento", "Juan Pérez", "#3d85d6"],
+  [3, 0.9, "Limpieza dental", "Camila Ruiz", "#8a6fd6"],
+  [4, 0.9, "Urgencia", "Luis Mendoza", "#d9638a"],
+];
+const hours = ["8:00", "9:00", "10:00", "11:00", "12:00", "13:00"];
+---
+
+<div class="win anim" role="img" aria-label="Vista ilustrativa de la agenda con citas de ejemplo">
+  <div class="win-ui">
+    <Side active="Agenda" />
+    <div class="pane">
+      <div class="win-title"><h4>Agenda</h4><span class="seg"><span class="on">Día</span><span>Semana</span><span>Mes</span></span></div>
+      <div class="date-nav"><i>‹</i>Mar, 13 de oct<i>›</i></div>
+      <div class="agenda-grid" style="grid-template-rows:repeat(6,3.1em)">
+        {hours.map((h) => (<><span class="h" style="border:0;padding:0.2em 0 0">{h}</span><span class="h"></span></>))}
+        {events.map(([row, h, title, who, color], k) => (
+          <div class="agenda-ev" style={`--c:${color};--k:${k};top:calc(${row} * 3.1em + 0.2em);height:calc(${h} * 3.1em);width:${68 - k * 4}%`}>
+            <b>{title}</b><span>{who}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>

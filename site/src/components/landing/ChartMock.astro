@@ -1,0 +1,35 @@
+---
+import Icon from "../Icon.astro";
+import OdontogramMock from "./OdontogramMock.astro";
+const evos: [string, string, string][] = [
+  ["10/10/2026", "Control de rutina", ""],
+  ["15/09/2026", "Limpieza profesional", ""],
+  ["20/08/2026", "Restauración", "pieza 1.6"],
+];
+---
+
+<div class="mock mock-card anim" role="img" aria-label="Vista ilustrativa de una historia clínica con odontograma, con datos de ejemplo">
+  <div class="chart-head">
+    <span class="chart-avatar">AM</span>
+    <div class="min-w-0 flex-1">
+      <b class="block text-[0.82rem]">Ana María Torres</b>
+      <span class="text-[0.64rem] text-muted-foreground">CC 1.067.845.678 · 28 años</span>
+    </div>
+    <Icon name="bell" class="size-4 text-muted-foreground" />
+  </div>
+  <div class="chart-tabs"><span>Resumen</span><span class="on">Evoluciones</span><span>Odontograma</span><span>Archivos</span></div>
+  <div class="chart-body">
+    <OdontogramMock />
+    <div class="evo">
+      <h6>Últimas evoluciones</h6>
+      <ul>
+        {evos.map(([date, what, tooth], k) => (
+          <li style={`--k:${k}`}>
+            <i></i>
+            <div><b>{date}</b><span>{what}{tooth && <> · {tooth}</>}</span></div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</div>

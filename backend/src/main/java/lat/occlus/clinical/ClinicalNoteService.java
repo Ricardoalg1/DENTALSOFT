@@ -49,6 +49,7 @@ public class ClinicalNoteService {
     private final AppointmentRepository appointments;
     private final PatientRepository patients;
     private final ClinicalAccess access;
+    private final DocumentBrandingService documentBranding;
     private final Icd10Service icd10;
 
     @Transactional(readOnly = true)
@@ -175,6 +176,7 @@ public class ClinicalNoteService {
         note.setSignedAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
         note.setContentHash(note.computeHash());
         notes.saveAndFlush(note);
+        documentBranding.captureNote(me, note.getId());
 
         if (note.getAppointmentId() != null) {
             appointments.findByIdAndClinicId(note.getAppointmentId(), me.clinicId())

@@ -1,0 +1,20 @@
+---
+import Icon from "../Icon.astro";
+---
+
+<div class="relative">
+  <span class="wa-float" aria-hidden="true"><Icon name="phone" class="" /></span>
+  <div class="phone anim" role="img" aria-label="Vista ilustrativa de un recordatorio de cita por WhatsApp con la respuesta del paciente">
+    <div class="phone-screen">
+      <div class="phone-bar"><i>O</i>Clínica Occlus</div>
+      <div class="chat">
+        <div class="bubble in">
+          Hola Ana María 👋<br />Te recordamos tu cita mañana a las 10:00 a.m. en Clínica Occlus. Responde <b>CONFIRMAR</b> para confirmar.
+          <time>9:30 a. m.</time>
+        </div>
+        <div class="typing" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="bubble out">CONFIRMAR<time>9:31 a. m. ✓✓</time></div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+---
+import Icon from "../Icon.astro";
+interface Props { items: [string, string][] }
+const { items } = Astro.props;
+---
+
+<div class="strip" data-reveal>
+  <div class="wrap strip-in">
+    {items.map(([icon, label]) => <div class="strip-item"><Icon name={icon} class="" />{label}</div>)}
+  </div>
+</div>

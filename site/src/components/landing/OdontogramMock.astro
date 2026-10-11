@@ -1,0 +1,42 @@
+---
+// Dientes dibujados como SVG: se ven nítidos a cualquier tamaño y se adaptan al tema.
+const widths = [15, 14, 14, 11, 11, 9, 9, 8, 8, 9, 9, 11, 11, 14, 14, 15];
+const slot = 320 / 16;
+function tooth(i: number, up: boolean, y0: number) {
+  const w = widths[i];
+  const cx = slot * i + slot / 2;
+  const x = cx - w / 2;
+  const crownH = 20;
+  const rootH = 18;
+  const crownY = up ? y0 + rootH : y0;
+  const root = up
+    ? `M${cx - w * 0.28} ${crownY} L${cx - w * 0.12} ${y0} L${cx + w * 0.12} ${y0} L${cx + w * 0.28} ${crownY}Z`
+    : `M${cx - w * 0.28} ${crownY + crownH} L${cx - w * 0.12} ${crownY + crownH + rootH} L${cx + w * 0.12} ${crownY + crownH + rootH} L${cx + w * 0.28} ${crownY + crownH}Z`;
+  return { x, crownY, w, crownH, root };
+}
+const upper = Array.from({ length: 16 }, (_, i) => tooth(i, true, 6));
+const lower = Array.from({ length: 16 }, (_, i) => tooth(i, false, 96));
+const upperFill: Record<number, string> = { 4: "fill-lt", 5: "fill-lt", 6: "fill-lt" };
+const lowerFill: Record<number, string> = { 11: "fill-red", 2: "fill-lt" };
+const surfaceFill: Record<number, string> = { 1: "fill-blue", 2: "fill-blue", 13: "fill-red" };
+---
+
+<div class="odonto anim" aria-hidden="true">
+  <svg viewBox="0 0 320 152">
+    {upper.map((t, i) => (
+      <g>
+        <path class:list={["t", upperFill[i]]} style={`--k:${i}`} d={t.root}></path>
+        <rect class:list={["t", upperFill[i]]} style={`--k:${i}`} x={t.x} y={t.crownY} width={t.w} height={t.crownH} rx={t.w * 0.32}></rect>
+      </g>
+    ))}
+    {Array.from({ length: 16 }, (_, i) => (
+      <rect class:list={["s", surfaceFill[i]]} style={`--k:${i}`} x={slot * i + 3} y="56" width={slot - 6} height="28" rx="6"></rect>
+    ))}
+    {lower.map((t, i) => (
+      <g>
+        <path class:list={["t", lowerFill[i]]} style={`--k:${i}`} d={t.root}></path>
+        <rect class:list={["t", lowerFill[i]]} style={`--k:${i}`} x={t.x} y={t.crownY} width={t.w} height={t.crownH} rx={t.w * 0.32}></rect>
+      </g>
+    ))}
+  </svg>
+</div>

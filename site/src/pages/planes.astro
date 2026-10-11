@@ -1,138 +1,177 @@
 ---
 import Layout from "../layouts/PublicLayout.astro";
 import Icon from "../components/Icon.astro";
+import Laptop from "../components/ui/Laptop.astro";
+import LaptopAgenda from "../components/ui/LaptopAgenda.astro";
+import Scene from "../components/ui/Scene.astro";
+import Faq from "../components/ui/Faq.astro";
+import CtaBand from "../components/ui/CtaBand.astro";
 import { plans, money } from "../../../shared/site-content";
 export const prerender = true;
+
+const planIcon: Record<string, string> = { ESTANDAR: "user", CRECIMIENTO: "team", EXPANSION: "chart", INTERNACIONAL: "building" };
+// Qué módulos trae cada plan (coincide con lo que la plataforma habilita). true = incluido, "extra" = complemento, false = no.
+const rows: [string, string, (boolean | "extra")[]][] = [
+  ["calendar", "Agenda y pacientes", [true, true, true, true]],
+  ["clinical", "Historia clínica y odontograma", [true, true, true, true]],
+  ["wallet", "Tratamientos, presupuestos y caja", [true, true, true, true]],
+  ["chart", "Reportes", [false, true, true, true]],
+  ["box", "Inventario y lotes", [false, false, true, true]],
+  ["receipt", "Facturación electrónica y RIPS", [false, false, "extra", true]],
+  ["chat", "Mensajes por WhatsApp", [false, false, "extra", true]],
+];
+const ideal: [string, string, "chair" | "team" | "sites", string, string][] = [
+  ["user", "Clínicas pequeñas", "chair", "ESTANDAR", "Para empezar con orden"],
+  ["team", "Clínicas en crecimiento", "team", "CRECIMIENTO", "Para coordinar al equipo"],
+  ["chart", "Clínicas con múltiples sedes", "sites", "EXPANSION", "Para operar con visión"],
+];
+const faq: [string, string][] = [
+  ["¿Puedo cambiar de plan más adelante?", "Sí. Cuando tu equipo crezca o necesites más módulos, acordamos el cambio con nuestro equipo; el nuevo valor rige desde tu próxima renovación."],
+  ["¿Qué formas de pago aceptan?", "Confirmamos las formas de pago disponibles en tu propuesta. En este sitio no se realizan cobros."],
+  ["¿El plan incluye soporte técnico?", "Cada plan incluye el acompañamiento descrito en su tarjeta. Los alcances se detallan en las condiciones comerciales."],
+  ["¿Hay un período de prueba?", "Podemos acordar una prueba al configurar tu cuenta. Cuéntanos tu caso al solicitar la demo."],
+];
 ---
 
 <Layout
   title="Planes"
   description="Planes para tu clínica desde $99.000 COP al mes. Esencial, Equipo, Integral y Global."
-  ><section class="section">
-    <div class="text-center">
-      <p class="eyebrow">Espacio para crecer</p><h1
-        class="mx-auto mt-4 max-w-3xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl"
-      >
-        Un plan para cada etapa de tu clínica.
-      </h1><p class="mt-5 text-muted-foreground">
-        Herramientas compartidas. Acompañamiento según tu operación.
-      </p><fieldset
-        class="mx-auto mt-8 flex w-fit rounded-full border border-border bg-card p-1"
-      >
-        <legend class="sr-only">Periodicidad del pago</legend><label
-          class="cursor-pointer rounded-full px-5 py-3 text-sm has-checked:bg-primary has-checked:text-primary-foreground"
-          ><input
-            class="sr-only"
-            type="radio"
-            name="period"
-            value="monthly"
-            checked
-          />Mensual</label
-        ><label
-          class="cursor-pointer rounded-full px-5 py-3 text-sm has-checked:bg-primary has-checked:text-primary-foreground"
-          ><input
-            class="sr-only"
-            type="radio"
-            name="period"
-            value="annual"
-          />Anual</label>
-      </fieldset>
-    </div><div class="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-      {
-        plans.map((p) => (
-          <article
-            class:list={[
-              "relative flex flex-col rounded-3xl border bg-card p-7",
-              p.id === "CRECIMIENTO"
-                ? "border-primary ring-1 ring-teal-700"
-                : "border-border",
-            ]}
-          >
-            <>
-              <p class="min-h-6 text-xs font-semibold text-primary">
-                {p.id === "CRECIMIENTO" ? "Para equipos en crecimiento" : " "}
-              </p>
-              <h2 class="mt-3 text-2xl font-semibold">{p.name}</h2>
-              <p class="mt-2 text-sm text-muted-foreground">{p.users}</p>
-              <div class="mt-7 min-h-28">
-                {p.monthly !== null && p.annual !== null ? (
-                  <>
-                    <p class="text-xs text-muted-foreground">Desde</p>
-                    <p
-                      data-monthly
-                      class="mt-2 text-3xl font-semibold tracking-tight"
-                    >
-                      ${money(p.monthly)}{" "}
-                      <span class="text-xs font-normal">COP/mes</span>
-                    </p>
-                    <p
-                      data-annual
-                      hidden
-                      class="mt-2 text-3xl font-semibold tracking-tight"
-                    >
-                      ${money(p.annual / 12)}{" "}
-                      <span class="text-xs font-normal">COP/mes</span>
-                    </p>
-                    <p data-monthly class="mt-3 text-xs text-muted-foreground">
-                      Pago mensual
-                    </p>
-                    <p data-annual hidden class="mt-3 text-xs text-muted-foreground">
-                      Pagando ${money(p.annual)} COP al año
-                    </p>
-                  </>
-                ) : (
-                  <p class="mt-5 text-2xl font-semibold">A tu medida</p>
-                )}
-              </div>
-              <p class="my-6 text-sm leading-7 text-muted-foreground">
-                {p.description}
-              </p>
-              <ul class="mb-8 space-y-4 text-sm">
-                {[...p.focus, p.support].map((f) => (
-                  <li class="flex gap-2">
-                    <Icon name="check" class="size-4 shrink-0 text-primary" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <a href={`/demo?plan=${p.id}`} class="btn mt-auto">
-                {p.monthly === null ? "Contactar un asesor" : "Solicitar demo"}
-              </a>
-            </>
+>
+  <!-- ===================== HERO ===================== -->
+  <section class="hero-x hero">
+    <span class="deco fill" style="left:-10rem;top:4rem;width:22rem;height:22rem"></span>
+    <div class="wrap-wide grid items-center gap-10 lg:grid-cols-[minmax(0,0.98fr)_minmax(0,1.02fr)]">
+      <div>
+        <p class="eyebrow rise" style="--d:0">Planes</p>
+        <h1 class="h-display rise mt-5" style="--d:1">
+          Un plan para cada<br /><span class="grad-text">etapa de tu clínica.</span>
+        </h1>
+        <p class="lead rise mt-6 max-w-md" style="--d:2">El software que se adapta al crecimiento de tu clínica.</p>
+        <fieldset class="period rise mt-8" style="--d:3">
+          <legend class="sr-only">Periodicidad del pago</legend>
+          <label><input class="sr-only" type="radio" name="period" value="monthly" checked />Pago mensual</label>
+          <label><input class="sr-only" type="radio" name="period" value="annual" />Pago anual</label>
+        </fieldset>
+      </div>
+      <div class="rise lg:-mr-8" style="--d:3"><Laptop><LaptopAgenda clinic="Clínica Central" /></Laptop></div>
+    </div>
+  </section>
+
+  <!-- ===================== PLANES ===================== -->
+  <section class="sec">
+    <div class="wrap-wide">
+      <p class="eyebrow" data-reveal>Nuestros planes</p>
+      <h2 class="h-section mt-3" data-reveal style="--i:1">Elige el plan ideal para tu clínica.</h2>
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {plans.map((p, i) => (
+          <article class:list={["soft hover plan-card", p.id === "CRECIMIENTO" && "hot"]} data-reveal style={`--i:${i}`}>
+            {p.id === "CRECIMIENTO" && <span class="badge-top">Más popular</span>}
+            <span class="ico-disc size-14"><Icon name={planIcon[p.id]} class="" /></span>
+            <h3 class="mt-5 text-xl font-semibold tracking-tight">{p.name}</h3>
+            <p class="mt-1 text-sm text-muted-foreground">{p.users}</p>
+            <div class="price-swap mt-6 min-h-24">
+              {p.monthly !== null && p.annual !== null ? (
+                <>
+                  <p data-monthly><span class="text-xs text-muted-foreground">Desde</span><span class="mt-1 block text-3xl font-bold tracking-tight">${money(p.monthly)}</span><span class="text-xs text-muted-foreground">COP/mes</span></p>
+                  <p data-annual hidden><span class="text-xs text-muted-foreground">Desde</span><span class="mt-1 block text-3xl font-bold tracking-tight">${money(Math.round(p.annual / 12))}</span><span class="text-xs text-muted-foreground">COP/mes · ${money(p.annual)} al año</span></p>
+                </>
+              ) : (
+                <p class="pt-6 text-2xl font-bold tracking-tight">A tu medida</p>
+              )}
+            </div>
+            <ul class="my-6 grid gap-3 border-t border-border pt-6 text-[0.84rem] leading-5">
+              {[...p.focus, p.support].map((f) => (
+                <li class="flex gap-2.5"><Icon name="check" class="mt-0.5 size-4 shrink-0 text-primary" />{f}</li>
+              ))}
+            </ul>
+            <a href={`/demo?plan=${p.id}`} class:list={["btn mt-auto", p.id !== "CRECIMIENTO" && "btn-outline"]}>
+              {p.monthly === null ? "Contáctanos" : "Solicitar demo"}
+            </a>
           </article>
-        ))
-      }
-    </div><div
-      class="mx-auto mt-10 max-w-3xl text-center text-sm leading-7 text-muted-foreground"
-    >
-      <p>
-        Los planes para Colombia comparten agenda, historias, presupuestos,
-        caja, inventario y reportes. Las tarjetas destacan prioridades de uso
-        para cada tamaño de equipo.
-      </p><p class="mt-4">
-        La propuesta confirmará impuestos, alcance y acompañamiento. Las
-        integraciones externas y adaptaciones internacionales se evalúan por
-        separado. No se realizan cobros en este sitio.
-      </p><a href="/condiciones" class="mt-4 inline-block underline"
-        >Consultar condiciones comerciales</a>
-    </div><noscript
-      ><p class="mt-6 text-center text-sm">
-        Precios anuales: Esencial $990.000, Equipo $1.788.000 e Integral
-        $2.388.000 COP por año.
-      </p></noscript>
-  </section></Layout
-><script>
-  document
-    .querySelectorAll<HTMLInputElement>('input[name="period"]')
-    .forEach((input) =>
-      input.addEventListener("change", () => {
-        const annual = input.value === "annual";
-        document
-          .querySelectorAll<HTMLElement>("[data-monthly]")
-          .forEach((el) => (el.hidden = annual));
-        document
-          .querySelectorAll<HTMLElement>("[data-annual]")
-          .forEach((el) => (el.hidden = !annual));
-      }),
-    );
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COMPARAR ===================== -->
+  <section class="sec">
+    <span class="deco fill" style="right:-9rem;top:2rem;width:20rem;height:20rem"></span>
+    <div class="wrap-wide">
+      <p class="eyebrow" data-reveal>Compara planes</p>
+      <h2 class="h-section mt-3" data-reveal style="--i:1">Todo lo que necesitas, en un solo lugar.</h2>
+      <div class="soft mt-9 overflow-x-auto" data-reveal style="--i:2">
+        <table class="cmp min-w-[40rem]">
+          <thead>
+            <tr><th scope="col">Módulos</th>{plans.map((p) => <th scope="col" class:list={[p.id === "CRECIMIENTO" && "hot"]}>{p.name}</th>)}</tr>
+          </thead>
+          <tbody>
+            {rows.map(([icon, label, vals]) => (
+              <tr>
+                <td><span class="inline-flex items-center gap-3"><Icon name={icon} class="size-5 text-primary" />{label}</span></td>
+                {vals.map((v, i) => (
+                  <td class:list={[plans[i].id === "CRECIMIENTO" && "hot"]}>
+                    {v === true ? <Icon name="check" class="" /> : v === "extra" ? <span class="extra">Complemento</span> : <span class="no" aria-label="No incluido">—</span>}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="mx-auto mt-6 max-w-3xl text-center text-xs leading-6 text-muted-foreground" data-reveal>
+        «Complemento» se agrega a tu plan con un valor acordado. La facturación electrónica con un proveedor y los mensajes por WhatsApp requieren configuración y activación. La propuesta confirmará impuestos, alcance y acompañamiento; las integraciones externas y adaptaciones internacionales se evalúan por separado. No se realizan cobros en este sitio.
+        <a href="/condiciones" class="underline">Consultar condiciones comerciales</a>.
+      </p>
+      <noscript><p class="mt-4 text-center text-sm">Precios anuales: Esencial $990.000, Equipo $1.788.000 e Integral $2.388.000 COP por año.</p></noscript>
+    </div>
+  </section>
+
+  <!-- ===================== IDEAL PARA ===================== -->
+  <section class="sec">
+    <div class="wrap-wide">
+      <p class="eyebrow" data-reveal>Ideal para</p>
+      <h2 class="h-section mt-3" data-reveal style="--i:1">Acompañamos cada etapa de crecimiento.</h2>
+      <div class="mt-9 grid gap-5 md:grid-cols-3">
+        {ideal.map(([icon, title, kind, plan, sub], i) => (
+          <a href={`/demo?plan=${plan}`} class="soft hover block overflow-hidden p-3" data-reveal style={`--i:${i}`}>
+            <Scene kind={kind} />
+            <div class="flex items-center gap-3 px-2 pb-2 pt-4">
+              <span class="ico-disc size-11"><Icon name={icon} class="" /></span>
+              <span class="min-w-0 flex-1"><b class="block text-[0.95rem]">{title}</b><small class="text-muted-foreground">{sub}</small></span>
+              <span class="grid size-9 place-items-center rounded-full border border-border text-primary"><Icon name="arrow" class="size-4" /></span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PREGUNTAS ===================== -->
+  <section class="sec">
+    <div class="wrap-wide grid gap-10 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)]">
+      <div data-reveal="right">
+        <p class="eyebrow">Preguntas frecuentes</p>
+        <h2 class="h-section mt-3">Resolvemos<br />tus dudas.</h2>
+      </div>
+      <Faq items={faq} />
+    </div>
+  </section>
+
+  <CtaBand
+    title="¿Listo para llevar tu clínica al siguiente nivel?"
+    text="Solicita una demo y conoce el plan ideal para tu equipo."
+  >
+    <a href="/demo" class="btn btn-light btn-lg">Solicitar demo <Icon name="arrow" class="size-4" /></a>
+  </CtaBand>
+</Layout>
+
+<script>
+  // Cambia entre precio mensual y anual (sin recargar). Sin JavaScript se ve el mensual y el aviso con los anuales.
+  document.querySelectorAll<HTMLInputElement>('input[name="period"]').forEach((input) =>
+    input.addEventListener("change", () => {
+      const annual = input.value === "annual";
+      document.querySelectorAll<HTMLElement>("[data-monthly]").forEach((el) => (el.hidden = annual));
+      document.querySelectorAll<HTMLElement>("[data-annual]").forEach((el) => (el.hidden = !annual));
+    }),
+  );
 </script>

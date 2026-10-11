@@ -1,4 +1,6 @@
+@import "@fontsource-variable/inter";
 @import "tailwindcss";
+@import "./minimal.css";
 @custom-variant dark (&:where(.dark, .dark *));
 @theme inline {
   --color-background: var(--background);
@@ -12,19 +14,19 @@
   --color-accent: var(--accent);
   --color-brand-deep: #0d2c48;
   --color-brand-glow: var(--brand-glow);
-  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Inter Variable", "Inter", "Segoe UI", system-ui, sans-serif;
 }
 :root {
   color-scheme: light;
-  --background: #f7f5ea;
+  --background: #fafaf6;
   --foreground: #0d2c48;
-  --card: #fffdf6;
+  --card: #ffffff;
   --primary: #246c78;
   --primary-foreground: #ffffff;
-  --muted: #e8eeeb;
+  --muted: #eff3f0;
   --muted-foreground: #526675;
-  --border: #ccd8d2;
-  --accent: #dcecea;
+  --border: #e0e8e4;
+  --accent: #e2f0ee;
   --brand-glow: #99c8c6;
 }
 .dark {

@@ -1,3 +1,4 @@
+import { ClinicDocumentHeader } from "@/components/app/document-identity";
 import { ClinicalDocumentToolbar } from "@/components/clinical-document-toolbar";
 import { PaginationLinks } from "@/components/pagination-links";
 import { loadPatient } from "../load-patient";
@@ -53,6 +54,7 @@ export default async function ClinicalRecordPage({
 
   return (
     <div className="grid gap-6">
+      <ClinicDocumentHeader />
       <ClinicalDocumentToolbar
         patientId={id}
         email={patient.email}

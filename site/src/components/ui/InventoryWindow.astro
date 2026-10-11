@@ -1,0 +1,29 @@
+---
+import Icon from "../Icon.astro";
+import Side from "./Side.astro";
+const rows: [string, string, string, string, string][] = [
+  ["Resina compuesta", "Restauración", "24", "En stock", "ok"],
+  ["Anestesia lidocaína", "Anestesia", "8", "Stock bajo", "warn"],
+  ["Guantes de nitrilo", "Bioseguridad", "120", "En stock", "ok"],
+  ["Fresas de diamante", "Instrumental", "6", "Stock bajo", "warn"],
+];
+---
+
+<div class="win anim" role="img" aria-label="Vista ilustrativa del inventario con existencias de ejemplo">
+  <div class="win-ui">
+    <Side active="Inventario" />
+    <div class="pane">
+      <div class="win-title"><h4>Inventario</h4></div>
+      <div style="display:flex;gap:0.8em;align-items:center">
+        <div class="search"><Icon name="search" class="" />Buscar insumo…</div>
+        <span class="btn-xs"><Icon name="plus" class="size-3" />Nuevo insumo</span>
+      </div>
+      <div class="tbl">
+        <div class="tbl-head"><span>Insumo</span><span>Categoría</span><span>Stock</span><span>Estado</span></div>
+        {rows.map(([name, cat, stock, status, kind], k) => (
+          <div class="tbl-row" style={`--k:${k}`}><b>{name}</b><span style="color:#6a7c89">{cat}</span><span>{stock}</span><span><span class={`chip ${kind}`}>{status}</span></span></div>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>

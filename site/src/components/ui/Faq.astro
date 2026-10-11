@@ -1,0 +1,14 @@
+---
+import Icon from "../Icon.astro";
+interface Props { items: [string, string][] }
+const { items } = Astro.props;
+---
+
+<div class="faq">
+  {items.map(([q, a], i) => (
+    <details data-reveal style={`--i:${i}`}>
+      <summary>{i + 1}. {q}<Icon name="chevron" class="" /></summary>
+      <p class="ans">{a}</p>
+    </details>
+  ))}
+</div>
