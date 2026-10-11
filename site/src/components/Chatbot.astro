@@ -1,0 +1,319 @@
+---
+import { plans } from "../../../shared/site-content";
+const planData = plans.map((p) => ({ id: p.id, name: p.name, users: p.users, monthly: p.monthly }));
+---
+
+<div id="occlu" data-plans={JSON.stringify(planData)}>
+  <button type="button" class="oc-fab" aria-label="Abrir chat con Occlu" aria-expanded="false" aria-controls="oc-panel">
+    <svg class="oc-ico oc-ico-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path></svg>
+    <svg class="oc-ico oc-ico-close" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+  </button>
+  <section id="oc-panel" class="oc-panel" role="dialog" aria-label="Chat con Occlu" hidden>
+    <header class="oc-head">
+      <button type="button" class="oc-hbtn oc-back" aria-label="Reiniciar conversación" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <span class="oc-avatar" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><use href="#oc-tooth"></use></svg><i class="oc-dot"></i>
+      </span>
+      <b class="oc-name">Occlu</b>
+      <button type="button" class="oc-hbtn oc-mute" aria-label="Silenciar sonido" aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path class="oc-wave" d="M16.500 8.500a5 5 0 010 7M19 6a8.500 8.500 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path class="oc-x" d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"></path></svg>
+      </button>
+      <button type="button" class="oc-hbtn oc-expand" aria-label="Ampliar chat">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <button type="button" class="oc-hbtn oc-close" aria-label="Cerrar chat">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+      </button>
+    </header>
+    <div class="oc-log" role="log" aria-live="polite"></div>
+    <form class="oc-form" autocomplete="off">
+      <input class="oc-input" type="text" maxlength="300" placeholder="Escribe un mensaje..." aria-label="Escribe un mensaje" />
+      <button class="oc-send" type="submit" aria-label="Enviar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3L3 10.5l7 2.5 2.5 7z M10 13l11-10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+      </button>
+    </form>
+  </section>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="oc-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffffff"></stop><stop offset="1" stop-color="#e3eef0"></stop>
+      </linearGradient>
+      <symbol id="oc-tooth" viewBox="0 0 64 64">
+        <path d="M32 7c-5-3-11-3-16 0C9 11 8 20 11 28c2 6 2 12 4 18 1 4 3 8 6 8 4 0 4-7 5-11 .6-2 1.600-3 6-3s5.400 1 6 3c1 4 1 11 5 11 3 0 5-4 6-8 2-6 2-12 4-18 3-8 2-17-5-21-5-3-11-3-16 0z" fill="url(#oc-g)" stroke="#8fb5bb" stroke-width="1.800" stroke-linejoin="round"></path>
+        <path d="M17 15c2-3 6-4 9-3" stroke="#b9d3d8" stroke-opacity=".8" stroke-width="3.200" stroke-linecap="round" fill="none"></path>
+        <ellipse cx="23.500" cy="29" rx="4.200" ry="5" fill="#0d2c48"></ellipse><ellipse cx="40.500" cy="29" rx="4.200" ry="5" fill="#0d2c48"></ellipse>
+        <circle cx="25" cy="27" r="1.700" fill="#fff"></circle><circle cx="42" cy="27" r="1.700" fill="#fff"></circle>
+        <circle cx="22.500" cy="31" r=".8" fill="#fff"></circle><circle cx="39.500" cy="31" r=".8" fill="#fff"></circle>
+        <ellipse cx="16" cy="37" rx="3.600" ry="2.300" fill="#ff8fa8" fill-opacity=".65"></ellipse><ellipse cx="48" cy="37" rx="3.600" ry="2.300" fill="#ff8fa8" fill-opacity=".65"></ellipse>
+        <path d="M28 37c0 5 8 5 8 0z" fill="#0d2c48" stroke="#0d2c48" stroke-width="1.400" stroke-linejoin="round"></path>
+        <path d="M30 40.500c1.200 1.600 3.800 1.600 4 0-1-.8-3-.8-4 0z" fill="#ff7b9c"></path>
+        <path d="M54 8l1.200 3 3 1.200-3 1.200L54 16.500l-1.200-3-3-1.200 3-1.200z" fill="#ffd86b"></path>
+      </symbol>
+    </defs>
+  </svg>
+</div>
+
+<style is:global>
+  #occlu { --oc-bg: var(--card, #fff); --oc-fg: var(--foreground, #0d2c48); --oc-line: var(--border, #dbe5e3); --oc-soft: color-mix(in srgb, var(--foreground, #0d2c48) 6%, var(--oc-bg)); --oc-p: var(--primary, #246c78); --oc-pf: var(--primary-foreground, #fff); }
+  .oc-fab { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 60; width: 3.6rem; height: 3.6rem; border-radius: 9999px; border: 0; cursor: pointer; display: grid; place-items: center; background: var(--oc-p); color: var(--oc-pf); box-shadow: 0 10px 30px rgb(13 44 72 / 0.28); transition: transform .2s; }
+  .oc-fab:hover { transform: scale(1.06); }
+  .oc-ico { width: 1.6rem; height: 1.6rem; grid-area: 1/1; transition: opacity .2s, transform .2s; }
+  .oc-ico-close { opacity: 0; transform: rotate(-60deg); }
+  .oc-fab[aria-expanded="true"] .oc-ico-open { opacity: 0; transform: rotate(60deg); }
+  .oc-fab[aria-expanded="true"] .oc-ico-close { opacity: 1; transform: none; }
+  .oc-panel { position: fixed; right: 1.25rem; bottom: 5.9rem; z-index: 60; width: min(24rem, calc(100vw - 2rem)); height: min(34rem, calc(100dvh - 8rem)); display: flex; flex-direction: column; background: var(--oc-bg); color: var(--oc-fg); border-radius: 1.1rem; overflow: hidden; box-shadow: 0 24px 60px rgb(13 44 72 / 0.28); border: 1px solid var(--oc-line); animation: oc-in .22s ease-out; }
+  .oc-panel[hidden] { display: none; }
+  .oc-panel.is-big { width: min(32rem, calc(100vw - 2rem)); height: min(44rem, calc(100dvh - 8rem)); }
+  @keyframes oc-in { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+  .oc-head { display: flex; align-items: center; gap: .7rem; padding: .8rem 1rem; background: var(--oc-p); color: var(--oc-pf); }
+  .oc-name { flex: 1; font-size: 1.05rem; }
+  .oc-avatar { position: relative; width: 2.6rem; height: 2.6rem; border-radius: 9999px; background: #cfe7e8; display: grid; place-items: center; }
+  .oc-avatar svg { width: 1.9rem; height: 1.9rem; }
+  .oc-dot { position: absolute; right: 0; bottom: 0; width: .7rem; height: .7rem; border-radius: 9999px; background: #4fc9a4; border: 2px solid var(--oc-p); }
+  .oc-hbtn { width: 2.1rem; height: 2.1rem; display: grid; place-items: center; background: transparent; border: 0; border-radius: .6rem; color: inherit; cursor: pointer; }
+  .oc-hbtn:hover { background: rgb(255 255 255 / .18); }
+  .oc-mute[aria-pressed="true"] .oc-wave { display: none; } .oc-mute[aria-pressed="true"] .oc-x { display: inline !important; }
+  .oc-hbtn svg { width: 1.2rem; height: 1.2rem; }
+  .oc-log { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .5rem; scroll-behavior: smooth; }
+  .oc-row { display: flex; gap: .55rem; align-items: flex-end; }
+  .oc-row.me { justify-content: flex-end; }
+  .oc-mini { width: 1.7rem; height: 1.7rem; flex: none; }
+  .oc-mini.ghost { visibility: hidden; }
+  .oc-b { max-width: 82%; padding: .6rem .85rem; border-radius: 1rem; background: var(--oc-soft); font-size: .9rem; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+  .oc-b a { color: var(--oc-p); font-weight: 600; text-decoration: underline; }
+  .oc-row.me .oc-b { background: var(--oc-p); color: var(--oc-pf); }
+  .oc-b small { display: block; opacity: .6; font-size: .68rem; margin-top: .15rem; }
+  .oc-chips { display: flex; flex-wrap: wrap; gap: .5rem; padding-left: 2.25rem; margin-top: .2rem; }
+  .oc-chip { font: inherit; font-size: .84rem; font-weight: 600; padding: .45rem .9rem; border-radius: 9999px; border: 1.5px solid var(--oc-line); background: var(--oc-bg); color: var(--oc-fg); cursor: pointer; transition: border-color .15s, background .15s; }
+  .oc-chip:hover { border-color: var(--oc-p); background: var(--oc-soft); }
+  .oc-typing { display: inline-flex; gap: 4px; padding: .8rem .9rem; }
+  .oc-typing i { width: 6px; height: 6px; border-radius: 9999px; background: currentColor; opacity: .35; animation: oc-bounce 1s infinite; }
+  .oc-typing i:nth-child(2) { animation-delay: .15s; } .oc-typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes oc-bounce { 40% { transform: translateY(-4px); opacity: .8; } }
+  .oc-form { display: flex; align-items: center; gap: .4rem; margin: .6rem 1rem 1rem; padding: .2rem .4rem .2rem 1rem; border: 1.5px solid var(--oc-line); border-radius: 9999px; }
+  .oc-form:focus-within { border-color: var(--oc-p); }
+  .oc-input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; font-size: .92rem; padding: .6rem 0; }
+  .oc-send { width: 2.2rem; height: 2.2rem; border: 0; border-radius: 9999px; background: transparent; color: var(--oc-p); cursor: pointer; display: grid; place-items: center; }
+  .oc-send:hover { background: var(--oc-soft); }
+  .oc-send svg { width: 1.3rem; height: 1.3rem; }
+  @media (max-width: 480px) { .oc-panel, .oc-panel.is-big { right: .5rem; left: .5rem; width: auto; bottom: 5.4rem; } .oc-fab { right: .8rem; bottom: .8rem; } }
+  @media (prefers-reduced-motion: reduce) { .oc-panel, .oc-ico, .oc-typing i { animation: none; transition: none; } }
+</style>
+
+<script>
+  type Plan = { id: string; name: string; users: string; monthly: number | null };
+  type Msg = { from: "bot" | "me"; text: string; t: string; html?: boolean };
+  type Lead = { name?: string; email?: string; clinicName?: string; teamSize?: string; phone?: string; plan?: string };
+
+  const root = document.getElementById("occlu")!;
+  const plans: Plan[] = JSON.parse(root.dataset.plans ?? "[]");
+  const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+  const fab = $<HTMLButtonElement>(".oc-fab"), panel = $("#oc-panel"), log = $(".oc-log");
+  const form = $<HTMLFormElement>(".oc-form"), input = $<HTMLInputElement>(".oc-input");
+  const back = $(".oc-back");
+  const KEY = "occlu-chat";
+  const cop = new Intl.NumberFormat("es-CO");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let msgs: Msg[] = [];
+  let step = "idle"; // idle | name | email | clinic | team | phone | confirm | sending
+  let lead: Lead = {};
+  let chips: [string, string][] = [];
+  let busy = false;
+
+  const save = () => { try { sessionStorage.setItem(KEY, JSON.stringify({ msgs, step, lead, chips })); } catch {} };
+  const load = () => { try { const s = JSON.parse(sessionStorage.getItem(KEY) ?? "null"); if (s) { msgs = s.msgs; step = s.step; lead = s.lead; chips = s.chips; return true; } } catch {} return false; };
+  const now = () => new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  const mini = (ghost = false) => `<svg class="oc-mini${ghost ? " ghost" : ""}" viewBox="0 0 64 64" aria-hidden="true"><use href="#oc-tooth"></use></svg>`;
+
+  function render() {
+    log.innerHTML = msgs.map((m, i) => {
+      const body = m.html ? m.text : esc(m.text);
+      return m.from === "me"
+        ? `<div class="oc-row me"><div class="oc-b">${body}<small>${m.t}</small></div></div>`
+        : `<div class="oc-row">${mini(!(msgs[i + 1]?.from !== "bot"))}<div class="oc-b">${body}</div></div>`;
+    }).join("") + (chips.length ? `<div class="oc-chips">${chips.map(([k, l]) => `<button type="button" class="oc-chip" data-k="${esc(k)}">${esc(l)}</button>`).join("")}</div>` : "");
+    back.hidden = msgs.length < 3;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  let muted = false, ctx: AudioContext | null = null;
+  try { muted = localStorage.getItem(KEY + "-muted") === "1"; } catch {}
+  const mute = $<HTMLButtonElement>(".oc-mute");
+  const syncMute = () => { mute.setAttribute("aria-pressed", String(muted)); mute.setAttribute("aria-label", muted ? "Activar sonido" : "Silenciar sonido"); };
+  syncMute();
+  // Campanita suave de dos notas, generada con Web Audio (sin archivos).
+  function chime() {
+    if (muted || reduce || panel.hidden) return;
+    try {
+      ctx ??= new AudioContext();
+      if (ctx.state === "suspended") void ctx.resume();
+      [[880, 0], [1318.5, 0.11]].forEach(([f, d]) => {
+        const t = ctx!.currentTime + d, o = ctx!.createOscillator(), g = ctx!.createGain();
+        o.type = "sine"; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        o.connect(g).connect(ctx!.destination); o.start(t); o.stop(t + 0.4);
+      });
+    } catch {}
+  }
+  mute.addEventListener("click", () => { muted = !muted; syncMute(); try { localStorage.setItem(KEY + "-muted", muted ? "1" : "0"); } catch {} if (!muted) chime(); });
+
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
+  async function say(text: string, opts: { html?: boolean; chips?: [string, string][] } = {}) {
+    busy = true; chips = [];
+    render();
+    log.insertAdjacentHTML("beforeend", `<div class="oc-row oc-tp">${mini()}<div class="oc-b oc-typing"><i></i><i></i><i></i></div></div>`);
+    log.scrollTop = log.scrollHeight;
+    await wait(Math.min(900, 350 + text.length * 8));
+    msgs.push({ from: "bot", text, t: now(), html: opts.html });
+    chime();
+    chips = opts.chips ?? [];
+    busy = false; save(); render();
+  }
+  const user = (text: string) => { msgs.push({ from: "me", text, t: now() }); chips = []; save(); render(); };
+
+  const MENU: [string, string][] = [["precios", "Conocer precios"], ["asesor", "Hablar con un asesor"], ["demo", "Agendar demostración"]];
+  const MORE: [string, string][] = [["precios", "Ver precios"], ["asesor", "Hablar con un asesor"], ["demo", "Agendar demostración"]];
+
+  async function start() {
+    msgs = []; step = "idle"; lead = {}; chips = []; save();
+    await say("¡Hola! Soy Occlu 🦷, tu asistente de Occlus.\n¿Tienes alguna pregunta? Estoy encantado de ayudarte.");
+    await say("¿En qué puedo ayudarte hoy?", { chips: MENU });
+  }
+
+  async function prices() {
+    const lines = plans.map((p) => `• ${p.name} (${p.users}): ${p.monthly ? `$${cop.format(p.monthly)} COP/mes` : "a convenir"}`).join("\n");
+    await say(`Estos son nuestros planes:\n${lines}`);
+    await say('Puedes compararlos en detalle en <a href="/planes">la página de planes</a>. ¿Te ayudo a elegir el ideal para tu clínica?', { html: true, chips: [["asesor", "Sí, hablar con un asesor"], ["demo", "Agendar demostración"], ["menu", "Otra pregunta"]] });
+  }
+
+  async function ask(kind: "name" | "demo") {
+    lead.plan = lead.plan ?? "UNDECIDED";
+    step = "name"; save();
+    await say(kind === "demo" ? "¡Genial! Para coordinar tu demostración necesito algunos datos." : "¡Genial! Necesito conocer algunos detalles para darte la mejor asesoría.");
+    await say("¿Cuál es tu nombre?");
+  }
+
+  const TEAMS: [string, string][] = [["SOLO", "Solo yo"], ["TWO_TO_FIVE", "2 a 5 personas"], ["SIX_TO_FIFTEEN", "6 a 15 personas"], ["MORE", "Más de 15"]];
+  const emailOk = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
+
+  async function submit() {
+    step = "sending"; save();
+    await say("Enviando tu solicitud…");
+    try {
+      const res = await fetch("/site-api/chat-lead", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: lead.name, email: lead.email, phone: lead.phone ?? "", clinicName: lead.clinicName, teamSize: lead.teamSize, plan: lead.plan ?? "UNDECIDED", message: "Solicitud enviada desde el chat con Occlu." }),
+      });
+      if (!res.ok) throw new Error();
+      step = "idle";
+      await say(`¡Listo, ${lead.name?.split(" ")[0]}! Recibimos tu solicitud y te escribiremos a ${lead.email} muy pronto.`, { chips: [["menu", "Otra pregunta"]] });
+      lead = {};
+    } catch {
+      step = "idle";
+      await say('No pude enviar tu solicitud en este momento. Puedes completarla en <a href="/demo">el formulario de contacto</a>.', { html: true, chips: [["asesor", "Intentar de nuevo"], ["menu", "Otra pregunta"]] });
+    }
+    save();
+  }
+
+  async function flow(text: string) {
+    switch (step) {
+      case "name":
+        if (text.trim().length < 2) return say("¿Me repites tu nombre, por favor?");
+        lead.name = text.trim(); step = "email"; save();
+        return say(`Mucho gusto, ${lead.name.split(" ")[0]}. ¿Cuál es tu correo electrónico?`);
+      case "email":
+        if (!emailOk(text.trim())) return say("Ese correo no parece válido. Escríbelo así: nombre@dominio.com");
+        lead.email = text.trim(); step = "clinic"; save();
+        return say("¿Cómo se llama tu clínica o consultorio?");
+      case "clinic":
+        if (text.trim().length < 2) return say("¿Cómo se llama tu clínica?");
+        lead.clinicName = text.trim(); step = "team"; save();
+        return say("¿Cuántas personas conforman tu equipo?", { chips: TEAMS });
+      case "team": {
+        const t = TEAMS.find(([k, l]) => k === text || l.toLowerCase() === text.toLowerCase());
+        if (!t) return say("Elige una de las opciones, por favor.", { chips: TEAMS });
+        lead.teamSize = t[0]; step = "phone"; save();
+        return say("¿Quieres dejarnos un teléfono de contacto? Es opcional.", { chips: [["skip", "Omitir"]] });
+      }
+      case "phone": {
+        if (text !== "skip") {
+          const digits = text.replace(/[^\d+]/g, "");
+          if (digits.length < 7) return say("Ese teléfono parece incompleto. Escríbelo de nuevo o pulsa Omitir.", { chips: [["skip", "Omitir"]] });
+          lead.phone = digits.slice(0, 30);
+        }
+        step = "confirm"; save();
+        return say(`Revisemos:\n• Nombre: ${lead.name}\n• Correo: ${lead.email}\n• Clínica: ${lead.clinicName}\n• Equipo: ${TEAMS.find(([k]) => k === lead.teamSize)?.[1]}${lead.phone ? `\n• Teléfono: ${lead.phone}` : ""}\n\n¿Autorizas que Occlus te contacte con estos datos? (Consulta la política en /privacidad)`, { chips: [["yes", "Sí, enviar"], ["no", "Cancelar"]] });
+      }
+      case "confirm":
+        if (text === "yes" || /^(s[ií]|claro|ok|dale|listo)\b/i.test(text)) return submit();
+        step = "idle"; lead = {}; save();
+        return say("Sin problema, no envié nada. ¿Algo más en lo que pueda ayudarte?", { chips: MENU });
+    }
+  }
+
+  const FAQ: [RegExp, string, string?][] = [
+    [/^(hola|buenas|hey|buen[oa]s)/i, "¡Hola! 😊 ¿En qué puedo ayudarte?"],
+    [/precio|costo|cu[aá]nto|plan|valor|tarifa|cuesta/i, "__prices"],
+    [/agenda|cita|calendario|recordatorio/, "La agenda de Occlus coordina citas, profesionales y sedes en una sola vista, con estados y notas por cita."],
+    [/historia|odontograma|evoluci[oó]n|consentimiento|paciente/, "Las historias clínicas reúnen evoluciones, odontograma, archivos y consentimientos, con acceso según el rol de cada persona."],
+    [/inventario|insumo|lote|stock|vencimiento/, "El inventario registra existencias, movimientos, lotes y vencimientos. Está disponible desde el plan Integral."],
+    [/whatsapp|mensaje/, "Los mensajes por WhatsApp son un módulo adicional que se configura y activa contigo. Un asesor te cuenta el alcance."],
+    [/factura|rips|dian/, "La facturación electrónica y RIPS dependen de un proveedor y requieren configuración y activación. Un asesor te explica el alcance."],
+    [/reporte|informe|producci[oó]n|recaudo/, "Los reportes muestran producción, recaudo y asistencia, y se pueden exportar. Están desde el plan Equipo."],
+    [/segur|privacidad|datos|habeas/, 'Cada clínica tiene su información separada y el acceso depende del rol. Lee nuestro <a href="/privacidad">aviso de privacidad</a>.', "html"],
+    [/soporte|ayuda t[eé]cnica|problema/, "Ofrecemos soporte en español y acompañamiento según tu plan. Si ya eres cliente, ingresa a tu clínica desde «Ingresar»."],
+    [/gracias|genial|perfecto/, "¡Con gusto! 🦷 Si necesitas algo más, aquí estaré."],
+    [/asesor|humano|persona|contacto|hablar/, "__advisor"],
+    [/demo|demostraci|probar|prueba/, "__demo"],
+  ];
+
+  async function handle(raw: string) {
+    const text = raw.trim();
+    if (!text || busy) return;
+    const label = chipLabel(text);
+    user(label);
+    if (step !== "idle") return void (await flow(text));
+    await route(text);
+  }
+  const chipLabel = (k: string) => [...MENU, ...MORE, ["menu", "Otra pregunta"], ["skip", "Omitir"], ["yes", "Sí, enviar"], ["no", "Cancelar"], ...TEAMS].find(([key]) => key === k)?.[1] ?? k;
+
+  async function route(text: string) {
+    if (text === "precios") return prices();
+    if (text === "asesor") return ask("name");
+    if (text === "demo") return ask("demo");
+    if (text === "menu") return say("¿En qué puedo ayudarte?", { chips: MENU });
+    const hit = FAQ.find(([re]) => re.test(text));
+    if (hit) {
+      if (hit[1] === "__prices") return prices();
+      if (hit[1] === "__advisor") return ask("name");
+      if (hit[1] === "__demo") return ask("demo");
+      return say(hit[1], { html: hit[2] === "html", chips: MORE });
+    }
+    return say("No estoy seguro de haberte entendido. Puedo contarte sobre precios, la agenda, historias clínicas, inventario o ponerte en contacto con un asesor.", { chips: MENU });
+  }
+
+  function open(v: boolean) {
+    panel.hidden = !v;
+    fab.setAttribute("aria-expanded", String(v));
+    fab.setAttribute("aria-label", v ? "Cerrar chat con Occlu" : "Abrir chat con Occlu");
+    if (v) { if (!msgs.length) void start(); else render(); setTimeout(() => input.focus(), 50); }
+    try { sessionStorage.setItem(KEY + "-open", v ? "1" : "0"); } catch {}
+  }
+
+  fab.addEventListener("click", () => open(panel.hidden));
+  $(".oc-close").addEventListener("click", () => { open(false); fab.focus(); });
+  $(".oc-expand").addEventListener("click", () => panel.classList.toggle("is-big"));
+  back.addEventListener("click", () => void start());
+  root.addEventListener("keydown", (e) => { if ((e as KeyboardEvent).key === "Escape" && !panel.hidden) { open(false); fab.focus(); } });
+  log.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>(".oc-chip");
+    if (b) void handle(b.dataset.k!);
+  });
+  form.addEventListener("submit", (e) => { e.preventDefault(); const v = input.value; input.value = ""; void handle(v); });
+
+  if (load()) { try { if (sessionStorage.getItem(KEY + "-open") === "1") open(true); } catch {} }
+</script>

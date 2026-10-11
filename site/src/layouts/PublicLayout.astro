@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Logo from '../components/Logo.astro';
+import Chatbot from '../components/Chatbot.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 import { THEME_INIT_SCRIPT } from '../../../shared/theme';
 interface Props {
@@ -141,7 +142,7 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
 					>Software para equipos odontológicos</span
 				>
 			</div>
-		</footer><script>
+		</footer><Chatbot /><script>
 			// Solo métricas agregadas; la configuración y la clave permanecen en el servidor.
 			void fetch('/site-api/config')
 				.then((r) => r.json())
