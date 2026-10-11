@@ -180,5 +180,5 @@ public final class PlatformDtos {
                                   Instant startsAt, Instant endsAt, Instant createdAt, Instant archivedAt) {}
 
     /** Lo que ve una clínica. */
-    public record ClinicAnnouncement(UUID id, String title, String body, String level) {}
+    public record ClinicAnnouncement(UUID id, String title, String body, String level, java.time.Instant createdAt, boolean read) {}
 }

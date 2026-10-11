@@ -233,7 +233,14 @@ export type AnnouncementRow = {
   archivedAt: string | null;
 };
 
-export type ClinicAnnouncement = { id: string; title: string; body: string; level: "INFO" | "WARNING" | "CRITICAL" };
+export type ClinicAnnouncement = {
+  id: string;
+  title: string;
+  body: string;
+  level: "INFO" | "WARNING" | "CRITICAL";
+  createdAt: string;
+  read: boolean;
+};
 
 export function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;

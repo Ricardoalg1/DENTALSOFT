@@ -236,14 +236,38 @@ public class PlatformFeeds {
         audit.record(me, "ANNOUNCEMENT_ARCHIVED", null, "Archivó el aviso «%s»".formatted(title), Views.details());
     }
 
-    /** Avisos vigentes para la clínica autenticada (RLS: ve los generales y los suyos). */
+    private static final String VISIBLE = " archived_at is null and starts_at <= now() and (ends_at is null or ends_at > now())";
+
+    /** Avisos vigentes para la clínica autenticada (RLS: ve los generales y los suyos) y si esta persona ya los leyó. */
     @Transactional(readOnly = true)
-    public List<ClinicAnnouncement> visibleToClinic() {
+    public List<ClinicAnnouncement> visibleToClinic(AuthUser me) {
         return db.query("""
-                select id, title, body, level from platform_announcement
-                where archived_at is null and starts_at <= now() and (ends_at is null or ends_at > now())
-                order by created_at desc limit 5""", (rs, i) -> new ClinicAnnouncement(rs.getObject("id", UUID.class),
-                rs.getString("title"), rs.getString("body"), rs.getString("level")));
+                select a.id, a.title, a.body, a.level, a.created_at, r.read_at is not null as is_read
+                from platform_announcement a
+                left join platform_announcement_read r on r.announcement_id = a.id and r.user_id = ?
+                where a.archived_at is null and a.starts_at <= now() and (a.ends_at is null or a.ends_at > now())
+                order by a.created_at desc limit 30""", (rs, i) -> new ClinicAnnouncement(rs.getObject("id", UUID.class),
+                rs.getString("title"), rs.getString("body"), rs.getString("level"),
+                rs.getTimestamp("created_at").toInstant(), rs.getBoolean("is_read")), me.userId());
+    }
+
+    /** Marca un aviso como leído por esta persona; repetirlo no cambia nada. */
+    @Transactional
+    public void markAnnouncementRead(AuthUser me, UUID id) {
+        if (db.queryForObject("select count(*) from platform_announcement where id = ? and" + VISIBLE, Long.class, id) == 0) {
+            throw new NotFoundException("Aviso no encontrado");
+        }
+        db.update("insert into platform_announcement_read (announcement_id, user_id, clinic_id) values (?, ?, ?) on conflict do nothing",
+                id, me.userId(), me.clinicId());
+    }
+
+    @Transactional
+    public void markAllAnnouncementsRead(AuthUser me) {
+        db.update("""
+                insert into platform_announcement_read (announcement_id, user_id, clinic_id)
+                select a.id, ?, ? from platform_announcement a
+                where a.archived_at is null and a.starts_at <= now() and (a.ends_at is null or a.ends_at > now())
+                on conflict do nothing""", me.userId(), me.clinicId());
     }
 
     // ---------- Apoyo ----------

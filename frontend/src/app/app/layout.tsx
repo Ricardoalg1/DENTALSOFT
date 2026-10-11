@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { LogOut, UserCog, Search, Bell, ChevronDown } from "lucide-react";
+import { LogOut, UserCog, Search, Inbox, ChevronDown } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { ForcedPasswordScreen, SuspendedScreen } from "@/components/app/blocked-screen";
 import { Nav } from "@/components/app/nav";
+import { NotificationBell } from "@/components/app/notification-bell";
 import { SubscriptionBanners } from "@/components/app/subscription-banners";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -74,7 +75,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
       <main className="reference-main min-w-0 flex-1 p-4 md:p-8">
         <div className="reference-topbar mb-7 flex flex-wrap items-center justify-between gap-4">
           <form action="/app/pacientes" role="search" className="flex max-w-lg flex-1 items-center gap-3 rounded-xl border bg-card px-4 py-2 shadow-sm"><Search className="size-4 text-muted-foreground" aria-hidden="true" /><input name="q" aria-label="Buscar pacientes" placeholder="Buscar pacientes por nombre o documento…" className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none" /><button type="submit" className="text-xs font-medium text-primary">Buscar</button></form>
-          <div className="flex items-center gap-4">{me.platformAdmin && <Link href="/app/plataforma/notificaciones" aria-label="Notificaciones de plataforma" className="rounded-full border bg-card p-3"><Bell className="size-5" aria-hidden="true" /></Link>}<Link href="/app/cuenta" className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-full bg-foreground font-medium text-background">{me.fullName.trim().slice(0,1)}</span><span className="hidden text-sm sm:block"><span className="block font-medium">{me.fullName}</span><span className="text-xs text-muted-foreground">{ROLE_LABELS[me.role]}</span></span><ChevronDown className="size-4" aria-hidden="true" /></Link></div>
+          <div className="flex items-center gap-4">{me.platformAdmin && <Link href="/app/plataforma/notificaciones" aria-label="Bandeja del equipo de plataforma" title="Bandeja del equipo de plataforma" className="rounded-full border bg-card p-3"><Inbox className="size-5" aria-hidden="true" /></Link>}<NotificationBell /><Link href="/app/cuenta" className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-full bg-foreground font-medium text-background">{me.fullName.trim().slice(0,1)}</span><span className="hidden text-sm sm:block"><span className="block font-medium">{me.fullName}</span><span className="text-xs text-muted-foreground">{ROLE_LABELS[me.role]}</span></span><ChevronDown className="size-4" aria-hidden="true" /></Link></div>
         </div>
         <SubscriptionBanners me={me} />
         {children}

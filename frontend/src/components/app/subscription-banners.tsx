@@ -65,7 +65,7 @@ export async function SubscriptionBanners({ me }: { me: Me }) {
   } catch (e) {
     if (!(e instanceof ApiError)) throw e;
   }
-  for (const a of announcements) items.push(<Banner key={a.id} tone={a.level} title={a.title}>{a.body}</Banner>);
+  for (const a of announcements.filter((x) => !x.read)) items.push(<Banner key={a.id} tone={a.level} title={a.title}>{a.body}</Banner>);
 
   if (!items.length) return null;
   return <div className="mb-6 grid max-w-5xl gap-2">{items}</div>;

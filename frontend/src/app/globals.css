@@ -434,3 +434,14 @@ tr[data-page-hidden="true"] {
 .patient-document div:has(> div > select:required) > label::after { content: " *"; color: var(--primary); }
 .reference-main input[type="checkbox"] { accent-color: var(--primary); width: 17px; height: 17px; flex-shrink: 0; }
 .reference-main [data-slot="card-title"] > span:has(.reference-icon) { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+
+/* Campanita de mensajes: se balancea mientras haya mensajes sin leer. */
+@keyframes bell-ring {
+  0%, 60%, 100% { transform: rotate(0); }
+  5%, 25% { transform: rotate(14deg); }
+  10%, 30% { transform: rotate(-12deg); }
+  15%, 35% { transform: rotate(8deg); }
+  20%, 40% { transform: rotate(-6deg); }
+}
+.bell-ring { animation: bell-ring 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .bell-ring { animation: none; } }
