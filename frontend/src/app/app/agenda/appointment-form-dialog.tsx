@@ -1,5 +1,6 @@
 "use client";
 
+import { RichTextarea } from "@/components/rich-textarea";
 import {
   CalendarPlus,
   CalendarDays,
@@ -239,7 +240,7 @@ export function AppointmentFormDialog({
               <NotebookPen className="size-4 text-primary" />
               Notas
             </Label>
-            <Textarea
+            <RichTextarea
               id="notes"
               name="notes"
               maxLength={1000}

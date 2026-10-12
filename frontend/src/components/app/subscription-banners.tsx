@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import { CircleAlert, Info, TriangleAlert } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -25,7 +26,7 @@ function Banner({ tone, title, children }: { tone: keyof typeof TONES; title: st
       <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />
       <div>
         <p className="font-medium">{title}</p>
-        {children && <p className="opacity-90">{children}</p>}
+        {children && <div className="opacity-90">{children}</div>}
       </div>
     </div>
   );
@@ -65,7 +66,7 @@ export async function SubscriptionBanners({ me }: { me: Me }) {
   } catch (e) {
     if (!(e instanceof ApiError)) throw e;
   }
-  for (const a of announcements.filter((x) => !x.read)) items.push(<Banner key={a.id} tone={a.level} title={a.title}>{a.body}</Banner>);
+  for (const a of announcements.filter((x) => !x.read)) items.push(<Banner key={a.id} tone={a.level} title={a.title}><RichText>{a.body}</RichText></Banner>);
 
   if (!items.length) return null;
   return <div className="mb-6 grid max-w-5xl gap-2">{items}</div>;

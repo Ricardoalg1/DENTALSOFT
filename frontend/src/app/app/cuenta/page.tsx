@@ -1,3 +1,4 @@
+import { BrandHeader } from "@/components/app/document-identity";
 import { DocumentSettings } from "@/components/app/document-settings";
 import type { DocumentBranding, DocumentProfile } from "@/lib/documents";
 import type { Metadata } from "next";
@@ -61,7 +62,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/app/cuen
         </Card>
       )}
 
-      <DocumentSettings brand={brand} profile={profile} admin={me.role === "ADMIN"} />
+      <DocumentSettings brand={brand} profile={profile} admin={me.role === "ADMIN"} preview={<BrandHeader brand={brand} />} />
       <SessionsCard />
 
       <Card>

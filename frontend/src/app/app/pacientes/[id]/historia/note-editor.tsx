@@ -1,5 +1,6 @@
 "use client";
 
+import { RichTextarea } from "@/components/rich-textarea";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -116,7 +117,7 @@ export function NoteEditor({ patientId, note, appointmentId, defaults }: Props) 
   const field = (key: TextKey, label: string, max: number, rows = 3) => (
     <div className="grid gap-1.5">
       <Label htmlFor={key}>{label}</Label>
-      <Textarea
+      <RichTextarea
         id={key}
         rows={rows}
         maxLength={max}

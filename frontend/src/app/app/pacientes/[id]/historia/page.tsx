@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import { ClinicDocumentHeader } from "@/components/app/document-identity";
 import { ClinicalDocumentToolbar } from "@/components/clinical-document-toolbar";
 import { PaginationLinks } from "@/components/pagination-links";
@@ -226,7 +227,7 @@ function NoteCard({
             <h3 className="text-sm font-medium">Notas aclaratorias</h3>
             {note.addenda.map((a) => (
               <div key={a.id} className="text-sm">
-                <p className="whitespace-pre-line">{a.text}</p>
+                <RichText>{a.text}</RichText>
                 <p className="text-xs text-muted-foreground">
                   {a.author.name} · {formatDateTime(a.createdAt)}
                 </p>
@@ -286,7 +287,7 @@ function Row({
   return (
     <div className="contents">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="min-w-0 whitespace-pre-line break-words">{children}</dd>
+      <dd className="min-w-0 break-words">{typeof children === "string" ? <RichText>{children}</RichText> : <span className="whitespace-pre-line">{children}</span>}</dd>
     </div>
   );
 }

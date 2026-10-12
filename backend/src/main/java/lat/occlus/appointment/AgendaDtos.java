@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -45,4 +46,17 @@ public final class AgendaDtos {
     public record ScheduleRequest(@NotNull @Size(max = 50) List<@Valid ScheduleBlock> blocks) {}
 
     public record ScheduleResponse(UUID dentistId, UUID siteId, int dayOfWeek, LocalTime startTime, LocalTime endTime) {}
+
+    /** Ausencia: uno o varios días, completos (sin horas) o solo una franja de cada día. */
+    public record TimeOffBlock(
+            @NotNull LocalDate fromDate,
+            @NotNull LocalDate toDate,
+            LocalTime startTime,
+            LocalTime endTime,
+            @Size(max = 120) String reason) {}
+
+    public record TimeOffRequest(@NotNull @Size(max = 200) List<@Valid TimeOffBlock> items) {}
+
+    public record TimeOffResponse(UUID dentistId, LocalDate fromDate, LocalDate toDate, LocalTime startTime,
+                                  LocalTime endTime, String reason) {}
 }

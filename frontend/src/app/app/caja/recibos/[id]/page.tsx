@@ -1,3 +1,4 @@
+import { ClinicDocumentHeader } from "@/components/app/document-identity";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -18,8 +19,9 @@ export default async function ReceiptPage({ params }: PageProps<"/app/caja/recib
   catch (e) { if (e instanceof ApiError && (e.status === 404 || e.status === 400)) notFound(); throw e; }
   return <div className="mx-auto grid max-w-2xl gap-5">
     <Link href="/app/caja" className="no-print inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Caja</Link>
-    <article className="grid gap-5 rounded-xl border p-6 print:border-0 print:p-0">
-      <header className="border-b pb-4 text-center"><p className="text-xl font-semibold">{payment.clinicName}</p>{payment.clinicNit && <p className="text-sm">NIT {payment.clinicNit}</p>}<p className="mt-3 text-sm uppercase tracking-wide">Recibo de pago</p><p className="text-lg font-semibold">N.º {formatReceipt(payment.receiptNumber)}</p></header>
+    <ClinicDocumentHeader />
+    <article className="clinical-paper grid gap-5 rounded-xl border p-6 print:border-0 print:p-0">
+      <header className="border-b pb-4 text-center"><p className="text-sm uppercase tracking-wide">Recibo de pago</p><p className="text-lg font-semibold">N.º {formatReceipt(payment.receiptNumber)}</p></header>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm"><dt className="text-muted-foreground">Fecha</dt><dd>{formatDateTime(payment.receivedAt)}</dd><dt className="text-muted-foreground">Paciente</dt><dd>{payment.patient.name}</dd><dt className="text-muted-foreground">Documento</dt><dd>{payment.patientDocument}</dd><dt className="text-muted-foreground">Sede</dt><dd>{payment.site.name}</dd><dt className="text-muted-foreground">Concepto</dt><dd>{payment.plan?.name ?? "Abono a cuenta"}</dd><dt className="text-muted-foreground">Medio de pago</dt><dd>{PAYMENT_METHODS[payment.method]}</dd>{payment.reference && <><dt className="text-muted-foreground">Referencia</dt><dd>{payment.reference}</dd></>}<dt className="text-muted-foreground">Recibió</dt><dd>{payment.receivedBy?.name ?? "—"}</dd></dl>
       <div className="flex justify-between border-t pt-4 text-lg font-semibold"><span>Total recibido</span><span>{formatCOP(payment.amount)}</span></div>
       {payment.notes && <p className="text-sm">Nota: {payment.notes}</p>}

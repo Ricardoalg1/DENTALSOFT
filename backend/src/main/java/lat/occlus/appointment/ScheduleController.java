@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.UUID;
 import lat.occlus.appointment.AgendaDtos.ScheduleRequest;
 import lat.occlus.appointment.AgendaDtos.ScheduleResponse;
+import lat.occlus.appointment.AgendaDtos.TimeOffRequest;
+import lat.occlus.appointment.AgendaDtos.TimeOffResponse;
 import lat.occlus.shared.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,5 +37,17 @@ public class ScheduleController {
     List<ScheduleResponse> replace(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID dentistId,
                                    @Valid @RequestBody ScheduleRequest req) {
         return service.replace(AuthUser.from(jwt).clinicId(), dentistId, req.blocks());
+    }
+
+    @GetMapping("/time-off")
+    List<TimeOffResponse> timeOff(@AuthenticationPrincipal Jwt jwt) {
+        return service.listTimeOff(AuthUser.from(jwt).clinicId());
+    }
+
+    @PutMapping("/{dentistId}/time-off")
+    @PreAuthorize("hasRole('ADMIN')")
+    List<TimeOffResponse> replaceTimeOff(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID dentistId,
+                                         @Valid @RequestBody TimeOffRequest req) {
+        return service.replaceTimeOff(AuthUser.from(jwt).clinicId(), dentistId, req.items());
     }
 }

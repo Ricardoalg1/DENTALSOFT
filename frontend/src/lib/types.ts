@@ -181,6 +181,16 @@ export type ScheduleBlock = {
   endTime: string;
 };
 
+/** Ausencia de un profesional: fechas "2026-10-12"; sin horas = todo el día. */
+export type TimeOff = {
+  dentistId: string;
+  fromDate: string;
+  toDate: string;
+  startTime: string | null;
+  endTime: string | null;
+  reason: string;
+};
+
 export const WEEKDAYS: Record<number, string> = {
   1: "Lunes",
   2: "Martes",

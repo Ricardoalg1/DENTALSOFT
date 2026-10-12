@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api, getMe } from "@/lib/api";
-import type { Professional, ScheduleBlock, Site } from "@/lib/types";
+import type { Professional, ScheduleBlock, Site, TimeOff } from "@/lib/types";
 import { ScheduleEditor } from "./schedule-editor";
 
 export const metadata: Metadata = { title: "Horarios de atención" };
@@ -13,10 +13,11 @@ export default async function SchedulesPage() {
   if (me.role !== "ADMIN") {
     return <p className="text-muted-foreground">Solo los administradores pueden editar los horarios.</p>;
   }
-  const [professionals, sites, schedules] = await Promise.all([
+  const [professionals, sites, schedules, timeOff] = await Promise.all([
     api<Professional[]>("/api/professionals"),
     api<Site[]>("/api/sites"),
     api<ScheduleBlock[]>("/api/schedules"),
+    api<TimeOff[]>("/api/schedules/time-off"),
   ]);
   const activeSites = sites.filter((s) => s.active);
 
@@ -28,7 +29,7 @@ export default async function SchedulesPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Horarios de atención</h1>
         <p className="text-muted-foreground">
-          Las citas solo se pueden agendar dentro del horario de cada profesional. Si no tiene horario, no hay restricción.
+          Define franjas para varios días a la vez, descuenta el almuerzo u otros descansos y bloquea fechas específicas. Las citas solo se pueden agendar dentro del horario de cada profesional; si no tiene horario, no hay restricción.
         </p>
       </div>
       {professionals.length === 0 && (
@@ -46,6 +47,7 @@ export default async function SchedulesPage() {
               dentistId={p.id}
               sites={activeSites}
               initial={schedules.filter((s) => s.dentistId === p.id)}
+              initialTimeOff={timeOff.filter((t) => t.dentistId === p.id)}
             />
           </CardContent>
         </Card>

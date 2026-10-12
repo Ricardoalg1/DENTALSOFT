@@ -1,5 +1,6 @@
 "use client";
 
+import { RichTextarea } from "@/components/rich-textarea";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useEffect } from "react";
@@ -203,7 +204,7 @@ export function PatientForm({ action, patient, cancelHref }: Props) {
       <Section title="Notas">
         <div className="grid gap-1.5 sm:col-span-2">
           <Label htmlFor="notes">Observaciones administrativas</Label>
-          <textarea
+          <RichTextarea
             key={v("notes")}
             id="notes"
             name="notes"

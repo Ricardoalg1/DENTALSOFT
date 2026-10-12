@@ -51,7 +51,7 @@ export function PlanView({ patientId, plan, procedures, suggestions, professiona
     <div className="grid gap-6">
       <FormError message={error} />
 
-      <Card>
+      <Card className="clinical-paper">
         <CardContent className="overflow-x-auto">
           {plan.items.length === 0 ? (
             <p className="py-4 text-sm text-muted-foreground">Agrega procedimientos al presupuesto.</p>

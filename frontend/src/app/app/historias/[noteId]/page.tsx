@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import { ClinicDocumentHeader, ProfessionalSignature } from "@/components/app/document-identity";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -93,9 +94,7 @@ export default async function NoteDocument({
                 <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {title}
                 </h2>
-                <p className="whitespace-pre-wrap break-words text-sm leading-7">
-                  {text}
-                </p>
+                <RichText className="text-sm leading-7">{text}</RichText>
               </section>
             ))}
         </div>
@@ -105,9 +104,7 @@ export default async function NoteDocument({
             className="mt-8 border-l-2 border-primary pl-4"
           >
             <h2 className="text-sm font-semibold">Nota aclaratoria</h2>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-7">
-              {item.text}
-            </p>
+            <RichText className="mt-2 text-sm leading-7">{item.text}</RichText>
             <p className="mt-2 text-xs text-muted-foreground">
               {item.author.name} · {formatDateTime(item.createdAt)}
             </p>

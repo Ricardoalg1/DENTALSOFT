@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -95,7 +96,7 @@ export default async function PatientPage({ params }: PageProps<"/app/pacientes/
             <CardTitle>Notas</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm whitespace-pre-line">{patient.notes}</p>
+            <RichText className="text-sm">{patient.notes}</RichText>
           </CardContent>
         </Card>
       )}

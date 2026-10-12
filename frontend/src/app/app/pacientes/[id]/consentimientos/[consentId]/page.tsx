@@ -1,3 +1,5 @@
+import { RichText } from "@/components/rich-text";
+import { ClinicDocumentHeader } from "@/components/app/document-identity";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -38,15 +40,16 @@ export default async function ConsentPage({ params }: PageProps<"/app/pacientes/
         </div>
       )}
 
-      <Card>
+      <ClinicDocumentHeader />
+
+      <Card className="clinical-paper">
         <CardContent className="grid gap-6 print:p-0">
           <header className="grid gap-1">
-            <p className="text-xs tracking-wide text-muted-foreground uppercase">{me.clinicName}</p>
             <h2 className="text-xl font-semibold">{c.title}</h2>
             <p className="text-sm text-muted-foreground">Paciente: {c.patient.name}</p>
           </header>
 
-          <div className="text-sm leading-relaxed whitespace-pre-line">{c.body}</div>
+          <RichText className="text-sm leading-relaxed">{c.body}</RichText>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="grid content-start gap-1 text-sm">

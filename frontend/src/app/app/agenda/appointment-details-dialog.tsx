@@ -1,5 +1,6 @@
 "use client";
 
+import { RichText } from "@/components/rich-text";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { CalendarClock, FilePlus2, MapPin, Stethoscope } from "lucide-react";
@@ -67,7 +68,7 @@ export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onC
               <span className="text-muted-foreground">Motivo:</span> {a.reason}
             </p>
           )}
-          {a.notes && <p className="whitespace-pre-line text-muted-foreground">{a.notes}</p>}
+          {a.notes && <RichText className="text-muted-foreground">{a.notes}</RichText>}
           {a.cancellationReason && (
             <p>
               <span className="text-muted-foreground">Motivo de cancelación:</span> {a.cancellationReason}

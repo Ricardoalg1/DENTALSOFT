@@ -43,11 +43,16 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  type,
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  // Base UI usa type="button" por defecto, y así un botón dentro de un <form> nunca lo enviaba.
+  // Sin onClick ni render propio, el botón es de envío; con onClick sigue siendo un botón normal.
+  const defaultType = props.onClick || props.render ? undefined : "submit";
   return (
     <ButtonPrimitive
       data-slot="button"
+      type={type ?? defaultType}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

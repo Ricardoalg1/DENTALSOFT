@@ -127,7 +127,7 @@
 .strip { border-block: 1px solid var(--soft-line); background: color-mix(in srgb, var(--card) 70%, transparent); }
 .strip-in { display: grid; grid-template-columns: repeat(2, 1fr); }
 @media (min-width: 768px) { .strip-in { display: flex; justify-content: space-between; } }
-.strip-item { display: flex; align-items: center; justify-content: center; gap: 0.9rem; padding: 1.4rem 1rem; font-weight: 550; font-size: 0.95rem; transition: color 0.2s; }
+.strip-item { min-width: 0; text-align: left; display: flex; align-items: center; justify-content: center; gap: 0.9rem; padding: 1.4rem 1rem; font-weight: 550; font-size: 0.95rem; transition: color 0.2s; }
 .strip-item svg { width: 1.9rem; height: 1.9rem; color: var(--primary); stroke-width: 1.5; transition: transform 0.35s; }
 @media (hover: hover) { .strip-item:hover svg { transform: translateY(-3px) scale(1.08); } }
 @media (min-width: 768px) { .strip-item + .strip-item { border-left: 1px solid var(--soft-line); } .strip-item { flex: 1; } }
@@ -242,3 +242,8 @@
 
 /* Las formas decorativas pueden salirse del contenedor sin crear scroll horizontal */
 .sec, .hero-x { overflow-x: clip; }
+
+/* Móvil y tableta: sin anillos decorativos sobre el texto; el menú desplegable cierra con Escape. */
+@media (max-width: 767px) { .deco.ring { display: none; } .strip-item { flex-direction: column; text-align: center; gap: 0.5rem; padding: 1.1rem 0.5rem; } }
+.menu-m > summary { list-style: none; }
+.menu-m > summary::-webkit-details-marker { display: none; }

@@ -1,5 +1,6 @@
 "use client";
 
+import { RichTextarea } from "@/components/rich-textarea";
 import { useState, useTransition } from "react";
 import { FormError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
@@ -48,14 +49,14 @@ export function TemplateEditor({ template, onDone }: { template?: ConsentTemplat
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor={`${prefix}-body`}>Texto</Label>
-        <Textarea
+        <RichTextarea
           id={`${prefix}-body`}
           name="body"
           required
           rows={10}
           maxLength={20000}
           defaultValue={template?.body}
-          className="font-mono text-xs leading-relaxed"
+          className="text-sm leading-relaxed"
         />
         <p className="text-xs text-muted-foreground">
           Marcadores que se reemplazan al firmar (<code className="rounded bg-muted px-1">{"{{declarante}}"}</code> arma

@@ -1,4 +1,5 @@
 "use client";
+import { RichText } from "@/components/rich-text";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, CircleAlert, Info, TriangleAlert, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
@@ -162,7 +163,7 @@ export function NotificationBell() {
         )}
       </button>
       {open && (
-        <section role="dialog" aria-label="Mensajes de Occlus" className="absolute right-0 top-full z-50 mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border bg-card shadow-xl">
+        <section role="dialog" aria-label="Mensajes de Occlus" className="z-50 overflow-hidden rounded-xl border bg-card shadow-xl max-sm:fixed max-sm:inset-x-3 max-sm:top-20 sm:absolute sm:right-0 sm:top-full sm:mt-2 sm:w-96">
           <header className="flex items-center justify-between border-b px-4 py-3">
             <h2 className="text-sm font-semibold">Mensajes de Occlus</h2>
             <button type="button" onClick={toggleMute} aria-pressed={muted} aria-label={muted ? "Activar sonido" : "Silenciar sonido"} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
@@ -172,7 +173,7 @@ export function NotificationBell() {
           {items.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-muted-foreground">No tienes mensajes.</p>
           ) : (
-            <ul className="max-h-96 divide-y overflow-y-auto">
+            <ul className="max-h-[60vh] divide-y overflow-y-auto sm:max-h-96">
               {items.map((i) => {
                 const Icon = ICONS[i.level] ?? Info;
                 return (
@@ -183,7 +184,7 @@ export function NotificationBell() {
                         {i.title}
                         {fresh.has(i.id) && <span className="ml-2 rounded-full bg-primary px-1.5 py-0.5 align-middle text-[0.62rem] font-semibold text-primary-foreground">Nuevo</span>}
                       </p>
-                      <p className="mt-0.5 whitespace-pre-line break-words text-muted-foreground">{i.body}</p>
+                      <RichText className="mt-0.5 text-muted-foreground">{i.body}</RichText>
                       <p className="mt-1 text-xs text-muted-foreground/80">{formatWhen(i.createdAt)}</p>
                     </div>
                   </li>

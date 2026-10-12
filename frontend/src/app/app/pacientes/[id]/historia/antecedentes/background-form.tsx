@@ -1,5 +1,6 @@
 "use client";
 
+import { RichTextarea } from "@/components/rich-textarea";
 import Link from "next/link";
 import { useActionState } from "react";
 import { FormError } from "@/components/form-error";
@@ -106,7 +107,7 @@ function Text({ name, label, max, value, errors }: { name: TextField; label: str
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={name}>{label}</Label>
-      <Textarea key={value} id={name} name={name} rows={2} maxLength={max} defaultValue={value} aria-invalid={errors ? true : undefined} />
+      <RichTextarea key={value} id={name} name={name} rows={2} maxLength={max} defaultValue={value} aria-invalid={errors ? true : undefined} />
       {errors && <p className="text-sm text-destructive">{errors[0]}</p>}
     </div>
   );

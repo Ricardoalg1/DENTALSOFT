@@ -68,11 +68,11 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
 			>Ir al contenido</a
 		><header class="sticky top-0 z-40 bg-background/80 backdrop-blur-md">
 			<div
-				class="wrap-wide flex flex-wrap items-center justify-between gap-5 py-4"
+				class="wrap-wide flex items-center justify-between gap-3 py-2 sm:py-3"
 			>
-				<Logo /><nav
+				<div class="[&_img]:w-14 sm:[&_img]:w-20"><Logo /></div><nav
 					aria-label="Navegación principal"
-					class="hidden items-center gap-9 md:flex"
+					class="hidden items-center gap-9 lg:flex"
 				>
 					{
 						nav.map(([href, label]) => (
@@ -87,23 +87,58 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
 							</a>
 						))
 					}
-				</nav><div class="flex flex-wrap items-center gap-4">
+				</nav><div class="flex items-center gap-2 sm:gap-4">
 					<ThemeToggle />
-					<a href={`${appUrl}/ingresar`} class="text-sm font-medium"
+					<a
+						href={`${appUrl}/ingresar`}
+						class="hidden text-sm font-medium sm:inline"
 						>Ingresar</a
-					><a href="/demo" class="btn"
+					><a href="/demo" class="btn !hidden sm:!inline-flex"
 						>Solicitar demo <span aria-hidden="true">↗</span></a
-					>
-				</div><details class="w-full md:hidden">
-					<summary class="cursor-pointer text-sm font-semibold"
-						>Explorar Occlus</summary
-					><nav
-						class="mt-4 flex flex-wrap gap-6 pb-2"
-						aria-label="Navegación móvil"
-					>
-						{nav.map(([href, label]) => <a href={href}>{label}</a>)}
-					</nav>
-				</details>
+					><details class="menu-m relative lg:hidden">
+						<summary
+							class="grid size-11 cursor-pointer place-items-center rounded-full border border-border bg-card"
+							aria-label="Abrir menú"
+						>
+							<svg
+								viewBox="0 0 24 24"
+								class="size-5"
+								aria-hidden="true"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								><path d="M4 7h16M4 12h16M4 17h16"></path></svg
+							>
+						</summary>
+						<nav
+							class="absolute right-0 top-full z-50 mt-2 grid w-64 gap-1 rounded-2xl border border-border bg-card p-3 shadow-xl"
+							aria-label="Navegación móvil"
+						>
+							{
+								nav.map(([href, label]) => (
+									<a
+										href={href}
+										class="rounded-lg px-3 py-3 text-base font-medium hover:bg-muted"
+										aria-current={
+											isActive(href) ? 'page' : undefined
+										}
+									>
+										{label}
+									</a>
+								))
+							}
+							<hr class="my-1 border-border" />
+							<a
+								href={`${appUrl}/ingresar`}
+								class="rounded-lg px-3 py-3 text-base font-medium hover:bg-muted"
+								>Ingresar</a
+							><a href="/demo" class="btn mt-1 justify-center"
+								>Solicitar demo <span aria-hidden="true">↗</span></a
+							>
+						</nav>
+					</details>
+				</div>
 			</div>
 		</header><main id="contenido"><slot /></main><footer
 			class="mt-6 border-t border-border"
@@ -143,6 +178,15 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
 				>
 			</div>
 		</footer><Chatbot /><script>
+			// Menú móvil: se cierra al tocar fuera o con Escape.
+			const menu = document.querySelector<HTMLDetailsElement>('.menu-m');
+			document.addEventListener('pointerdown', (e) => {
+				if (menu?.open && !menu.contains(e.target as Node)) menu.open = false;
+			});
+			document.addEventListener('keydown', (e) => {
+				if (e.key === 'Escape' && menu?.open) menu.open = false;
+			});
+		</script><script>
 			// Solo métricas agregadas; la configuración y la clave permanecen en el servidor.
 			void fetch('/site-api/config')
 				.then((r) => r.json())

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { errorMessage } from "@/lib/forms";
-import type { Appointment, ScheduleBlock } from "@/lib/types";
+import type { Appointment, ScheduleBlock, TimeOff } from "@/lib/types";
 
 /** Resultado para acciones llamadas desde componentes de cliente (no formularios). */
 export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -58,6 +58,16 @@ export async function changeAppointmentStatus(
   );
 }
 
+const timeOffSchema = z.array(
+  z.object({
+    fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida"),
+    toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida"),
+    startTime: z.string().regex(/^\d{2}:\d{2}$/, "Hora inválida").nullable(),
+    endTime: z.string().regex(/^\d{2}:\d{2}$/, "Hora inválida").nullable(),
+    reason: z.string().trim().max(120, "El motivo admite máximo 120 caracteres"),
+  }),
+);
+
 const time = z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Hora inválida");
 const scheduleSchema = z.array(
   z.object({
@@ -78,6 +88,23 @@ export async function saveSchedule(
     api<ScheduleBlock[]>(`/api/schedules/${dentistId}`, {
       method: "PUT",
       body: JSON.stringify({ blocks: parsed.data }),
+    }),
+  );
+  if (result.ok) revalidatePath("/app/agenda", "layout");
+  return result;
+}
+
+/** Reemplaza las ausencias (días o franjas sin atención) del profesional. */
+export async function saveTimeOff(
+  dentistId: string,
+  items: z.input<typeof timeOffSchema>,
+): Promise<ActionResult<TimeOff[]>> {
+  const parsed = timeOffSchema.safeParse(items);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const result = await run(() =>
+    api<TimeOff[]>(`/api/schedules/${dentistId}/time-off`, {
+      method: "PUT",
+      body: JSON.stringify({ items: parsed.data }),
     }),
   );
   if (result.ok) revalidatePath("/app/agenda", "layout");

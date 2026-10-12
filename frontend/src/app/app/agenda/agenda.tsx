@@ -22,7 +22,7 @@ import { NativeSelect } from "@/components/native-select";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { minutesBetween, nowWall, todayCO, toWall, wallToApi } from "@/lib/agenda-time";
-import type { Appointment, Professional, ScheduleBlock, Site } from "@/lib/types";
+import type { Appointment, Professional, ScheduleBlock, Site, TimeOff } from "@/lib/types";
 import { saveAppointment } from "./actions";
 import { AppointmentDetailsDialog } from "./appointment-details-dialog";
 import { AppointmentFormDialog, type AppointmentDraft } from "./appointment-form-dialog";
@@ -33,13 +33,14 @@ type Props = {
   professionals: Professional[];
   sites: Site[];
   schedules: ScheduleBlock[];
+  timeOff: TimeOff[];
   presetPatient: PickedPatient | null;
   defaultDentistId?: string;
   /** Profesional con acceso a la historia clínica: puede registrar la evolución desde la cita. */
   canWriteClinical: boolean;
 };
 
-export function Agenda({ professionals, sites, schedules, presetPatient, defaultDentistId, canWriteClinical }: Props) {
+export function Agenda({ professionals, sites, schedules, timeOff, presetPatient, defaultDentistId, canWriteClinical }: Props) {
   const calendarRef = useRef<FullCalendar>(null);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [dentistId, setDentistId] = useState(defaultDentistId ?? "");
@@ -98,6 +99,27 @@ export function Agenda({ professionals, sites, schedules, presetPatient, default
       endTime: b.endTime.slice(0, 5),
     }));
   }, [schedules, dentistId, siteId]);
+
+  // Ausencias (festivos, vacaciones, descansos puntuales) sombreadas en rojo suave.
+  const timeOffEvents = useMemo<EventInput[]>(() => {
+    const out: EventInput[] = [];
+    for (const t of timeOff) {
+      if (dentistId && t.dentistId !== dentistId) continue;
+      const first = new Date(`${t.fromDate}T00:00:00Z`);
+      const last = new Date(`${t.toDate}T00:00:00Z`);
+      for (let d = first, n = 0; d <= last && n < 400; d = new Date(d.getTime() + 86_400_000), n++) {
+        const day = d.toISOString().slice(0, 10);
+        out.push({
+          start: t.startTime ? `${day}T${t.startTime.slice(0, 5)}:00` : `${day}T00:00:00`,
+          end: t.endTime ? `${day}T${t.endTime.slice(0, 5)}:00` : `${day}T23:59:59`,
+          display: "background",
+          color: "#ef4444",
+          title: t.reason || "Sin atención",
+        });
+      }
+    }
+    return out;
+  }, [timeOff, dentistId]);
 
   const refetch = () => calendarRef.current?.getApi().refetchEvents();
 
@@ -235,7 +257,7 @@ export function Agenda({ professionals, sites, schedules, presetPatient, default
           eventDurationEditable
           eventStartEditable
           businessHours={businessHours}
-          events={fetchEvents}
+          eventSources={[fetchEvents, timeOffEvents]}
           select={onSelect}
           eventClick={onEventClick}
           eventDrop={onMoveOrResize}

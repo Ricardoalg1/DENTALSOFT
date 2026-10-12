@@ -4,6 +4,10 @@ import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "reac
 import { Eraser } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+/** Tamaño lógico del recuadro: la firma siempre se dibuja en este espacio, sin importar el ancho de la pantalla. */
+const PAD_W = 480;
+const PAD_H = 176;
+
 export type SignaturePadHandle = {
   /** PNG en base64 (data URL) o null si no se ha firmado. */
   toDataUrl: () => string | null;
@@ -20,10 +24,9 @@ export function SignaturePad({ ref, label }: { ref: Ref<SignaturePadHandle>; lab
 
   useEffect(() => {
     const canvas = canvasRef.current!;
-    const ratio = window.devicePixelRatio || 1;
-    const { width, height } = canvas.getBoundingClientRect();
-    canvas.width = Math.round(width * ratio);
-    canvas.height = Math.round(height * ratio);
+    const ratio = Math.max(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(PAD_W * ratio);
+    canvas.height = Math.round(PAD_H * ratio);
     const ctx = canvas.getContext("2d")!;
     ctx.scale(ratio, ratio);
     ctx.lineWidth = 2.2;
@@ -38,7 +41,8 @@ export function SignaturePad({ ref, label }: { ref: Ref<SignaturePadHandle>; lab
 
   function point(e: React.PointerEvent<HTMLCanvasElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    // Del tamaño en pantalla al espacio lógico fijo: la firma no se deforma si el recuadro se ve más angosto o más ancho.
+    return { x: ((e.clientX - rect.left) * PAD_W) / rect.width, y: ((e.clientY - rect.top) * PAD_H) / rect.height };
   }
 
   function start(e: React.PointerEvent<HTMLCanvasElement>) {
@@ -63,17 +67,17 @@ export function SignaturePad({ ref, label }: { ref: Ref<SignaturePadHandle>; lab
 
   function clear() {
     const canvas = canvasRef.current!;
-    canvas.getContext("2d")!.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.getContext("2d")!.clearRect(0, 0, PAD_W, PAD_H);
     setHasInk(false);
   }
 
   return (
-    <div className="grid gap-2">
-      <div className="relative rounded-lg border-2 border-dashed bg-white">
+    <div className="grid gap-2 overflow-x-auto">
+      <div className="relative mx-auto w-full max-w-[480px] min-w-[280px] rounded-lg border-2 border-dashed bg-white">
         <canvas
           ref={canvasRef}
           aria-label={label}
-          className="h-44 w-full touch-none cursor-crosshair"
+          className="block aspect-[480/176] w-full touch-none cursor-crosshair"
           onPointerDown={start}
           onPointerMove={move}
           onPointerUp={() => (drawing.current = false)}
@@ -86,7 +90,7 @@ export function SignaturePad({ ref, label }: { ref: Ref<SignaturePadHandle>; lab
         )}
         <span className="pointer-events-none absolute right-4 bottom-8 left-4 border-b border-gray-300" />
       </div>
-      <Button type="button" variant="ghost" size="sm" className="w-fit" onClick={clear} disabled={!hasInk}>
+      <Button type="button" variant="ghost" size="sm" className="mx-auto w-fit" onClick={clear} disabled={!hasInk}>
         <Eraser /> Borrar firma
       </Button>
     </div>

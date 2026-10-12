@@ -1,5 +1,6 @@
 "use client";
 
+import { RichTextarea } from "@/components/rich-textarea";
 import { useActionState, useState } from "react";
 import { MessageSquarePlus } from "lucide-react";
 import { FormError } from "@/components/form-error";
@@ -30,7 +31,7 @@ export function AddendumForm({ patientId, noteId }: { patientId: string; noteId:
     <form action={formAction} className="grid w-full gap-2">
       <FormError message={state?.error} />
       <Label htmlFor={textId}>Nota aclaratoria</Label>
-      <Textarea
+      <RichTextarea
         id={textId}
         name="text"
         rows={3}

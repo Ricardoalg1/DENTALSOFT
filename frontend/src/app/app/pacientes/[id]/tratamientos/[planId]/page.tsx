@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { api, ApiError, getMe } from "@/lib/api";
 import { formatDate, formatDateTime } from "@/lib/format";
 import type { Procedure, TreatmentPlan, TreatmentSuggestion } from "@/lib/types";
+import { ClinicDocumentHeader } from "@/components/app/document-identity";
 import { PlanStatusBadge } from "../plan-status-badge";
 import { PlanView } from "./plan-view";
 
@@ -36,6 +37,8 @@ export default async function PlanPage({ params }: PageProps<"/app/pacientes/[id
       >
         <ArrowLeft className="size-4" /> Tratamientos y pagos
       </Link>
+
+      <ClinicDocumentHeader />
 
       <header className="grid gap-1">
         <p className="hidden text-xs tracking-wide text-muted-foreground uppercase print:block">

@@ -64,8 +64,12 @@ public class BrandedPdfRenderer {
  }
  private static String join(String a,String b){return a.isBlank()?b:b.isBlank()?a:a+" | "+b;}
  private static void text(PDPageContentStream s,PDType0Font f,int size,float x,float y,String t)throws IOException{s.beginText();s.setFont(f,size);s.newLineAtOffset(x,y);s.showText(t);s.endText();}
+ /** El texto de los campos con formato lleva marcas simples: se muestran como viñetas y sin asteriscos. */
+ static String plain(String text){
+  return text.replaceAll("(?m)^(\\s*)[-*]\\s+","$1• ").replaceAll("\\*\\*([^*\\n]+)\\*\\*","$1").replaceAll("(?<![*\\w])\\*([^*\\s][^*\\n]*)\\*(?![*\\w])","$1");
+ }
  private static List<String> wrap(String text,PDType0Font font,float width,int size)throws IOException {
-  var out=new ArrayList<String>();for(var p:text.replace("\t","    ").split("\\R",-1)) {
+  var out=new ArrayList<String>();for(var p:plain(text).replace("\t","    ").split("\\R",-1)) {
    var clean=new StringBuilder();p.codePoints().filter(c->!Character.isISOControl(c)).forEach(clean::appendCodePoint);var line=new StringBuilder();
    for(var word:clean.toString().split("(?<=\\s)")) {
     if(!line.isEmpty()&&font.getStringWidth(line+word)/1000*size>width){out.add(line.toString().stripTrailing());line.setLength(0);}

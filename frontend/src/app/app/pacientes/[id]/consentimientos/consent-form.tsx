@@ -1,5 +1,6 @@
 "use client";
 
+import { RichText } from "@/components/rich-text";
 import Link from "next/link";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { FileSignature } from "lucide-react";
@@ -125,8 +126,8 @@ export function ConsentForm({ patient, templates, professionalName, clinicName, 
           </div>
           <div className="grid gap-1.5">
             <p className="text-sm font-medium">Texto que se firmará</p>
-            <div className="max-h-80 overflow-y-auto rounded-lg border bg-muted/40 p-4 text-sm leading-relaxed whitespace-pre-line">
-              {text}
+            <div className="max-h-80 overflow-y-auto rounded-lg border bg-muted/40 p-4 text-sm leading-relaxed">
+              <RichText>{text}</RichText>
             </div>
           </div>
         </CardContent>

@@ -1,3 +1,5 @@
+import { RichTextarea } from "@/components/rich-textarea";
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FormField } from "@/components/form-field";
@@ -52,7 +54,7 @@ export default async function AnnouncementsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 text-sm">
-                  <p className="whitespace-pre-line">{a.body}</p>
+                  <RichText>{a.body}</RichText>
                   <form action={archiveAnnouncement.bind(null, a.id)}>
                     <Button type="submit" variant="outline" size="sm">
                       Archivar
@@ -93,7 +95,7 @@ export default async function AnnouncementsPage() {
             <FormField name="title" label="Título" required maxLength={120} />
             <div className="grid gap-1.5">
               <Label htmlFor="body">Mensaje</Label>
-              <Textarea id="body" name="body" rows={4} required maxLength={1000} />
+              <RichTextarea id="body" name="body" rows={4} required maxLength={1000} />
             </div>
             <NativeSelect name="level" label="Importancia" defaultValue="INFO" options={{ INFO: SEVERITY_LABELS.INFO, WARNING: SEVERITY_LABELS.WARNING }} />
             <FormField name="endsOn" label="Visible hasta (opcional)" type="date" />
