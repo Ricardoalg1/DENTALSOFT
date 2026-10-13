@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { CUPS } from "@/lib/cups";
 import { ReferenceArt } from "@/components/app/reference-art";
 import type { Metadata } from "next";
 import { TriangleAlert } from "lucide-react";
@@ -12,7 +14,9 @@ import { ProcedureForm } from "./procedure-form";
 
 export const metadata: Metadata = { title: "Lista de precios" };
 
-export default async function PricesPage() {
+export default async function PricesPage({ searchParams }: { searchParams: Promise<{ cups?: string }> }) {
+  const { cups } = await searchParams;
+  const initialCups = CUPS.find((entry) => entry.code === cups);
   const me = await getMe();
   const isAdmin = me.role === "ADMIN";
   const procedures = await api<Procedure[]>(`/api/procedures?includeInactive=${isAdmin}`);
@@ -21,6 +25,7 @@ export default async function PricesPage() {
   return (
     <div className="grid max-w-5xl gap-6">
       <div>
+        <Link href="/app/cups" className="mb-2 inline-block text-sm text-primary underline">Consultar catálogo CUPS</Link>
         <h1 className="text-2xl font-semibold tracking-tight">Lista de precios</h1>
         <p className="text-muted-foreground">
           Procedimientos que se usan en los presupuestos. Cambiar un precio no altera los planes ya presupuestados.
@@ -101,10 +106,10 @@ export default async function PricesPage() {
       {isAdmin && (
         <Card>
           <CardHeader>
-            <CardTitle>Nuevo procedimiento</CardTitle>
+            <CardTitle id="nuevo-procedimiento">Nuevo procedimiento</CardTitle>
           </CardHeader>
           <CardContent>
-            <ProcedureForm />
+            <ProcedureForm key={initialCups?.code ?? "new"} initialCups={initialCups} />
           </CardContent>
         </Card>
       )}

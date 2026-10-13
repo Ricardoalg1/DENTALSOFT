@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { CupsPicker } from "@/components/cups-picker";
+import { CUPS_PROCEDURE_CATEGORY, type CupsEntry } from "@/lib/cups";
 import { FormError } from "@/components/form-error";
 import { NativeSelect } from "@/components/native-select";
 import { Button } from "@/components/ui/button";
@@ -24,8 +26,9 @@ const FINDINGS = Object.fromEntries(
 );
 
 /** Crear (procedure = undefined) o editar un procedimiento de la lista de precios. */
-export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
+export function ProcedureForm({ procedure, initialCups }: { procedure?: Procedure; initialCups?: CupsEntry }) {
   const [error, setError] = useState<string>();
+  const [resetCount, setResetCount] = useState(0);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
   const p = procedure?.id ?? "new";
@@ -50,7 +53,7 @@ export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
       });
       if (result.ok) {
         setSaved(true);
-        if (!procedure) formEl.reset();
+        if (!procedure) { formEl.reset(); setResetCount((count) => count + 1); }
       } else setError(result.error);
     });
   }
@@ -60,7 +63,7 @@ export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
       <div className="grid gap-3 sm:grid-cols-[1.6fr_1fr]">
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-name`}>Nombre</Label>
-          <Input id={`${p}-name`} name="name" placeholder="Ej. Profilaxis dental" required maxLength={150} defaultValue={procedure?.name} />
+          <Input id={`${p}-name`} name="name" placeholder="Ej. Profilaxis dental" required maxLength={150} defaultValue={procedure?.name ?? initialCups?.description.slice(0, 150)} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-price`}>Precio (COP)</Label>
@@ -81,11 +84,11 @@ export function ProcedureForm({ procedure }: { procedure?: Procedure }) {
           id={`${p}-category`}
           label="Categoría"
           options={PROCEDURE_CATEGORIES}
-          defaultValue={procedure?.category ?? "RESTORATIVE"}
+          defaultValue={procedure?.category ?? (initialCups ? CUPS_PROCEDURE_CATEGORY[initialCups.category] : "RESTORATIVE")}
         />
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-cups`}>Código CUPS</Label>
-          <Input id={`${p}-cups`} name="cupsCode" maxLength={10} defaultValue={procedure?.cupsCode ?? ""} placeholder="Ej. 890203" />
+          <CupsPicker key={resetCount} id={`${p}-cups`} defaultValue={procedure?.cupsCode ?? initialCups?.code ?? ""} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-code`}>Código interno</Label>

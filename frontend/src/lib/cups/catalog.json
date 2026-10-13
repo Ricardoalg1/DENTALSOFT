@@ -1,0 +1,877 @@
+[
+  {
+    "code": "230101",
+    "description": "EXODONCIA DE DIENTE PERMANENTE UNIRRADICULAR",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "230102",
+    "description": "EXODONCIA DE DIENTE PERMANENTE MULTIRRADICULAR",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "230103",
+    "description": "EXODONCIA DE DIENTES PERMANENTES",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "230201",
+    "description": "EXODONCIA DE DIENTE TEMPORAL UNIRRADICULAR",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "230202",
+    "description": "EXODONCIA DE DIENTE TEMPORAL MULTIRRADICULAR",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "230203",
+    "description": "EXODONCIA DE DIENTES TEMPORALES",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "231101",
+    "description": "EXODONCIA QUIRÚRGICA UNIRRADICULAR",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "231201",
+    "description": "EXODONCIA QUIRÚRGICA MULTIRRADICULAR",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "231301",
+    "description": "EXODONCIA DE INCLUIDO EN POSICIÓN ECTÓPICA CON ABORDAJE INTRAORAL",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "231302",
+    "description": "EXODONCIA DE INCLUIDO EN POSICIÓN ECTÓPICA CON ABORDAJE EXTRAORAL",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "231303",
+    "description": "EXODONCIA DE DIENTE INCLUIDO",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "231401",
+    "description": "EXODONCIAS MÚLTIPLES CON ALVEOLOPLASTIA, POR CUADRANTE",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "231501",
+    "description": "COLGAJO DESPLAZADO PARA ABORDAJE DE DIENTE RETENIDO (VENTANA QUIRÚRGICA)",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "232101",
+    "description": "OBTURACIÓN DENTAL CON AMALGAMA",
+    "category": "Restauradora"
+  },
+  {
+    "code": "232102",
+    "description": "OBTURACIÓN DENTAL CON RESINA DE FOTOCURADO",
+    "category": "Restauradora"
+  },
+  {
+    "code": "232103",
+    "description": "OBTURACIÓN DENTAL CON IONÓMERO DE VIDRIO",
+    "category": "Restauradora"
+  },
+  {
+    "code": "232104",
+    "description": "OBTURACIÓN DENTAL",
+    "category": "Restauradora"
+  },
+  {
+    "code": "232201",
+    "description": "OBTURACIÓN TEMPORAL POR DIENTE",
+    "category": "Restauradora"
+  },
+  {
+    "code": "232301",
+    "description": "COLOCACIÓN DE PIN MILIMÉTRICO",
+    "category": "Restauradora"
+  },
+  {
+    "code": "232401",
+    "description": "RECONSTRUCCIÓN DE ÁNGULO INCISAL",
+    "category": "Restauradora"
+  },
+  {
+    "code": "232402",
+    "description": "RECONSTRUCCIÓN TERCIO INCISAL",
+    "category": "Restauradora"
+  },
+  {
+    "code": "232403",
+    "description": "RECONSTRUCCIÓN DENTAL",
+    "category": "Restauradora"
+  },
+  {
+    "code": "233101",
+    "description": "RESTAURACIÓN DE DIENTES MEDIANTE INCRUSTACIÓN METÁLICA",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "233201",
+    "description": "RESTAURACIÓN DE DIENTES MEDIANTE INCRUSTACIÓN NO METÁLICA",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234101",
+    "description": "COLOCACIÓN O APLICACIÓN DE CORONA EN ACERO INOXIDABLE (PARA DIENTES TEMPORALES)",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234102",
+    "description": "COLOCACIÓN O APLICACIÓN DE CORONA EN POLICARBOXILATO (PARA DIENTES TEMPORALES)",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234103",
+    "description": "COLOCACIÓN O APLICACIÓN DE CORONA EN FORMA PLÁSTICA",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234105",
+    "description": "INSERCIÓN O APLICACIÓN DE CORONA",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234106",
+    "description": "COLOCACIÓN O APLICACIÓN DE CORONA PROVISIONAL",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234201",
+    "description": "COLOCACIÓN O INSERCIÓN DE PRÓTESIS FIJA CADA UNIDAD (PILAR Y PÓNTICOS)",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234202",
+    "description": "RECONSTRUCCIÓN DE MUÑONES",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234204",
+    "description": "REPARACIÓN DE PRÓTESIS FIJA",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234205",
+    "description": "INSERCIÓN DE RETENEDOR INTRARRADICULAR",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234301",
+    "description": "INSERCIÓN, ADAPTACIÓN Y CONTROL DE PRÓTESIS REMOVIBLE PARCIAL (SUPERIOR O INFERIOR) MUCOSOPORTADA",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234302",
+    "description": "INSERCIÓN, ADAPTACIÓN Y CONTROL DE PRÓTESIS REMOVIBLE PARCIAL (SUPERIOR O INFERIOR) DENTOMUCOSOPORTADA O IMPLANTOSOPORTADA",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234303",
+    "description": "REPARACIÓN DE PRÓTESIS REMOVIBLE PARCIAL",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234401",
+    "description": "INSERCIÓN, ADAPTACIÓN Y CONTROL DE PRÓTESIS MUCOSOPORTADA TOTAL MEDIO CASO SUPERIOR O INFERIOR",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234402",
+    "description": "INSERCIÓN, ADAPTACIÓN Y CONTROL DE PRÓTESIS MUCOSOPORTADA TOTAL SUPERIOR E INFERIOR",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234403",
+    "description": "INSERCIÓN, ADAPTACIÓN Y CONTROL DE PRÓTESIS IMPLANTOASISTIDA TOTAL MEDIO CASO SUPERIOR O INFERIOR",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "234404",
+    "description": "INSERCIÓN, ADAPTACIÓN Y CONTROL DE PRÓTESIS IMPLANTOASISTIDA TOTAL SUPERIOR E INFERIOR",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "235101",
+    "description": "REIMPLANTE DE DIENTE",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "235201",
+    "description": "TRASPLANTE DE DIENTE (INTENCIONAL)",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "236101",
+    "description": "IMPLANTE ALOPLÁSTICO CERÁMICO",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "236201",
+    "description": "IMPLANTE ALOPLÁSTICO METÁLICO",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "236301",
+    "description": "IMPLANTE ALOPLÁSTICO (OSEOINTEGRACIÓN)",
+    "category": "Rehabilitación"
+  },
+  {
+    "code": "237102",
+    "description": "PULPOTOMÍA",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237103",
+    "description": "PULPECTOMÍA",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237201",
+    "description": "APEXIFICACIÓN (INDUCCIÓN DE APEXOGÉNESIS)",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237202",
+    "description": "REVASCULARIZACIÓN PULPAR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237203",
+    "description": "RECUBRIMIENTO PULPAR DIRECTO",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237204",
+    "description": "RECUBRIMIENTO PULPAR INDIRECTO",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237301",
+    "description": "TERAPIA DE CONDUCTO RADICULAR EN DIENTE UNIRRADICULAR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237302",
+    "description": "TERAPIA DE CONDUCTO RADICULAR EN DIENTE BIRRADICULAR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237303",
+    "description": "TERAPIA DE CONDUCTO RADICULAR EN DIENTE MULTIRRADICULAR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237304",
+    "description": "TERAPIA DE CONDUCTO RADICULAR EN DIENTE TEMPORAL UNIRRADICULAR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237305",
+    "description": "TERAPIA DE CONDUCTO RADICULAR EN DIENTE TEMPORAL MULTIRRADICULAR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237307",
+    "description": "DESOBTURACIÓN DE CONDUCTO RADICULAR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237401",
+    "description": "CURETAJE APICAL CON APICECTOMÍA Y OBTURACIÓN RETRÓGRADA (CIRUGÍA PERIRRADICULAR)",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237501",
+    "description": "PROCEDIMIENTO CORRECTIVO EN RESORCIÓN RADICULAR (INTERNA Y EXTERNA)",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237502",
+    "description": "PROCEDIMIENTOS CORRECTIVOS EN FRACTURAS RADICULARES",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237503",
+    "description": "SELLADO QUIRÚRGICO DE PERFORACIÓN ENDODÓNTICA",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237504",
+    "description": "SELLADO NO QUIRÚRGICO DE PERFORACIÓN ENDODÓNTICA",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237505",
+    "description": "REMOCIÓN DE RETENEDOR INTRARRADICULAR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237601",
+    "description": "FISTULIZACIÓN ENDODÓNTICA POR TREPANACIÓN Y DRENAJE",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237602",
+    "description": "FISTULIZACIÓN ENDODÓNTICA POR INCISIÓN",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237603",
+    "description": "FISTULIZACIÓN ENDODÓNTICA",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237604",
+    "description": "FISTULIZACIÓN ENDODÓNTICA POR DESCOMPRESIÓN",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237701",
+    "description": "RADECTOMÍA (AMPUTACIÓN RADICULAR) ÚNICA",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237702",
+    "description": "RADECTOMÍA (AMPUTACIÓN RADICULAR) MÚLTIPLE",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237703",
+    "description": "RADECTOMÍA (AMPUTACIÓN RADICULAR)",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237801",
+    "description": "HEMISECCIÓN DEL DIENTE",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237901",
+    "description": "BLANQUEAMIENTO DE DIENTE INTRÍNSECO",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237902",
+    "description": "EXPLORACIÓN Y MOVILIZACIÓN DE NERVIO DENTARIO INFERIOR",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "237903",
+    "description": "BLANQUEAMIENTO DENTAL EXTRÍNSECO",
+    "category": "Endodoncia"
+  },
+  {
+    "code": "240201",
+    "description": "DETARTRAJE SUBGINGIVAL",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "240301",
+    "description": "ALISADO RADICULAR, CAMPO CERRADO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "240401",
+    "description": "DRENAJE DE COLECCIÓN PERIODONTAL (CERRADO CON ALISADO RADICULAR)",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "241101",
+    "description": "BIOPSIA INCISIONAL DE ENCÍA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "241102",
+    "description": "BIOPSIA ESCISIONAL DE ENCÍA CON CIERRE PRIMARIO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "241103",
+    "description": "BIOPSIA ESCISIONAL DE ENCÍA Y RECUBRIMIENTO CON COLGAJO O INJERTO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "241104",
+    "description": "BIOPSIA DE ENCÍA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "241201",
+    "description": "BIOPSIA DE PARED ALVEOLAR",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242101",
+    "description": "PLASTIA MUCOGINGIVAL CON INJERTOS PEDICULADOS (COLGAJOS PEDICULADOS)",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242102",
+    "description": "PLASTIA MUCOGINGIVAL CON INJERTO GINGIVAL LIBRE",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242103",
+    "description": "PLASTIA MUCOGINGIVAL",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242201",
+    "description": "CURETAJE A CAMPO ABIERTO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242202",
+    "description": "CIRUGÍA A COLGAJO CON RESECCIÓN RADICULAR (AMPUTACIÓN, HEMISECCIÓN)",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242204",
+    "description": "AUMENTO DE REBORDE PARCIALMENTE EDÉNTULO (SIN MATERIAL)",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242205",
+    "description": "AUMENTO DE REBORDE PARCIALMENTE EDÉNTULO (CON MATERIAL)",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242301",
+    "description": "PLASTIAS PREPROTÉSICAS (AUMENTO DE CORONA CLÍNICA)",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "242401",
+    "description": "REPARACIÓN O PLASTIA PERIODONTAL REGENERATIVA (INJERTOS, MEMBRANAS)",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243101",
+    "description": "ESCISIÓN DE LESIÓN BENIGNA ENCAPSULADA EN ENCÍA HASTA DE TRES CENTÍMETROS",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243102",
+    "description": "ESCISIÓN DE LESIÓN BENIGNA ENCAPSULADA EN ENCÍA DE MÁS DE TRES CENTÍMETROS",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243103",
+    "description": "ESCISIÓN DE LESIÓN BENIGNA NO ENCAPSULADA EN ENCÍA HASTA DE TRES CENTÍMETROS",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243104",
+    "description": "ESCISIÓN DE LESIÓN BENIGNA NO ENCAPSULADA EN ENCÍA DE MÁS DE TRES CENTÍMETROS",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243105",
+    "description": "ESCISIÓN DE LESIÓN MALIGNA DE ENCÍA SIN VACIAMIENTO GANGLIONAR NI RESECCIÓN DE ESTRUCTURAS VECINAS U ÓSEAS",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243106",
+    "description": "ESCISIÓN DE LESIÓN MALIGNA DE ENCÍA CON VACIAMIENTO GANGLIONAR, PISO DE BOCA O LENGUA CON CIERRE PRIMARIO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243107",
+    "description": "ESCISIÓN DE LESIÓN MALIGNA DE ENCÍA CON VACIAMIENTO GANGLIONAR, PISO DE BOCA O LENGUA Y RECONSTRUCCIÓN CON COLGAJO PEDICULADO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243108",
+    "description": "ESCISIÓN DE LESIÓN MALIGNA DE ENCÍA CON VACIAMIENTO GANGLIONAR, RESECCIÓN ÓSEA Y RECONSTRUCCIÓN CON PLACA Y COLGAJO PEDICULADO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243109",
+    "description": "ESCISIÓN DE LESIÓN MALIGNA DE ENCÍA CON VACIAMIENTO GANGLIONAR, RESECCIÓN ÓSEA Y RECONSTRUCCIÓN CON PLACA Y COLGAJO LIBRE",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243110",
+    "description": "RESECCIÓN DE LESIÓN DE ENCÍA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243201",
+    "description": "SUTURA DE LACERACIÓN DE ENCÍA, MENOR DE TRES CENTÍMETROS",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243202",
+    "description": "SUTURA DE LACERACIÓN DE ENCÍA, MAYOR DE TRES CENTÍMETROS",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243203",
+    "description": "SUTURA DE LACERACIÓN DE ENCÍA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243301",
+    "description": "ENUCLEACIÓN DE QUISTE EPIDERMOIDE, VÍA INTRAORAL",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243302",
+    "description": "ENUCLEACIÓN DE QUISTE EPIDERMOIDE, VÍA EXTRAORAL",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243303",
+    "description": "ENUCLEACIÓN DE QUISTE EPIDERMOIDE",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243401",
+    "description": "GINGIVECTOMÍA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243501",
+    "description": "CUÑA DISTAL",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "243502",
+    "description": "OPERCULECTOMÍA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244101",
+    "description": "ENUCLEACIÓN DE QUISTE ODONTOGÉNICO HASTA DE TRES CENTÍMETROS DE DIÁMETRO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244102",
+    "description": "ENUCLEACIÓN DE QUISTE ODONTOGÉNICO DE MÁS DE TRES CENTÍMETROS DE DIÁMETRO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244103",
+    "description": "RESECCIÓN DE TUMOR BENIGNO O MALIGNO ODONTOGÉNICO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244104",
+    "description": "RESECCIÓN DE TUMOR BENIGNO O MALIGNO ODONTOGÉNICO Y RECONSTRUCCIÓN INMEDIATA CON INJERTO ÓSEO LIBRE",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244105",
+    "description": "RESECCIÓN DE TUMOR BENIGNO O MALIGNO ODONTOGÉNICO Y RECONSTRUCCIÓN CON COLGAJO ÓSEO PEDICULADO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244106",
+    "description": "RESECCIÓN DE TUMOR BENIGNO O MALIGNO ODONTOGÉNICO Y RECONSTRUCCIÓN CON COLGAJO ÓSEO LIBRE",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244107",
+    "description": "RESECCIÓN DE TUMOR BENIGNO O MALIGNO ODONTOGÉNICO Y RECONSTRUCCIÓN CON PLACA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244108",
+    "description": "MARSUPIALIZACIÓN DE QUISTE ODONTOGÉNICO",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "244109",
+    "description": "RESECCIÓN DE LESIÓN ODONTOGÉNICA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "245101",
+    "description": "REGULARIZACIÓN DE REBORDES",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "245201",
+    "description": "ALVEOLECTOMÍA",
+    "category": "Periodoncia"
+  },
+  {
+    "code": "247001",
+    "description": "COLOCACIÓN DE ANCLAJE TEMPORAL ESQUELÉTICO",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "247101",
+    "description": "COLOCACIÓN DE APARATOLOGÍA FIJA PARA ORTODONCIA (ARCADA)",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "247201",
+    "description": "COLOCACIÓN DE APARATOLOGÍA REMOVIBLE INTRAORAL PARA ORTODONCIA (ARCADA)",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "247202",
+    "description": "COLOCACIÓN DE APARATOLOGÍA REMOVIBLE EXTRAORAL PARA ORTODONCIA (ARCADA)",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "247301",
+    "description": "COLOCACIÓN DE APARATOS DE RETENCIÓN",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "247401",
+    "description": "FERULIZACIÓN RÍGIDA (SUPERIOR O INFERIOR)",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "247402",
+    "description": "FERULIZACIÓN SEMIRRÍGIDA (SUPERIOR O INFERIOR)",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "247403",
+    "description": "FERULIZACIÓN",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "248101",
+    "description": "CIERRE DE DIASTEMA (ALVEOLAR, DENTAL)",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "248201",
+    "description": "AJUSTAMIENTO OCLUSAL",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "248401",
+    "description": "REPARACIÓN DE APARATOLOGÍA FIJA O REMOVIBLE",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "248801",
+    "description": "COLOCACIÓN DE MÁSCARA FACIAL TERAPÉUTICA",
+    "category": "Ortodoncia"
+  },
+  {
+    "code": "249101",
+    "description": "CONTROL DE HEMORRAGIA DENTAL POSQUIRÚRGICA",
+    "category": "Cirugía oral"
+  },
+  {
+    "code": "870440",
+    "description": "RADIOGRAFÍAS INTRAORALES OCLUSALES",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "870450",
+    "description": "RADIOGRAFÍAS INTRAORALES PERIAPICALES MILIMETRADAS",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "870451",
+    "description": "RADIOGRAFÍAS INTRAORALES PERIAPICALES DIENTES ANTERIORES SUPERIORES",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "870452",
+    "description": "RADIOGRAFÍAS INTRAORALES PERIAPICALES DIENTES ANTERIORES INFERIORES",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "870453",
+    "description": "RADIOGRAFÍAS INTRAORALES PERIAPICALES ZONA DE CANINOS",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "870454",
+    "description": "RADIOGRAFÍAS INTRAORALES PERIAPICALES PREMOLARES",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "870455",
+    "description": "RADIOGRAFÍAS INTRAORALES PERIAPICALES MOLARES",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "870456",
+    "description": "RADIOGRAFÍAS INTRAORALES PERIAPICALES JUEGO COMPLETO",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "870460",
+    "description": "RADIOGRAFÍAS INTRAORALES CORONALES",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "890103",
+    "description": "ATENCIÓN (VISITA) DOMICILIARIA, POR ODONTOLOGÍA GENERAL",
+    "category": "Consulta"
+  },
+  {
+    "code": "890203",
+    "description": "CONSULTA DE PRIMERA VEZ POR ODONTOLOGÍA GENERAL",
+    "category": "Consulta"
+  },
+  {
+    "code": "890204",
+    "description": "CONSULTA DE PRIMERA VEZ POR OTRAS ESPECIALIDADES EN ODONTOLOGIA",
+    "category": "Consulta"
+  },
+  {
+    "code": "890303",
+    "description": "CONSULTA DE CONTROL O DE SEGUIMIENTO POR ODONTOLOGÍA GENERAL",
+    "category": "Consulta"
+  },
+  {
+    "code": "890304",
+    "description": "CONSULTA DE CONTROL O DE SEGUIMIENTO POR OTRAS ESPECIALIDADES EN ODONTOLOGIA",
+    "category": "Consulta"
+  },
+  {
+    "code": "890403",
+    "description": "INTERCONSULTA POR ODONTOLOGÍA GENERAL",
+    "category": "Consulta"
+  },
+  {
+    "code": "890404",
+    "description": "INTERCONSULTA POR OTRAS ESPECIALIDADES EN ODONTOLOGIA",
+    "category": "Consulta"
+  },
+  {
+    "code": "890604",
+    "description": "CUIDADO (MANEJO) INTRAHOSPITALARIO POR ODONTOLOGÍA ESPECIALIZADA",
+    "category": "Consulta"
+  },
+  {
+    "code": "890703",
+    "description": "CONSULTA DE URGENCIAS POR ODONTOLOGÍA GENERAL",
+    "category": "Consulta"
+  },
+  {
+    "code": "890704",
+    "description": "CONSULTA DE URGENCIAS POR ODONTOLOGÍA ESPECIALIZADA",
+    "category": "Consulta"
+  },
+  {
+    "code": "893101",
+    "description": "IMPRESIÓN DE ARCO DENTARIO SUPERIOR O INFERIOR, CON MODELO DE ESTUDIO Y CONCEPTO",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893102",
+    "description": "FOTOGRAFÍA CLÍNICA EXTRAORAL, INTRAORAL, FRONTAL O LATERAL",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893103",
+    "description": "EVALUACIÓN Y MEDICIÓN ORTODÓNTICA U ORTOPÉDICA ORAL",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893104",
+    "description": "ESTUDIO DE OCLUSIÓN Y ARTICULACIÓN TEMPOROMANDIBULAR",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893105",
+    "description": "MASCARA FACIAL DIAGNÓSTICA",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893106",
+    "description": "CONTROL DE ORTODONCIA FIJA, REMOVIBLE O TRATAMIENTO ORTOPÉDICO FUNCIONAL Y MECÁNICO",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893107",
+    "description": "ELABORACIÓN Y ADAPTACIÓN DE APARATO ORTOPÉDICO",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893108",
+    "description": "CONTROL DE CRECIMIENTO Y DESARROLLO DENTO-MAXILOFACIAL",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893109",
+    "description": "EXAMEN O RECONOCIMIENTO DE MUCOSA ORAL Y PERIODONTAL",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "893110",
+    "description": "ELABORACIÓN Y ADAPTACIÓN DE APARATO ORTÉSICO INTRAORAL",
+    "category": "Diagnóstica"
+  },
+  {
+    "code": "990103",
+    "description": "EDUCACIÓN GRUPAL EN SALUD, POR ODONTOLOGÍA",
+    "category": "Educación en salud"
+  },
+  {
+    "code": "990112",
+    "description": "EDUCACIÓN GRUPAL EN SALUD, POR HIGIENE ORAL",
+    "category": "Educación en salud"
+  },
+  {
+    "code": "990203",
+    "description": "EDUCACIÓN INDIVIDUAL EN SALUD, POR ODONTOLOGÍA",
+    "category": "Educación en salud"
+  },
+  {
+    "code": "990212",
+    "description": "EDUCACIÓN INDIVIDUAL EN SALUD, POR HIGIENE ORAL",
+    "category": "Educación en salud"
+  },
+  {
+    "code": "997001",
+    "description": "PROFILAXIS DENTAL O PULIDO CORONAL",
+    "category": "Preventiva"
+  },
+  {
+    "code": "997002",
+    "description": "CONTROL DE PLACA DENTAL",
+    "category": "Preventiva"
+  },
+  {
+    "code": "997103",
+    "description": "TOPICACIÓN DE FLÚOR EN GEL",
+    "category": "Preventiva"
+  },
+  {
+    "code": "997104",
+    "description": "TOPICACIÓN DE FLÚOR EN SOLUCIÓN",
+    "category": "Preventiva"
+  },
+  {
+    "code": "997105",
+    "description": "APLICACIÓN DE RESINA PREVENTIVA",
+    "category": "Preventiva"
+  },
+  {
+    "code": "997106",
+    "description": "TOPICACIÓN DE FLÚOR EN BARNIZ",
+    "category": "Preventiva"
+  },
+  {
+    "code": "997107",
+    "description": "APLICACIÓN DE SELLANTES",
+    "category": "Preventiva"
+  },
+  {
+    "code": "997301",
+    "description": "DETARTRAJE SUPRAGINGIVAL",
+    "category": "Preventiva"
+  }
+]

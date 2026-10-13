@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { api, getMe } from "@/lib/api";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { ODONTOGRAM_CONDITIONS, SURFACES, canReadClinical, canWriteClinical, type OdontogramEntry } from "@/lib/types";
+import { ClinicDocumentHeader } from "@/components/app/document-identity";
 import { Odontogram } from "./odontogram";
 
 export const metadata: Metadata = { title: "Odontograma" };
@@ -21,7 +22,8 @@ export default async function OdontogramPage({ params, searchParams }: PageProps
   // ?at=2026-09-15 → el odontograma tal como estaba al final de ese día (hora de Colombia).
   const date = typeof at === "string" && /^\d{4}-\d{2}-\d{2}$/.test(at) ? at : null;
   const query = date ? `?at=${encodeURIComponent(`${date}T23:59:59-05:00`)}` : "";
-  const [entries, history] = await Promise.all([
+  const [patient, entries, history] = await Promise.all([
+    api<{ fullName: string; documentType: string; documentNumber: string }>(`/api/patients/${id}`),
     api<OdontogramEntry[]>(`/api/patients/${id}/odontogram${query}`),
     api<OdontogramEntry[]>(`/api/patients/${id}/odontogram/history`),
   ]);
@@ -29,7 +31,18 @@ export default async function OdontogramPage({ params, searchParams }: PageProps
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      {/* Encabezado que solo aparece al imprimir o guardar en PDF. */}
+      <div className="hidden gap-3 print:grid">
+        <ClinicDocumentHeader />
+        <div>
+          <h1 className="text-xl font-semibold">Odontograma</h1>
+          <p className="text-sm">
+            {patient.fullName} · {patient.documentType} {patient.documentNumber} ·{" "}
+            {date ? `estado al ${formatDate(date)}` : `vigente al ${formatDate(new Date().toISOString().slice(0, 10))}`}
+          </p>
+        </div>
+      </div>
+      <div className="no-print flex flex-wrap items-end justify-between gap-3">
         {date ? (
           <p className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
             Viendo el odontograma al <strong>{formatDate(date)}</strong> (solo lectura).{" "}
@@ -53,9 +66,9 @@ export default async function OdontogramPage({ params, searchParams }: PageProps
       </div>
 
       {/* key: al cambiar de fecha se reinicia el estado del componente. */}
-      <Odontogram key={date ?? "now"} patientId={id} initialEntries={entries} readOnly={!!date || !canWriteClinical(me)} />
+      <Odontogram key={date ?? "now"} patientId={id} patientName={patient.fullName} asOf={date} initialEntries={entries} readOnly={!!date || !canWriteClinical(me)} />
 
-      <Card>
+      <Card className="no-print">
         <CardHeader>
           <CardTitle>Historial de cambios</CardTitle>
           <CardDescription>Nada se borra: cada marca queda con quién la registró y quién la quitó.</CardDescription>

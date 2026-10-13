@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Wallet,
   Tags,
+  BookOpen,
   ClipboardList,
   FileText,
   LayoutDashboard,
@@ -54,6 +55,7 @@ const ITEMS: Item[] = [
   },
   { href: "/app", label: "Inicio", icon: LayoutDashboard },
   { href: "/app/pacientes", label: "Pacientes", icon: UserRound },
+  { href: "/app/cups", label: "Catálogo CUPS", icon: BookOpen },
   { href: "/app/agenda", label: "Agenda", icon: CalendarDays },
   {
     href: "/app/mensajes",

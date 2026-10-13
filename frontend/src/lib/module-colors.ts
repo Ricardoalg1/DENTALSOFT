@@ -41,6 +41,7 @@ export const ROUTE_MODULES: Record<string, string> = {
   historias: "CLINICAL_RECORD",
   caja: "TREATMENTS_CASH",
   precios: "TREATMENTS_CASH",
+  cups: "BILLING_RIPS",
   facturacion: "BILLING_RIPS",
   inventario: "INVENTORY",
   reportes: "REPORTS",

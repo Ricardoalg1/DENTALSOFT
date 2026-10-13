@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowLeft, CalendarPlus, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,7 @@ export default async function PatientLayout({ children, params }: LayoutProps<"/
 
   return (
     <div className="grid max-w-5xl gap-6">
-      <Link href="/app/pacientes" className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/app/pacientes" className="inline-flex w-fit print:hidden items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Pacientes
       </Link>
 
@@ -39,7 +40,7 @@ export default async function PatientLayout({ children, params }: LayoutProps<"/
             </p>
           </div>
           {patient.active && (
-            <Link href={`/app/agenda?patientId=${id}`} className={buttonVariants()}>
+            <Link href={`/app/agenda?patientId=${id}`} className={cn(buttonVariants(), "print:hidden")}>
               <CalendarPlus /> Agendar cita
             </Link>
           )}

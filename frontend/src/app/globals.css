@@ -498,3 +498,17 @@ tr[data-page-hidden="true"] {
     color: #0d2c48 !important;
   }
 }
+
+/* Odontograma impreso: el dibujo ocupa todo el ancho de la hoja. */
+@media print {
+  .odontogram-print {
+    overflow: visible !important;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+  .odontogram-print svg {
+    min-width: 0 !important;
+    width: 100%;
+    height: auto;
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
-import { MousePointer2, X } from "lucide-react";
+import { useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { Download, MousePointer2, Printer, X } from "lucide-react";
 import { FormError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +9,15 @@ import { formatDateTime } from "@/lib/format";
 import { ODONTOGRAM_CONDITIONS, SURFACES, type OdontogramCondition, type OdontogramEntry, type ToothSurface } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { addMark, removeMark } from "./actions";
+import { ART_H, DECIDUOUS_SCALE, ToothArt, ToothArtDefs } from "./tooth-art";
 import { KIND_COLOR, ROWS, SURFACE_FILL, cariesIndices, isAnterior, surfaceAt, type Side } from "./teeth";
 
 type Props = {
   patientId: string;
+  /** Para el título del archivo y de la imagen exportada. */
+  patientName?: string;
+  /** Fecha del odontograma mostrado (YYYY-MM-DD); si falta, es el vigente de hoy. */
+  asOf?: string | null;
   initialEntries: OdontogramEntry[];
   readOnly: boolean;
 };
@@ -26,6 +31,33 @@ const PAD = 8;
 const ROW_H = 72;
 const ARCH_GAP = 16; // separación entre arcada superior e inferior
 const WIDTH = PAD * 2 + CELL * 16 + MIDLINE;
+const ART_D_FULL = Math.round(ART_H * DECIDUOUS_SCALE); // alto del dibujo de un diente temporal
+const ART_KEY = "occlus-odontogram-art";
+const ART_EVENT = "occlus-odontogram-art-change";
+// La preferencia vive en localStorage; useSyncExternalStore evita el desajuste entre servidor y navegador.
+const subscribeArt = (cb: () => void) => {
+  window.addEventListener(ART_EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(ART_EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+};
+const readArt = () => {
+  try {
+    return localStorage.getItem(ART_KEY) !== "0";
+  } catch {
+    return true;
+  }
+};
+
+/** Posiciones verticales; sin las ilustraciones, las filas quedan una tras otra con solo la separación entre arcadas. */
+function geometry(showArt: boolean) {
+  const top = showArt ? ART_H : 0;
+  const mid = showArt ? ART_D_FULL : 0;
+  const rowY = [top, top + ROW_H + mid, top + ROW_H * 2 + mid + ARCH_GAP, top + ROW_H * 3 + mid * 2 + ARCH_GAP];
+  return { rowY, totalH: rowY[3] + ROW_H + top, midY: rowY[1] + ROW_H + ARCH_GAP / 2 };
+}
 
 const POLYGONS: Record<Exclude<Side, "center">, string> = {
   top: `0,0 ${BOX},0 ${BOX - INNER},${INNER} ${INNER},${INNER}`,
@@ -36,12 +68,22 @@ const POLYGONS: Record<Exclude<Side, "center">, string> = {
 
 type Tool = OdontogramCondition | "SELECT";
 
-export function Odontogram({ patientId, initialEntries, readOnly }: Props) {
+export function Odontogram({ patientId, patientName, asOf, initialEntries, readOnly }: Props) {
   const [entries, setEntries] = useState(initialEntries);
   const [tool, setTool] = useState<Tool>("SELECT");
   const [selected, setSelected] = useState<number | null>(null);
   const [error, setError] = useState<string>();
   const [pending, startTransition] = useTransition();
+  const showArt = useSyncExternalStore(subscribeArt, readArt, () => true);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const { rowY, totalH, midY } = useMemo(() => geometry(showArt), [showArt]);
+
+  function toggleArt(on: boolean) {
+    try {
+      localStorage.setItem(ART_KEY, on ? "1" : "0");
+    } catch {}
+    window.dispatchEvent(new Event(ART_EVENT));
+  }
 
   const byTooth = useMemo(() => {
     const map = new Map<number, OdontogramEntry[]>();
@@ -80,27 +122,104 @@ export function Odontogram({ patientId, initialEntries, readOnly }: Props) {
     apply(tooth, surfaceAt(tooth, side));
   }
 
+  /** Descarga el odontograma como imagen PNG sobre fondo blanco, con el mismo aspecto en tema claro u oscuro. */
+  async function exportImage() {
+    const svg = svgRef.current;
+    if (!svg) return;
+    setError(undefined);
+    // Se dibuja una copia dentro de un contenedor "papel" (siempre claro) y se copian los estilos ya calculados.
+    const host = document.createElement("div");
+    host.className = "clinical-paper";
+    host.style.cssText = "position:fixed;left:-99999px;top:0;width:1200px";
+    document.body.append(host);
+    try {
+      const clone = svg.cloneNode(true) as SVGSVGElement;
+      host.append(clone);
+      const props = ["fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-linejoin", "opacity", "font-size", "font-weight", "font-family", "text-anchor"];
+      for (const el of [clone, ...clone.querySelectorAll<SVGElement>("*")]) {
+        const cs = getComputedStyle(el);
+        for (const p of props) el.style.setProperty(p, cs.getPropertyValue(p));
+        el.removeAttribute("class");
+      }
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      clone.setAttribute("width", String(WIDTH));
+      clone.setAttribute("height", String(totalH));
+      const xml = new XMLSerializer().serializeToString(clone);
+      const img = new Image();
+      img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(xml)}`;
+      await img.decode();
+
+      const scale = 2;
+      const head = 56;
+      const canvas = document.createElement("canvas");
+      canvas.width = WIDTH * scale;
+      canvas.height = (totalH + head) * scale;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0d2c48";
+      ctx.font = `600 ${18 * scale}px sans-serif`;
+      ctx.fillText(`Odontograma${patientName ? ` · ${patientName}` : ""}`, 12 * scale, 26 * scale);
+      ctx.fillStyle = "#526675";
+      ctx.font = `${12 * scale}px sans-serif`;
+      ctx.fillText(asOf ? `Estado al ${asOf}` : `Vigente al ${new Date().toLocaleDateString("es-CO")}`, 12 * scale, 46 * scale);
+      ctx.drawImage(img, 0, head * scale, WIDTH * scale, totalH * scale);
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!blob) throw new Error();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const slug = (patientName ?? "paciente").normalize("NFD").replace(/[^\w]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
+      a.href = url;
+      a.download = `odontograma-${slug}-${asOf ?? new Date().toISOString().slice(0, 10)}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("No se pudo generar la imagen. Usa «Imprimir / Guardar PDF».");
+    } finally {
+      host.remove();
+    }
+  }
+
   const toolInfo = tool === "SELECT" ? null : ODONTOGRAM_CONDITIONS[tool];
   const selectedEntries = selected ? (byTooth.get(selected) ?? []) : [];
 
   return (
     <div className="grid gap-4">
       {!readOnly && (
-        <Toolbar tool={tool} onChange={setTool} />
+        <div className="no-print">
+          <Toolbar tool={tool} onChange={setTool} />
+        </div>
       )}
+      <div className="no-print flex flex-wrap items-center justify-between gap-3">
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" className="size-4" checked={showArt} onChange={(e) => toggleArt(e.target.checked)} />
+          Mostrar ilustración de los dientes
+        </label>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => void exportImage()}>
+            <Download /> Descargar imagen
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer /> Imprimir / Guardar PDF
+          </Button>
+        </div>
+      </div>
       <FormError message={error} />
 
-      <div className="overflow-x-auto rounded-lg border bg-card p-2">
+      <div className="odontogram-print overflow-x-auto rounded-lg border bg-card p-2">
         <svg
-          viewBox={`0 0 ${WIDTH} ${ROW_H * 4 + ARCH_GAP}`}
+          viewBox={`0 0 ${WIDTH} ${totalH}`}
+          ref={svgRef}
           className={cn("min-w-[640px] select-none", pending && "opacity-70")}
           role="group"
           aria-label="Odontograma"
         >
-          <line x1={WIDTH / 2} x2={WIDTH / 2} y1={0} y2={ROW_H * 4 + ARCH_GAP} className="stroke-border" strokeDasharray="4 4" />
-          <line x1={0} x2={WIDTH} y1={ROW_H * 2 + ARCH_GAP / 2} y2={ROW_H * 2 + ARCH_GAP / 2} className="stroke-border" strokeDasharray="4 4" />
+          <ToothArtDefs />
+          <line x1={WIDTH / 2} x2={WIDTH / 2} y1={0} y2={totalH} className="stroke-border" strokeDasharray="4 4" />
+          <line x1={0} x2={WIDTH} y1={midY} y2={midY} className="stroke-border" strokeDasharray="4 4" />
           {ROWS.map((row, r) => {
-            const y = r * ROW_H + (r >= 2 ? ARCH_GAP : 0);
+            const y = rowY[r];
+            const art = !showArt ? undefined : r <= 1 ? "upper" : "lower"; // raíces hacia arriba en la arcada superior y hacia abajo en la inferior
             // Los temporales se alinean hacia la línea media.
             const offset = row.deciduous ? 3 : 0;
             return (
@@ -114,6 +233,8 @@ export function Odontogram({ patientId, initialEntries, readOnly }: Props) {
                     entries={byTooth.get(tooth) ?? []}
                     selected={selected === tooth}
                     interactive={!pending}
+                    art={art}
+                    small={row.deciduous}
                     onClick={onToothClick}
                   />
                 ))}
@@ -126,6 +247,8 @@ export function Odontogram({ patientId, initialEntries, readOnly }: Props) {
                     entries={byTooth.get(tooth) ?? []}
                     selected={selected === tooth}
                     interactive={!pending}
+                    art={art}
+                    small={row.deciduous}
                     onClick={onToothClick}
                   />
                 ))}
@@ -135,8 +258,8 @@ export function Odontogram({ patientId, initialEntries, readOnly }: Props) {
         </svg>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-[1fr_16rem]">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-[1fr_16rem] print:grid-cols-1">
+        <Card className="no-print">
           <CardHeader>
             <CardTitle>{selected ? `Diente ${selected}` : "Selecciona un diente"}</CardTitle>
             <CardDescription>
@@ -230,6 +353,8 @@ function Tooth({
   entries,
   selected,
   interactive,
+  art,
+  small,
   onClick,
 }: {
   tooth: number;
@@ -238,6 +363,8 @@ function Tooth({
   entries: OdontogramEntry[];
   selected: boolean;
   interactive: boolean;
+  art?: "upper" | "lower";
+  small?: boolean;
   onClick: (tooth: number, side: Side) => void;
 }) {
   const bySurface = new Map(entries.filter((e) => e.surface).map((e) => [e.surface!, e.condition]));
@@ -292,6 +419,16 @@ function Tooth({
         }
       }}
     >
+      {art === "upper" && (
+        <g transform={`translate(${(CELL - 44) / 2} ${-ART_H})`}>
+          <ToothArt tooth={tooth} lower={false} absent={absent} scale={small ? DECIDUOUS_SCALE : 1} />
+        </g>
+      )}
+      {art === "lower" && (
+        <g transform={`translate(${(CELL - 44) / 2} ${ROW_H - 2})`}>
+          <ToothArt tooth={tooth} lower absent={absent} scale={small ? DECIDUOUS_SCALE : 1} />
+        </g>
+      )}
       <text x={CELL / 2} y={10} textAnchor="middle" className={cn("text-[10px] tabular-nums", selected ? "fill-primary font-semibold" : "fill-muted-foreground")}>
         {tooth}
       </text>
