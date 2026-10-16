@@ -23,15 +23,40 @@ public final class TreatmentDtos {
 
     // ---------- Lista de precios ----------
 
+    /** {@code category} null = la del tratamiento elegido. */
     public record ProcedureRequest(
             @Size(max = 20) String code,
             @NotBlank @Size(max = 150) String name,
-            @NotNull ProcedureCategory category,
+            ProcedureCategory category,
             @Pattern(regexp = "[A-Za-z0-9]{0,10}", message = "Solo letras y números (hasta 10)") String cupsCode,
             @NotNull @DecimalMin("0") @Digits(integer = 12, fraction = 2) BigDecimal price,
             boolean perTooth,
             OdontogramCondition treatsCondition,
+            Boolean active,
+            UUID treatmentId) {}
+
+    public record ActiveRequest(@NotNull Boolean active) {}
+
+    /** Fila importada de un CSV de procedimientos: el tratamiento va por nombre (se crea si no existe). */
+    public record ProcedureImportRow(String name, String cupsCode, String treatment, BigDecimal price, Boolean perTooth,
+                                     Boolean active, String code) {}
+
+    public record ImportRowError(int row, String message) {}
+
+    /** {@code row} de los errores = número de línea del CSV (la 1 es el encabezado). */
+    public record ImportResult(int created, int updated, int skipped, List<ImportRowError> errors) {}
+
+    // ---------- Tratamientos ----------
+
+    public record TreatmentTypeRequest(
+            @NotBlank @Size(max = 150) String name,
+            @NotNull ProcedureCategory category,
+            @Size(max = 300) String description,
             Boolean active) {}
+
+    /** {@code procedures}: cuántos procedimientos de la lista de precios lo usan. */
+    public record TreatmentTypeResponse(UUID id, String name, ProcedureCategory category, String description,
+                                        boolean active, long procedures) {}
 
     /** Un código del catálogo CUPS para crear un procedimiento con su descripción como nombre. */
     public record CupsImportItem(
@@ -42,14 +67,16 @@ public final class TreatmentDtos {
     /** Importar varios códigos CUPS a la lista de precios, todos con el mismo precio inicial. */
     public record CupsImportRequest(
             @NotNull @Size(min = 1, max = 200) List<@Valid @NotNull CupsImportItem> items,
-            @NotNull @DecimalMin("0") @Digits(integer = 12, fraction = 2) BigDecimal price) {}
+            @NotNull @DecimalMin("0") @Digits(integer = 12, fraction = 2) BigDecimal price,
+            /** Tratamiento al que quedan asignados (opcional). */
+            UUID treatmentId) {}
 
     /** {@code skipped}: ya había un procedimiento con ese código CUPS o ese nombre. */
     public record CupsImportResponse(int created, int skipped) {}
 
     public record ProcedureResponse(
             UUID id, String code, String name, ProcedureCategory category, String cupsCode, BigDecimal price,
-            boolean perTooth, OdontogramCondition treatsCondition, boolean active) {}
+            boolean perTooth, OdontogramCondition treatsCondition, boolean active, Ref treatment) {}
 
     // ---------- Planes ----------
 

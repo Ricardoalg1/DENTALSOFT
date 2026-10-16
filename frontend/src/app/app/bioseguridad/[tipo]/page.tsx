@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, getMe } from "@/lib/api";
 import { todayCO } from "@/lib/agenda-time";
-import { BIOSAFETY_KINDS, displayValue, kindBySlug, type BiosafetyField, type BiosafetyRecord } from "@/lib/biosafety";
+import { BIOSAFETY_KINDS, displayValue, kindBySlug, type BiosafetyField, type BiosafetyRecord, type EquipmentOption } from "@/lib/biosafety";
 import { formatDate } from "@/lib/format";
 import type { Page, Site } from "@/lib/types";
 import { RecordForm } from "../record-form";
@@ -33,11 +33,14 @@ export default async function BiosafetyKindPage({ params, searchParams }: PagePr
   const from = isDate(sp.desde) ? sp.desde : defaultFrom;
   const to = isDate(sp.hasta) ? sp.hasta : today;
   const page = Math.max(0, Math.trunc(Number(sp.page) || 0));
-  const [list, sites] = await Promise.all([
+  const [list, sites, equipment] = await Promise.all([
     api<Page<BiosafetyRecord>>(`/api/biosafety?kind=${kind}&from=${from}&to=${to}&page=${page}&size=25`),
     api<Site[]>("/api/sites"),
+    kind === "MAINTENANCE" ? api<EquipmentOption[]>("/api/biosafety/equipment") : Promise.resolve([] as EquipmentOption[]),
   ]);
-  const columns = fields.filter((f) => !f.wide).slice(0, 5);
+  const defaultEquipment = typeof sp.equipo === "string" && equipment.some((e) => e.id === sp.equipo) ? sp.equipo : "";
+  // El equipo ligado se muestra por su nombre (campo equipment), no por su id.
+  const columns = fields.filter((f) => !f.wide && f.type !== "EQUIPMENT").slice(0, 5);
 
   return (
     <div className="grid gap-6">
@@ -47,7 +50,14 @@ export default async function BiosafetyKindPage({ params, searchParams }: PagePr
           <CardDescription>{info.description} Queda a nombre de {me.fullName}.</CardDescription>
         </CardHeader>
         <CardContent>
-          <RecordForm kind={kind} sites={sites.filter((s) => s.active).map((s) => ({ id: s.id, name: s.name }))} today={today} />
+          <RecordForm
+            key={defaultEquipment}
+            kind={kind}
+            sites={sites.filter((s) => s.active).map((s) => ({ id: s.id, name: s.name }))}
+            today={today}
+            equipment={equipment}
+            defaultEquipment={defaultEquipment}
+          />
         </CardContent>
       </Card>
 

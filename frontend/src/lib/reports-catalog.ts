@@ -38,13 +38,7 @@ export const REPORT_SECTIONS: { title: string; reports: ReportEntry[] }[] = [
     reports: [
       { key: "inventarios", label: "Inventarios", description: "Existencias por insumo, sede y lote, con vencimientos y mínimos.", dates: false, site: true },
       { key: "movimientos-inventario", label: "Movimientos de inventario", description: "Entradas, consumos, descartes, ajustes y traslados.", dates: true, site: true },
-      {
-        key: "inventario-valorizado",
-        label: "Inventario valorizado",
-        description: "Existencias multiplicadas por su costo.",
-        dates: false,
-        soon: "Requiere registrar el costo de cada insumo en Inventario.",
-      },
+      { key: "inventario-valorizado", label: "Inventario valorizado", description: "Existencias × costo unitario y equipos por su costo.", dates: false, site: true },
     ],
   },
   {

@@ -5,7 +5,9 @@ import static lat.occlus.support.ApiClient.createUserAndLogin;
 import static lat.occlus.support.ApiClient.registerClinic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -447,6 +449,58 @@ class TreatmentAndCashTests {
         call(post("/api/patients/" + patientId + "/payments").contentType(MediaType.APPLICATION_JSON).content(
                 "{\"siteId\":\"%s\",\"amount\":1000,\"method\":\"CASH\",\"financingId\":\"%s\"}".formatted(siteId, financingId)), admin)
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void treatmentCatalogAndProcedureCrud() throws Exception {
+        String reception = createUserAndLogin(mvc, admin, "RECEPTION", false);
+        call(post("/api/treatment-types/presets"), reception).andExpect(status().isForbidden());
+        call(post("/api/treatment-types/presets"), admin).andExpect(status().isOk()).andExpect(jsonPath("$.created").value(32));
+        call(post("/api/treatment-types/presets"), admin).andExpect(jsonPath("$.created").value(0));
+
+        String treatment = JsonPath.read(call(post("/api/treatment-types").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Blanqueamiento LED\",\"category\":\"RESTORATIVE\"}"), admin)
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");
+        call(post("/api/treatment-types").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"blanqueamiento led\",\"category\":\"OTHER\"}"), admin).andExpect(status().isConflict());
+        call(get("/api/treatment-types/search?q=led"), admin).andExpect(jsonPath("$.totalElements").value(1));
+
+        // Procedimiento: nombre, CUPS, tratamiento y precio; la categoría sale del tratamiento.
+        String procedure = JsonPath.read(call(post("/api/procedures").contentType(MediaType.APPLICATION_JSON).content(
+                        "{\"name\":\"Blanqueamiento en consultorio\",\"cupsCode\":\"997310\",\"price\":400000,\"perTooth\":false,\"treatmentId\":\"" + treatment + "\"}"), admin)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.category").value("RESTORATIVE"))
+                .andExpect(jsonPath("$.treatment.name").value("Blanqueamiento LED"))
+                .andReturn().getResponse().getContentAsString(), "$.id");
+        call(get("/api/procedures/search?q=consultorio&treatmentId=" + treatment), admin)
+                .andExpect(jsonPath("$.totalElements").value(1));
+        call(get("/api/procedures/search?size=5"), admin)
+                .andExpect(jsonPath("$.content.length()").value(5)).andExpect(jsonPath("$.totalPages").value(3));
+
+        // Un tratamiento con procedimientos no se borra; se desactiva.
+        call(delete("/api/treatment-types/" + treatment), admin).andExpect(status().isConflict());
+        call(patch("/api/procedures/" + procedure + "/status").contentType(MediaType.APPLICATION_JSON).content("{\"active\":false}"), admin)
+                .andExpect(jsonPath("$.active").value(false));
+        call(get("/api/procedures/search?status=inactive"), admin).andExpect(jsonPath("$.totalElements").value(1));
+        call(delete("/api/procedures/" + procedure), admin).andExpect(status().isNoContent());
+        call(delete("/api/treatment-types/" + treatment), admin).andExpect(status().isNoContent());
+
+        // Un procedimiento usado en un plan no se borra.
+        String planId = createPlan(admin);
+        addItems(admin, planId, "[{\"procedureId\":\"%s\",\"quantity\":1}]".formatted(cleaningId)).andExpect(status().isOk());
+        call(delete("/api/procedures/" + cleaningId), admin).andExpect(status().isConflict());
+
+        // Importación: crea por nombre, crea el tratamiento si no existe, actualiza los existentes e informa errores.
+        call(post("/api/procedures/import").contentType(MediaType.APPLICATION_JSON).content("""
+                [{"name":"Carilla en porcelana","cupsCode":"237101","treatment":"Carillas","price":900000},
+                 {"name":"Resina de fotocurado","price":130000},
+                 {"name":"","price":1},
+                 {"name":"Sin precio"}]"""), admin)
+                .andExpect(jsonPath("$.created").value(1))
+                .andExpect(jsonPath("$.updated").value(1))
+                .andExpect(jsonPath("$.errors.length()").value(2))
+                .andExpect(jsonPath("$.errors[0].row").value(4));
+        call(get("/api/procedures/search?q=carilla"), admin).andExpect(jsonPath("$.content[0].treatment.name").value("Carillas"));
     }
 
     private ResultActions openCashRequest(String token, String base) throws Exception {

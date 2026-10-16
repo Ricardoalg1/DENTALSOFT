@@ -1,61 +1,83 @@
-import Link from "next/link";
-import { CUPS } from "@/lib/cups";
-import { ReferenceArt } from "@/components/app/reference-art";
 import type { Metadata } from "next";
-import { TriangleAlert } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { BookOpen, ListTree, Stethoscope, TriangleAlert } from "lucide-react";
+import { ReferenceArt } from "@/components/app/reference-art";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, getMe } from "@/lib/api";
-import { formatCOP } from "@/lib/format";
-import { ODONTOGRAM_CONDITIONS, PROCEDURE_CATEGORIES, type Procedure } from "@/lib/types";
+import { CUPS } from "@/lib/cups";
+import { PROCEDURE_CATEGORIES, type Page, type Procedure, type ProcedureCategory, type TreatmentType } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { ImportCups } from "./import-cups";
 import { LoadExamples } from "./load-examples";
-import { ProcedureForm } from "./procedure-form";
+import { ProceduresTab } from "./procedures-tab";
+import { TreatmentsTab } from "./treatments-tab";
 
 export const metadata: Metadata = { title: "Lista de precios" };
 
-export default async function PricesPage({ searchParams }: { searchParams: Promise<{ cups?: string }> }) {
-  const { cups } = await searchParams;
+const str = (v: unknown, max = 120) => (typeof v === "string" ? v.slice(0, max) : "");
+
+export default async function PricesPage({ searchParams }: PageProps<"/app/precios">) {
+  const sp = await searchParams;
+  const view = sp.vista === "tratamientos" ? "tratamientos" : "procedimientos";
+  const cups = str(sp.cups, 10);
   const initialCups = CUPS.find((entry) => entry.code === cups);
+  const q = str(sp.q);
+  const estado = sp.estado === "active" || sp.estado === "inactive" ? sp.estado : "";
+  const page = Math.max(0, Math.trunc(Number(sp.page) || 0));
+  const tratamiento = /^[0-9a-f-]{36}$/.test(str(sp.tratamiento)) ? str(sp.tratamiento) : "";
+  const categoria = str(sp.categoria) in PROCEDURE_CATEGORIES ? (str(sp.categoria) as ProcedureCategory) : "";
+
   const me = await getMe();
   const isAdmin = me.role === "ADMIN";
-  const procedures = await api<Procedure[]>(`/api/procedures?includeInactive=${isAdmin}`);
-  const missingCups = procedures.filter((p) => p.active && !p.cupsCode).length;
+  const params = new URLSearchParams({ q, status: estado || "all", page: String(page), size: "20" });
+  if (view === "procedimientos" && tratamiento) params.set("treatmentId", tratamiento);
+  if (view === "tratamientos" && categoria) params.set("category", categoria);
+
+  const [treatments, all, procedures, treatmentPage] = await Promise.all([
+    api<TreatmentType[]>("/api/treatment-types"),
+    api<Procedure[]>(`/api/procedures?includeInactive=${isAdmin}`),
+    view === "procedimientos" ? api<Page<Procedure>>(`/api/procedures/search?${params}`) : null,
+    view === "tratamientos" ? api<Page<TreatmentType>>(`/api/treatment-types/search?${params}`) : null,
+  ]);
+  const missingCups = all.filter((p) => p.active && !p.cupsCode).length;
+  const withoutTreatment = all.filter((p) => p.active && !p.treatment).length;
 
   return (
-    <div className="grid max-w-5xl gap-6">
-      <div>
-        <Link href="/app/cups" className="mb-2 inline-block text-sm text-primary underline">Consultar catálogo CUPS</Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Lista de precios</h1>
-        <p className="text-muted-foreground">
-          Procedimientos que se usan en los presupuestos. Cambiar un precio no altera los planes ya presupuestados.
-        </p>
+    <div className="grid max-w-6xl gap-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Lista de precios</h1>
+          <p className="text-muted-foreground">
+            Tratamientos y sus procedimientos (código CUPS y precio). Cambiar un precio no altera los planes ya presupuestados.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-start gap-2">
+          <Link href="/app/cups" className="inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm hover:bg-muted">
+            <BookOpen className="size-4" /> Catálogo CUPS
+          </Link>
+          {isAdmin && <ImportCups existing={all.flatMap((p) => (p.cupsCode ? [p.cupsCode] : []))} treatments={treatments} />}
+        </div>
       </div>
 
-      {isAdmin && <ImportCups existing={procedures.flatMap((p) => (p.cupsCode ? [p.cupsCode] : []))} />}
-
-      {isAdmin && missingCups > 0 && (
+      {isAdmin && (missingCups > 0 || withoutTreatment > 0) && (
         <div
           role="note"
           className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200"
         >
           <TriangleAlert className="mt-0.5 size-4 shrink-0" />
           <p>
-            {missingCups} {missingCups === 1 ? "procedimiento no tiene" : "procedimientos no tienen"} código CUPS. Complétalos con la
-            tabla oficial vigente: serán obligatorios para generar los RIPS.
+            {missingCups > 0 && `${missingCups} ${missingCups === 1 ? "procedimiento activo no tiene" : "procedimientos activos no tienen"} código CUPS (obligatorio para los RIPS). `}
+            {withoutTreatment > 0 && `${withoutTreatment} sin tratamiento asignado.`}
           </p>
         </div>
       )}
 
-      {isAdmin && procedures.length === 0 && (
+      {isAdmin && all.length === 0 && (
         <Card className="relative lg:pr-80">
-          <ReferenceArt kind="prices" className="hidden lg:block absolute right-6 top-6 !w-72" />
+          <ReferenceArt kind="prices" className="absolute top-6 right-6 hidden !w-72 lg:block" />
           <CardHeader>
             <CardTitle>Empieza con una lista de ejemplo</CardTitle>
-            <CardDescription>
-              Trae procedimientos comunes con precios orientativos y sin códigos CUPS. Ajústalos a tu clínica.
-            </CardDescription>
+            <CardDescription>Trae procedimientos comunes con precios orientativos. Ajústalos a tu clínica.</CardDescription>
           </CardHeader>
           <CardContent>
             <LoadExamples />
@@ -63,59 +85,42 @@ export default async function PricesPage({ searchParams }: { searchParams: Promi
         </Card>
       )}
 
-      {procedures.length > 0 && (
-        <Card>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Procedimiento</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>CUPS</TableHead>
-                  <TableHead className="text-right">Precio</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {procedures.map((p) => (
-                  <TableRow key={p.id} className={p.active ? undefined : "opacity-60"}>
-                    <TableCell className="align-top whitespace-normal">
-                      <div className="font-medium">
-                        {p.name} {!p.active && <Badge variant="outline">Inactivo</Badge>}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {p.perTooth ? "Por diente" : "Por atención"}
-                        {p.treatsCondition && ` · resuelve: ${ODONTOGRAM_CONDITIONS[p.treatsCondition].label.toLowerCase()}`}
-                      </div>
-                      {isAdmin && (
-                        <details className="mt-2">
-                          <summary className="cursor-pointer text-xs text-primary">Editar</summary>
-                          <div className="max-w-2xl pt-3">
-                            <ProcedureForm procedure={p} />
-                          </div>
-                        </details>
-                      )}
-                    </TableCell>
-                    <TableCell className="align-top">{PROCEDURE_CATEGORIES[p.category]}</TableCell>
-                    <TableCell className="align-top tabular-nums">{p.cupsCode ?? "—"}</TableCell>
-                    <TableCell className="text-right align-top tabular-nums">{formatCOP(p.price)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+      <nav aria-label="Lista de precios" className="flex w-fit gap-1 rounded-lg bg-muted/60 p-1">
+        {[
+          { key: "procedimientos", label: "Procedimientos", icon: Stethoscope, count: all.length },
+          { key: "tratamientos", label: "Tratamientos", icon: ListTree, count: treatments.length },
+        ].map((t) => (
+          <Link
+            key={t.key}
+            href={`/app/precios?vista=${t.key}`}
+            aria-current={view === t.key ? "page" : undefined}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground",
+              view === t.key && "bg-background font-medium text-foreground shadow-sm",
+            )}
+          >
+            <t.icon className="size-4" /> {t.label} <span className="text-xs tabular-nums opacity-70">{t.count}</span>
+          </Link>
+        ))}
+      </nav>
 
-      {isAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle id="nuevo-procedimiento">Nuevo procedimiento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProcedureForm key={initialCups?.code ?? "new"} initialCups={initialCups} />
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardContent className="pt-6">
+          {procedures && (
+            <ProceduresTab
+              key={`${q}|${estado}|${tratamiento}|${page}`}
+              page={procedures}
+              treatments={treatments}
+              filters={{ q, estado, tratamiento }}
+              isAdmin={isAdmin}
+              initialCups={initialCups}
+            />
+          )}
+          {treatmentPage && (
+            <TreatmentsTab key={`${q}|${estado}|${categoria}|${page}`} page={treatmentPage} filters={{ q, estado, categoria }} isAdmin={isAdmin} />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

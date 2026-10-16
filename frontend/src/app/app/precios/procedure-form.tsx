@@ -1,135 +1,145 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Save } from "lucide-react";
 import { CupsPicker } from "@/components/cups-picker";
-import { CUPS_PROCEDURE_CATEGORY, type CupsEntry } from "@/lib/cups";
 import { FormError } from "@/components/form-error";
-import { NativeSelect } from "@/components/native-select";
+import { SearchableSelect } from "@/components/searchable-select";
 import { Button } from "@/components/ui/button";
-import { IconInput as Input } from "@/components/icon-input";
-import { Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  ODONTOGRAM_CONDITIONS,
-  PROCEDURE_CATEGORIES,
-  type OdontogramCondition,
-  type Procedure,
-  type ProcedureCategory,
-} from "@/lib/types";
+import { CUPS_PROCEDURE_CATEGORY, type CupsEntry } from "@/lib/cups";
+import { ODONTOGRAM_CONDITIONS, PROCEDURE_CATEGORIES, type OdontogramCondition, type Procedure, type TreatmentType } from "@/lib/types";
 import { saveProcedure } from "./actions";
 
 /** Hallazgos del odontograma que un procedimiento puede resolver (para sugerir planes). */
-const FINDINGS = Object.fromEntries(
-  Object.entries(ODONTOGRAM_CONDITIONS)
-    .filter(([, info]) => info.kind === "finding")
-    .map(([key, info]) => [key, info.label]),
-);
+const FINDINGS = Object.entries(ODONTOGRAM_CONDITIONS).filter(([, info]) => info.kind === "finding");
 
-/** Crear (procedure = undefined) o editar un procedimiento de la lista de precios. */
-export function ProcedureForm({ procedure, initialCups }: { procedure?: Procedure; initialCups?: CupsEntry }) {
+const selectClass =
+  "h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30";
+
+/**
+ * Crear o editar un procedimiento: nombre, código CUPS (se digita o se elige con la lupa), tratamiento (con
+ * buscador) y precio. Lo demás (código interno, por diente, hallazgo que resuelve) va en "Más opciones".
+ */
+export function ProcedureForm({
+  procedure,
+  initialCups,
+  treatments,
+  onDone,
+}: {
+  procedure?: Procedure;
+  initialCups?: CupsEntry;
+  treatments: TreatmentType[];
+  onDone: () => void;
+}) {
+  const [name, setName] = useState(procedure?.name ?? initialCups?.description.slice(0, 150) ?? "");
+  const [treatmentId, setTreatmentId] = useState(procedure?.treatment?.id ?? "");
+  const [price, setPrice] = useState(procedure ? String(procedure.price) : "");
+  const [code, setCode] = useState(procedure?.code ?? "");
+  const [perTooth, setPerTooth] = useState(procedure?.perTooth ?? true);
+  const [treats, setTreats] = useState<OdontogramCondition | "">(procedure?.treatsCondition ?? "");
+  const [active, setActive] = useState(procedure?.active ?? true);
+  const [cupsCode, setCupsCode] = useState(procedure?.cupsCode ?? initialCups?.code ?? "");
   const [error, setError] = useState<string>();
-  const [resetCount, setResetCount] = useState(0);
-  const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
   const p = procedure?.id ?? "new";
+  // Un procedimiento antiguo sin tratamiento conserva su categoría hasta que se le asigne uno.
+  const legacyCategory = procedure && !procedure.treatment ? procedure.category : undefined;
+  const options = treatments
+    .filter((t) => t.active || t.id === treatmentId)
+    .map((t) => ({ value: t.id, label: t.name, hint: PROCEDURE_CATEGORIES[t.category] }));
 
-  // onSubmit (no <form action>) para que un error no borre lo escrito.
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formEl = e.currentTarget;
-    const form = new FormData(formEl);
+    const cups = String(new FormData(e.currentTarget).get("cupsCode") ?? cupsCode);
     setError(undefined);
-    setSaved(false);
     startTransition(async () => {
-      const result = await saveProcedure(procedure?.id ?? null, {
-        name: String(form.get("name")),
-        code: String(form.get("code") ?? "") || undefined,
-        category: String(form.get("category")) as ProcedureCategory,
-        cupsCode: String(form.get("cupsCode") ?? "") || undefined,
-        price: Number(form.get("price")),
-        perTooth: form.get("perTooth") === "on",
-        treatsCondition: (String(form.get("treatsCondition") ?? "") || null) as OdontogramCondition | null,
-        active: form.get("active") === "on",
+      const r = await saveProcedure(procedure?.id ?? null, {
+        name,
+        code: code || undefined,
+        cupsCode: cups || undefined,
+        price: Number(price),
+        perTooth,
+        treatsCondition: treats || null,
+        active,
+        treatmentId: treatmentId || undefined,
+        category: treatmentId ? undefined : legacyCategory ?? (initialCups ? CUPS_PROCEDURE_CATEGORY[initialCups.category] : undefined),
       });
-      if (result.ok) {
-        setSaved(true);
-        if (!procedure) { formEl.reset(); setResetCount((count) => count + 1); }
-      } else setError(result.error);
+      if (!r.ok) return setError(r.error);
+      onDone();
     });
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3">
-      <div className="grid gap-3 sm:grid-cols-[1.6fr_1fr]">
-        <div className="grid gap-1.5">
-          <Label htmlFor={`${p}-name`}>Nombre</Label>
-          <Input id={`${p}-name`} name="name" placeholder="Ej. Profilaxis dental" required maxLength={150} defaultValue={procedure?.name ?? initialCups?.description.slice(0, 150)} />
+    <form onSubmit={submit} className="grid gap-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-1.5 sm:col-span-2">
+          <Label htmlFor={`${p}-name`}>Nombre *</Label>
+          <Input id={`${p}-name`} required maxLength={150} value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Profilaxis dental" />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor={`${p}-price`}>Precio (COP)</Label>
-          <Input
-            id={`${p}-price`}
-            name="price"
-            required
-            type="number"
-            min="0"
-            step="0.01"
-            defaultValue={procedure ? String(procedure.price) : ""}
-          />
-        </div>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <NativeSelect
-          name="category"
-          id={`${p}-category`}
-          label="Categoría"
-          options={PROCEDURE_CATEGORIES}
-          defaultValue={procedure?.category ?? (initialCups ? CUPS_PROCEDURE_CATEGORY[initialCups.category] : "RESTORATIVE")}
-        />
-        <div className="grid gap-1.5">
-          <Label htmlFor={`${p}-cups`}>Código CUPS</Label>
+          <Label htmlFor={`${p}-cups`}>Código</Label>
           <CupsPicker
-            key={resetCount}
             id={`${p}-cups`}
-            defaultValue={procedure?.cupsCode ?? initialCups?.code ?? ""}
+            defaultValue={cupsCode}
             onPick={(entry) => {
-              // Si el nombre está vacío, toma la descripción CUPS y su categoría.
-              const name = document.getElementById(`${p}-name`) as HTMLInputElement | null;
-              if (name && !name.value.trim()) name.value = entry.description.slice(0, 150);
-              const category = document.getElementById(`${p}-category`) as HTMLSelectElement | null;
-              const mapped = CUPS_PROCEDURE_CATEGORY[entry.category];
-              if (category && mapped && !procedure) category.value = mapped;
+              setCupsCode(entry.code);
+              if (!name.trim()) setName(entry.description.slice(0, 150));
             }}
           />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor={`${p}-code`}>Código interno</Label>
-          <Input id={`${p}-code`} name="code" placeholder="Ej. OP-001" maxLength={20} defaultValue={procedure?.code ?? ""} />
+          <Label htmlFor={`${p}-treatment`}>Tratamiento *</Label>
+          <SearchableSelect id={`${p}-treatment`} options={options} value={treatmentId} onChange={setTreatmentId} placeholder="Seleccione…" />
+          {legacyCategory && !treatmentId && (
+            <p className="text-xs text-muted-foreground">Sin tratamiento (categoría {PROCEDURE_CATEGORIES[legacyCategory].toLowerCase()}).</p>
+          )}
+        </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor={`${p}-price`}>Precio (COP) *</Label>
+          <Input id={`${p}-price`} required type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
         </div>
       </div>
-      <NativeSelect
-        name="treatsCondition"
-        id={`${p}-treats`}
-        label="Resuelve este hallazgo del odontograma (para sugerir planes)"
-        options={FINDINGS}
-        placeholder="Ninguno"
-        defaultValue={procedure?.treatsCondition ?? ""}
-      />
-      <div className="flex flex-wrap gap-4 text-sm">
-        <label className="flex items-center gap-2">
-          <input type="checkbox" name="perTooth" defaultChecked={procedure?.perTooth ?? true} className="size-4 accent-primary" />
-          Se cobra por diente
-        </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" name="active" defaultChecked={procedure?.active ?? true} className="size-4 accent-primary" />
-          Activo
-        </label>
-      </div>
+
+      <details className="rounded-lg border px-3 py-2">
+        <summary className="cursor-pointer text-sm font-medium">Más opciones</summary>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor={`${p}-code`}>Código interno</Label>
+            <Input id={`${p}-code`} maxLength={20} value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ej. OP-001" />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor={`${p}-treats`}>Resuelve este hallazgo del odontograma</Label>
+            <select id={`${p}-treats`} value={treats} onChange={(e) => setTreats(e.target.value as OdontogramCondition | "")} className={selectClass}>
+              <option value="">Ninguno</option>
+              {FINDINGS.map(([k, info]) => (
+                <option key={k} value={k}>
+                  {info.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={perTooth} onChange={(e) => setPerTooth(e.target.checked)} className="size-4 accent-primary" />
+            Se cobra por diente
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="size-4 accent-primary" />
+            Activo
+          </label>
+        </div>
+      </details>
+
       <FormError message={error} />
-      {saved && <p className="text-sm text-primary">Guardado.</p>}
-      <Button type="submit" disabled={pending} className="w-fit">
-        <Plus aria-hidden="true" />{pending ? "Guardando…" : procedure ? "Guardar cambios" : "Agregar procedimiento"}
-      </Button>
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onDone}>
+          Cancelar
+        </Button>
+        <Button type="submit" disabled={pending}>
+          <Save /> {pending ? "Guardando…" : procedure ? "Guardar cambios" : "Crear procedimiento"}
+        </Button>
+      </div>
     </form>
   );
 }

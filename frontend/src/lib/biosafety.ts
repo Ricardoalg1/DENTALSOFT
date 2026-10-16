@@ -4,7 +4,7 @@ import type { Ref } from "@/lib/types";
  * Registros de bioseguridad. Misma especificación de campos que BiosafetyKind.java (el backend valida y descarta
  * lo que no esté aquí).
  */
-export type FieldType = "TEXT" | "NUMBER" | "DATE" | "BOOL" | "CHOICE";
+export type FieldType = "TEXT" | "NUMBER" | "DATE" | "BOOL" | "CHOICE" | "EQUIPMENT";
 export type BiosafetyField = {
   name: string;
   label: string;
@@ -114,7 +114,8 @@ export const BIOSAFETY_KINDS = {
     label: "Mantenimiento de equipos",
     description: "Mantenimientos preventivos, correctivos y calibraciones, con su próximo vencimiento.",
     fields: [
-      { name: "equipment", label: "Equipo", type: "TEXT", required: true, maxLength: 100 },
+      { name: "equipmentId", label: "Equipo del inventario", type: "EQUIPMENT" },
+      { name: "equipment", label: "Equipo", type: "TEXT", maxLength: 100 },
       {
         name: "maintenanceType",
         label: "Tipo",
@@ -173,6 +174,9 @@ export type BiosafetyRecord = {
   voidReason: string | null;
   alert: string | null;
 };
+
+/** Equipo del inventario para ligar un mantenimiento. */
+export type EquipmentOption = { id: string; code: string; name: string; kind: "BIOMEDICAL" | "GENERAL"; site: string };
 
 export type BiosafetySummary = {
   counts: { kind: BiosafetyKind; last30Days: number; lastRecord: string | null }[];

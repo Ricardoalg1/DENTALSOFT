@@ -477,7 +477,22 @@ export type Procedure = {
   perTooth: boolean;
   treatsCondition: OdontogramCondition | null;
   active: boolean;
+  /** Tratamiento del catálogo al que pertenece. */
+  treatment: Ref | null;
 };
+
+/** Tratamiento del catálogo de la clínica: agrupa procedimientos de la lista de precios. */
+export type TreatmentType = {
+  id: string;
+  name: string;
+  category: ProcedureCategory;
+  description: string | null;
+  active: boolean;
+  /** Procedimientos que lo usan. */
+  procedures: number;
+};
+
+export type ImportResult = { created: number; updated: number; skipped: number; errors: { row: number; message: string }[] };
 
 export const PLAN_STATUS = {
   DRAFT: "Borrador",

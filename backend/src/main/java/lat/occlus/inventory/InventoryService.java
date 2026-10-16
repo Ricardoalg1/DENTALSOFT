@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryService {
  private final JdbcTemplate db;
  private Item item(ResultSet r,int row) throws SQLException {
-  return new Item(r.getObject("id",UUID.class),r.getString("code"),r.getString("name"),r.getString("unit"),r.getBigDecimal("minimum"),r.getBoolean("track_lots"),r.getBoolean("active"));
+  return new Item(r.getObject("id",UUID.class),r.getString("code"),r.getString("name"),r.getString("unit"),r.getBigDecimal("minimum"),r.getBoolean("track_lots"),r.getBoolean("active"),r.getString("category"),r.getBigDecimal("unit_cost"));
  }
  @Transactional(readOnly=true)
  public Overview overview(UUID clinic) {
@@ -37,17 +37,19 @@ public class InventoryService {
  public Item save(AuthUser me,UUID id,ItemRequest r) {
   if(me.role()!=Role.ADMIN) throw new ForbiddenException("Solo administradores pueden gestionar insumos.");
   String code=r.code().trim().toUpperCase(Locale.ROOT);
+  String category=r.category()==null?"SUPPLY":r.category();
+  if(!Set.of("SUPPLY","MATERIAL").contains(category)) throw new BadRequestException("Categoría inválida.");
   if(!db.queryForList("select id from inventory_item where clinic_id=? and code=? and id<>?",me.clinicId(),code,id==null?UUID.randomUUID():id).isEmpty()) throw new ConflictException("Ya existe un insumo con ese código.");
   if(id==null) {
    id=UUID.randomUUID();
-   db.update("insert into inventory_item(id,clinic_id,code,name,unit,minimum,track_lots,active) values(?,?,?,?,?,?,?,?)",id,me.clinicId(),code,r.name().trim(),r.unit().trim(),r.minimum(),r.trackLots(),r.active());
+   db.update("insert into inventory_item(id,clinic_id,code,name,unit,minimum,track_lots,active,category,unit_cost) values(?,?,?,?,?,?,?,?,?,?)",id,me.clinicId(),code,r.name().trim(),r.unit().trim(),r.minimum(),r.trackLots(),r.active(),category,r.unitCost());
   } else {
    var found=db.query("select * from inventory_item where clinic_id=? and id=? for update",this::item,me.clinicId(),id);
    if(found.isEmpty()) throw new NotFoundException("Insumo no encontrado.");
    var old=found.getFirst();
    boolean hasHistory=db.queryForObject("select exists(select 1 from inventory_batch where item_id=? and clinic_id=?)",Boolean.class,id,me.clinicId());
    if(hasHistory && (old.trackLots()!=r.trackLots() || !old.unit().equals(r.unit().trim()))) throw new ConflictException("La unidad y el control de lotes no cambian después de registrar existencias.");
-   db.update("update inventory_item set code=?,name=?,unit=?,minimum=?,track_lots=?,active=? where id=? and clinic_id=?",code,r.name().trim(),r.unit().trim(),r.minimum(),r.trackLots(),r.active(),id,me.clinicId());
+   db.update("update inventory_item set code=?,name=?,unit=?,minimum=?,track_lots=?,active=?,category=?,unit_cost=? where id=? and clinic_id=?",code,r.name().trim(),r.unit().trim(),r.minimum(),r.trackLots(),r.active(),category,r.unitCost(),id,me.clinicId());
   }
   return db.query("select * from inventory_item where id=? and clinic_id=?",this::item,id,me.clinicId()).getFirst();
  }

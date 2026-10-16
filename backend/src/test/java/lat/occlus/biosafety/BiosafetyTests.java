@@ -80,6 +80,40 @@ class BiosafetyTests {
     }
 
     @Test
+    void maintenanceIsLinkedToInventoriedEquipment() throws Exception {
+        String equipment = """
+                {"siteId":"%s","code":"AUT-01","name":"Autoclave clase B","kind":"BIOMEDICAL","brand":"W&H","serial":"SN-123",
+                 "invimaRegistry":"2019EBC-0001","riskClass":"IIA","maintenanceMonths":6,"cost":12500000}""".formatted(siteId);
+        String id = JsonPath.read(call(post("/api/equipment").contentType(MediaType.APPLICATION_JSON).content(equipment), admin)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.nextMaintenance").doesNotExist())
+                .andReturn().getResponse().getContentAsString(), "$.id");
+        call(post("/api/equipment").contentType(MediaType.APPLICATION_JSON).content(equipment), admin).andExpect(status().isConflict());
+        call(post("/api/equipment").contentType(MediaType.APPLICATION_JSON)
+                .content(equipment.replace("AUT-01", "PC-01").replace("BIOMEDICAL", "GENERAL")), admin).andExpect(status().isBadRequest());
+        String assistant = createUserAndLogin(mvc, admin, "ASSISTANT", false);
+        call(post("/api/equipment").contentType(MediaType.APPLICATION_JSON).content(equipment.replace("AUT-01", "X-1")), assistant)
+                .andExpect(status().isForbidden());
+
+        // El mantenimiento se liga al equipo: guarda su nombre y calcula la próxima fecha con la periodicidad.
+        LocalDate today = LocalDate.now(ZoneId.of("America/Bogota"));
+        call(get("/api/biosafety/equipment"), assistant).andExpect(jsonPath("$[0].id").value(id));
+        record(assistant, "MAINTENANCE", "{\"equipmentId\":\"" + id + "\",\"maintenanceType\":\"PREVENTIVE\"}")
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.equipment").value("AUT-01 · Autoclave clase B"))
+                .andExpect(jsonPath("$.data.nextDue").value(today.plusMonths(6).toString()));
+        record(admin, "MAINTENANCE", "{\"maintenanceType\":\"PREVENTIVE\"}").andExpect(status().isBadRequest());
+        record(admin, "MAINTENANCE", "{\"equipmentId\":\"" + UUID.randomUUID() + "\",\"maintenanceType\":\"PREVENTIVE\"}")
+                .andExpect(status().isBadRequest());
+        call(get("/api/equipment/" + id), admin)
+                .andExpect(jsonPath("$.lastMaintenance").value(today.toString()))
+                .andExpect(jsonPath("$.nextMaintenance").value(today.plusMonths(6).toString()));
+        call(get("/api/equipment?kind=BIOMEDICAL&q=autoclave"), admin).andExpect(jsonPath("$.totalElements").value(1));
+        call(get("/api/reports/tables/inventario-valorizado"), admin)
+                .andExpect(jsonPath("$.totals.valor").value(12500000.0));
+    }
+
+    @Test
     void onlyAdminsVoidAndRecordsAreImmutable() throws Exception {
         String id = JsonPath.read(record(admin, "CLEANING", "{\"area\":\"OPERATORY\",\"cleaningType\":\"TERMINAL\",\"product\":\"Amonio cuaternario\"}")
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");

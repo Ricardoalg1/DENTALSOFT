@@ -32,7 +32,9 @@ public enum BiosafetyKind {
             Field.number("temperature", true, -30, 60),
             Field.number("humidity", false, 0, 100))),
     MAINTENANCE(List.of(
-            Field.text("equipment", true, 100),
+            // Equipo del inventario (equipmentId) o, si la clínica no los registra, su nombre (equipment).
+            Field.text("equipmentId", false, 36),
+            Field.text("equipment", false, 100),
             Field.choice("maintenanceType", true, "PREVENTIVE", "CORRECTIVE", "CALIBRATION"),
             Field.text("provider", false, 150),
             Field.date("nextDue", false),

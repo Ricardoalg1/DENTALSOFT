@@ -6,7 +6,8 @@ import { FormError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BIOSAFETY_KINDS, type BiosafetyField, type BiosafetyKind } from "@/lib/biosafety";
+import { BIOSAFETY_KINDS, type BiosafetyField, type BiosafetyKind, type EquipmentOption } from "@/lib/biosafety";
+import { SearchableSelect } from "@/components/searchable-select";
 import { cn } from "@/lib/utils";
 import { registerRecord } from "./actions";
 
@@ -14,9 +15,23 @@ const selectClass =
   "h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30";
 
 /** Formulario de un registro de bioseguridad, armado con la especificación de campos del tipo. */
-export function RecordForm({ kind, sites, today }: { kind: BiosafetyKind; sites: { id: string; name: string }[]; today: string }) {
+export function RecordForm({
+  kind,
+  sites,
+  today,
+  equipment = [],
+  defaultEquipment = "",
+}: {
+  kind: BiosafetyKind;
+  sites: { id: string; name: string }[];
+  today: string;
+  /** Equipos del inventario (mantenimiento). */
+  equipment?: EquipmentOption[];
+  defaultEquipment?: string;
+}) {
   const fields: readonly BiosafetyField[] = BIOSAFETY_KINDS[kind].fields;
   const [siteId, setSiteId] = useState(sites[0]?.id ?? "");
+  const [equipmentId, setEquipmentId] = useState(defaultEquipment);
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -28,7 +43,9 @@ export function RecordForm({ kind, sites, today }: { kind: BiosafetyKind; sites:
     const data: Record<string, string | number | boolean> = {};
     for (const field of fields) {
       const raw = f.get(field.name);
-      if (field.type === "BOOL") {
+      if (field.type === "EQUIPMENT") {
+        if (equipmentId) data[field.name] = equipmentId;
+      } else if (field.type === "BOOL") {
         if (raw === "true" || raw === "false") data[field.name] = raw === "true";
       } else if (raw !== null && String(raw).trim() !== "") {
         data[field.name] = field.type === "NUMBER" ? Number(String(raw).replace(",", ".")) : String(raw).trim();
@@ -47,6 +64,7 @@ export function RecordForm({ kind, sites, today }: { kind: BiosafetyKind; sites:
       if (!r.ok) return setError(r.error);
       setSaved(true);
       form.reset();
+      setEquipmentId("");
     });
   }
 
@@ -73,7 +91,15 @@ export function RecordForm({ kind, sites, today }: { kind: BiosafetyKind; sites:
           return (
             <div key={field.name} className={cn("grid gap-1.5", field.wide && "sm:col-span-2 lg:col-span-4")}>
               <Label htmlFor={id}>{label}</Label>
-              {field.type === "CHOICE" ? (
+              {field.type === "EQUIPMENT" ? (
+                <SearchableSelect
+                  id={id}
+                  emptyLabel={equipment.length ? "No está en el inventario" : "Sin equipos registrados en Inventario"}
+                  options={equipment.map((e) => ({ value: e.id, label: `${e.code} · ${e.name}`, hint: e.site }))}
+                  value={equipmentId}
+                  onChange={setEquipmentId}
+                />
+              ) : field.type === "CHOICE" ? (
                 <select id={id} name={field.name} required={field.required} defaultValue="" className={selectClass}>
                   <option value="" disabled={field.required}>
                     {field.required ? "Seleccionar…" : "—"}

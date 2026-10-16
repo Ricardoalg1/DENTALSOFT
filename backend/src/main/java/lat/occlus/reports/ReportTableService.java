@@ -76,6 +76,7 @@ public class ReportTableService {
             case "residuos" -> waste(clinicId, from, to, siteId);
             case "inventarios" -> stock(clinicId, siteId);
             case "movimientos-inventario" -> movements(clinicId, from, to, siteId);
+            case "inventario-valorizado" -> valued(clinicId, siteId);
             case "actividades" -> activities(clinicId, from, to);
             case "oportunidad-citas" -> opportunity(clinicId, from, to, siteId);
             case "cop" -> cop(clinicId);
@@ -373,6 +374,45 @@ public class ReportTableService {
                 }, args.toArray());
         return report("inventarios", "Inventarios", "Existencias por insumo, sede y lote, con vencimientos y mínimos. Estado a hoy.",
                 cols, rows, Map.of());
+    }
+
+    /** Existencias por insumo y sede × costo unitario; los equipos activos van con su costo de adquisición. */
+    private TableReport valued(UUID clinicId, UUID siteId) {
+        var cols = List.of(col("tipo", "Tipo", ColumnType.TEXT), col("codigo", "Código", ColumnType.TEXT),
+                col("nombre", "Insumo / equipo", ColumnType.TEXT), col("sede", "Sede", ColumnType.TEXT),
+                col("cantidad", "Cantidad", ColumnType.NUMBER), col("costo", "Costo unitario", ColumnType.MONEY),
+                col("valor", "Valor", ColumnType.MONEY));
+        var args = new ArrayList<Object>(List.of(clinicId));
+        String site = siteFilter("b.site_id", siteId, args);
+        var rows = new ArrayList<>(db.query("""
+                select it.category, it.code, it.name, s.name as site, sum(b.quantity) as qty, it.unit_cost
+                from inventory_batch b join inventory_item it on it.id = b.item_id join site s on s.id = b.site_id
+                where b.clinic_id = ? and it.active %s
+                group by it.id, s.id having sum(b.quantity) > 0
+                order by it.name, s.name""".formatted(site),
+                (rs, i) -> {
+                    BigDecimal qty = rs.getBigDecimal("qty");
+                    BigDecimal cost = rs.getBigDecimal("unit_cost");
+                    return row("tipo", "MATERIAL".equals(rs.getString("category")) ? "Material" : "Insumo",
+                            "codigo", rs.getString("code"), "nombre", rs.getString("name"), "sede", rs.getString("site"),
+                            "cantidad", qty, "costo", cost,
+                            "valor", cost == null ? null : qty.multiply(cost).setScale(2, java.math.RoundingMode.HALF_UP));
+                }, args.toArray()));
+        var eqArgs = new ArrayList<Object>(List.of(clinicId));
+        String eqSite = siteFilter("e.site_id", siteId, eqArgs);
+        rows.addAll(db.query("""
+                select e.kind, e.code, e.name, s.name as site, e.cost
+                from equipment e join site s on s.id = e.site_id
+                where e.clinic_id = ? and e.status <> 'RETIRED' %s order by e.name""".formatted(eqSite),
+                (rs, i) -> row("tipo", "BIOMEDICAL".equals(rs.getString("kind")) ? "Equipo biomédico" : "Equipo",
+                        "codigo", rs.getString("code"), "nombre", rs.getString("name"), "sede", rs.getString("site"),
+                        "cantidad", BigDecimal.ONE, "costo", rs.getBigDecimal("cost"), "valor", rs.getBigDecimal("cost")),
+                eqArgs.toArray()));
+        long missing = rows.stream().filter(r -> r.get("valor") == null).count();
+        return report("inventario-valorizado", "Inventario valorizado",
+                "Existencias × costo unitario y equipos activos por su costo. Estado a hoy." + (missing > 0
+                        ? " %d %s sin costo registrado.".formatted(missing, missing == 1 ? "artículo" : "artículos") : ""),
+                cols, rows, Map.of("valor", sum(rows, "valor", r -> true)));
     }
 
     private TableReport movements(UUID clinicId, LocalDate from, LocalDate to, UUID siteId) {

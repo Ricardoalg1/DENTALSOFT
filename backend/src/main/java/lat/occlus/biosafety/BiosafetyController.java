@@ -50,6 +50,12 @@ public class BiosafetyController {
         return service.summary(AuthUser.from(jwt).clinicId());
     }
 
+    /** Equipos del inventario para ligar un mantenimiento. */
+    @GetMapping("/api/biosafety/equipment")
+    java.util.List<java.util.Map<String, Object>> equipment(@AuthenticationPrincipal Jwt jwt) {
+        return service.equipmentOptions(AuthUser.from(jwt).clinicId());
+    }
+
     @PostMapping("/api/biosafety")
     @ResponseStatus(HttpStatus.CREATED)
     RecordResponse register(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody RecordRequest req) {

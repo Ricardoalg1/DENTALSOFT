@@ -37,6 +37,8 @@ public class Procedure {
     private ProcedureCategory category;
 
     private String cupsCode;
+    /** Tratamiento del catálogo al que pertenece. */
+    private UUID treatmentId;
     private BigDecimal price;
     private boolean perTooth;
 

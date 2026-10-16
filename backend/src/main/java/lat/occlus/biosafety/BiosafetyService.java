@@ -68,6 +68,7 @@ public class BiosafetyService {
         LocalDate date = req.recordDate() == null ? today : req.recordDate();
         if (date.isAfter(today)) throw new BadRequestException("La fecha del registro no puede ser futura");
         var data = validate(req.kind(), req.data());
+        if (req.kind() == BiosafetyKind.MAINTENANCE) linkEquipment(me.clinicId(), date, data);
         UUID id = UUID.randomUUID();
         jdbc.update("""
                 insert into biosafety_record (id, clinic_id, site_id, kind, record_date, responsible_id, data, notes, created_by)
@@ -126,7 +127,8 @@ public class BiosafetyService {
         var latest = new LinkedHashMap<String, Row>();
         jdbc.query(SELECT + " where clinic_id = ? and kind = 'MAINTENANCE' and voided_at is null order by record_date desc, created_at desc",
                         this::map, clinicId)
-                .forEach(r -> latest.putIfAbsent(r.siteId() + "|" + String.valueOf(r.data().get("equipment")).toLowerCase(), r));
+                .forEach(r -> latest.putIfAbsent(r.data().get("equipmentId") != null ? String.valueOf(r.data().get("equipmentId"))
+                        : r.siteId() + "|" + String.valueOf(r.data().get("equipment")).toLowerCase(), r));
         Map<UUID, String> siteNames = siteNames(latest.values().stream().map(Row::siteId).toList());
         var due = latest.values().stream()
                 .filter(r -> r.data().get("nextDue") != null)
@@ -137,6 +139,41 @@ public class BiosafetyService {
                 .sorted(java.util.Comparator.comparing(MaintenanceDue::nextDue))
                 .toList();
         return new Summary(counts, alerts, due);
+    }
+
+    /**
+     * Mantenimiento: liga el equipo del inventario (guarda también su nombre para mostrarlo) y, si no se indicó la
+     * próxima fecha, la calcula con la periodicidad del equipo.
+     */
+    private void linkEquipment(UUID clinicId, LocalDate date, Map<String, Object> data) {
+        Object rawId = data.get("equipmentId");
+        if (rawId == null) {
+            if (data.get("equipment") == null) throw new BadRequestException("Elige el equipo del mantenimiento");
+            return;
+        }
+        UUID equipmentId;
+        try {
+            equipmentId = UUID.fromString(rawId.toString());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Equipo no válido");
+        }
+        var rows = jdbc.queryForList("select code, name, maintenance_months from equipment where id = ? and clinic_id = ?", equipmentId, clinicId);
+        if (rows.isEmpty()) throw new BadRequestException("Equipo no válido");
+        var e = rows.getFirst();
+        data.put("equipmentId", equipmentId.toString());
+        data.put("equipment", e.get("code") + " · " + e.get("name"));
+        if (data.get("nextDue") == null && e.get("maintenance_months") != null) {
+            data.put("nextDue", date.plusMonths(((Number) e.get("maintenance_months")).longValue()).toString());
+        }
+    }
+
+    /** Equipos del inventario para elegir en un mantenimiento (sin los dados de baja). */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> equipmentOptions(UUID clinicId) {
+        return jdbc.query("select e.id, e.code, e.name, e.kind, s.name as site from equipment e join site s on s.id = e.site_id "
+                        + "where e.clinic_id = ? and e.status <> 'RETIRED' order by lower(e.name)",
+                (rs, i) -> Map.<String, Object>of("id", rs.getObject("id", UUID.class), "code", rs.getString("code"),
+                        "name", rs.getString("name"), "kind", rs.getString("kind"), "site", rs.getString("site")), clinicId);
     }
 
     /** Valida los campos del tipo y devuelve solo los conocidos, normalizados. */
