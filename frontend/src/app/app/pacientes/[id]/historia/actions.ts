@@ -67,6 +67,27 @@ export async function saveBackground(patientId: string, _: FormState, formData: 
 
 // ---------- Evoluciones ----------
 
+const perioSite = <T extends z.ZodType>(item: T) => z.array(item).length(3);
+const perioSide = z.object({
+  pd: perioSite(z.number().int().min(0).max(15).nullable()),
+  gm: perioSite(z.number().int().min(-10).max(15).nullable()),
+  bop: perioSite(z.number().int().min(0).max(3)),
+  suppuration: perioSite(z.boolean()),
+  plaque: perioSite(z.boolean()),
+  furcation: z.array(z.number().int().min(0).max(3)).max(2).nullish(),
+});
+const perioTooth = z.object({
+  tooth: z.number().int(),
+  missing: z.boolean().nullish(),
+  implant: z.boolean().nullish(),
+  mobility: z.number().int().min(0).max(3).nullish(),
+  prognosis: z.enum(["GOOD", "DOUBTFUL", "POOR", "HOPELESS"]).nullish(),
+  gingivalWidth: z.number().int().min(0).max(20).nullish(),
+  note: z.string().max(200, "Nota del periodontograma: máximo 200 caracteres").nullish(),
+  buccal: perioSide.nullish(),
+  lingual: perioSide.nullish(),
+});
+
 const code = z.string().regex(/^[A-Za-z]\d{2}\.?\d?$/, "Código CIE-10 inválido");
 const noteSchema = z.object({
   appointmentId: z.uuid().optional(),
@@ -79,6 +100,7 @@ const noteSchema = z.object({
   diagnosisRelated: z.array(code).max(3, "Máximo 3 diagnósticos relacionados"),
   procedures: optional(4000),
   plan: optional(2000),
+  periodontogram: z.object({ teeth: z.array(perioTooth).max(32) }).nullish(),
 });
 export type NoteInput = z.input<typeof noteSchema>;
 

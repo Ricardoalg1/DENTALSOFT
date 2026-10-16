@@ -1,5 +1,6 @@
 package lat.occlus.clinical;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -53,7 +54,9 @@ public final class ClinicalDtos {
             DiagnosisType diagnosisType,
             @Size(max = 3) List<@Size(max = 5) String> diagnosisRelated,
             @Size(max = 4000) String procedures,
-            @Size(max = 2000) String plan) {}
+            @Size(max = 2000) String plan,
+            /** Periodontograma del borrador; null = la evolución no lleva periodontograma. */
+            @Valid PerioChart periodontogram) {}
 
     public record AddendumRequest(@NotBlank @Size(max = 2000) String text) {}
 
@@ -71,6 +74,7 @@ public final class ClinicalDtos {
             /** Solo para firmadas: el contenido actual coincide con el hash guardado al firmar. */
             Boolean integrityOk,
             List<AddendumResponse> addenda,
+            PerioChart periodontogram,
             Instant createdAt, Instant updatedAt) {}
 
     /** Fila de los listados generales (sin el contenido clínico completo). */
@@ -89,4 +93,38 @@ public final class ClinicalDtos {
     public record OdontogramEntryResponse(
             UUID id, int tooth, ToothSurface surface, OdontogramCondition condition, String note,
             Instant createdAt, Ref createdBy, Instant removedAt, Ref removedBy) {}
+
+    // ---------- Periodontograma ----------
+
+    /**
+     * Una cara (vestibular o palatina/lingual) de un diente, con el formato del periodontograma de SEPA.
+     * Tres sitios de izquierda a derecha como se ve en el dibujo (lado derecho del paciente a la izquierda).
+     * <ul>
+     *   <li>{@code pd} profundidad de sondaje y {@code gm} margen gingival en mm (null = 0). Margen negativo = sobre la corona;
+     *       nivel de inserción = margen + sondaje.</li>
+     *   <li>{@code bop} sangrado en grados 0–3; {@code suppuration} y {@code plaque} sí/no.</li>
+     *   <li>{@code furcation} grados 0–3 (inicial, abierta, completa) en las entradas de furca que tenga esa cara (0 a 2).</li>
+     * </ul>
+     */
+    public record PerioSide(
+            @NotNull @Size(max = 3) List<Integer> pd,
+            @NotNull @Size(max = 3) List<Integer> gm,
+            @NotNull @Size(max = 3) List<Integer> bop,
+            @NotNull @Size(max = 3) List<Boolean> suppuration,
+            @NotNull @Size(max = 3) List<Boolean> plaque,
+            @Size(max = 2) List<Integer> furcation) {}
+
+    /**
+     * Flags como {@code Boolean} (Jackson 3 rechaza un primitivo ausente). Movilidad 0–3; pronóstico GOOD, DOUBTFUL,
+     * POOR o HOPELESS (bueno, dudoso, malo, imposible); anchura de encía vestibular en mm.
+     */
+    public record PerioTooth(
+            @NotNull Integer tooth, Boolean missing, Boolean implant,
+            Integer mobility, @Size(max = 10) String prognosis, Integer gingivalWidth, @Size(max = 200) String note,
+            @Valid PerioSide buccal, @Valid PerioSide lingual) {}
+
+    public record PerioChart(@NotNull @Size(max = 32) List<@Valid PerioTooth> teeth) {}
+
+    /** Periodontograma del historial del paciente, con los datos de la evolución que lo contiene. */
+    public record PerioChartEntry(UUID noteId, OffsetDateTime attendedAt, NoteStatus status, Ref dentist, PerioChart chart) {}
 }

@@ -48,6 +48,7 @@ public class ClinicalRecordController {
     private final ClinicalNoteService notes;
     private final OdontogramService odontogram;
     private final Icd10Service icd10;
+    private final PeriodontalChartService periodontalCharts;
 
     // ---------- CIE-10 ----------
 
@@ -130,6 +131,14 @@ public class ClinicalRecordController {
     NoteResponse addAddendum(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
                              @Valid @RequestBody AddendumRequest req) {
         return notes.addAddendum(AuthUser.from(jwt), id, req);
+    }
+
+    // ---------- Periodontograma ----------
+
+    /** Historial de periodontogramas del paciente; cada uno vive dentro de una evolución. */
+    @GetMapping("/api/patients/{patientId}/periodontal-charts")
+    List<ClinicalDtos.PerioChartEntry> periodontalCharts(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID patientId) {
+        return periodontalCharts.byPatient(AuthUser.from(jwt).clinicId(), patientId);
     }
 
     // ---------- Odontograma ----------

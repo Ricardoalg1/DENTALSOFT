@@ -293,8 +293,50 @@ export type ClinicalNote = {
   contentHash: string | null;
   integrityOk: boolean | null;
   addenda: { id: string; author: Ref; text: string; createdAt: string }[];
+  periodontogram: PerioChart | null;
   createdAt: string;
   updatedAt: string;
+};
+
+/**
+ * Una cara del diente (formato SEPA): 3 sitios de izquierda a derecha como se ve en el dibujo.
+ * pd = profundidad de sondaje, gm = margen gingival (negativo = sobre la corona), bop = sangrado 0–3,
+ * furcation = grados 0–3 en las entradas de furca de esa cara.
+ */
+export type PerioSide = {
+  pd: (number | null)[];
+  gm: (number | null)[];
+  bop: number[];
+  suppuration: boolean[];
+  plaque: boolean[];
+  furcation?: number[] | null;
+};
+export type PerioPrognosis = "GOOD" | "DOUBTFUL" | "POOR" | "HOPELESS";
+export const PERIO_PROGNOSES: Record<PerioPrognosis, string> = {
+  GOOD: "Bueno",
+  DOUBTFUL: "Dudoso",
+  POOR: "Malo",
+  HOPELESS: "Imposible",
+};
+export type PerioTooth = {
+  tooth: number;
+  missing?: boolean | null;
+  implant?: boolean | null;
+  mobility?: number | null;
+  prognosis?: PerioPrognosis | null;
+  gingivalWidth?: number | null;
+  note?: string | null;
+  buccal?: PerioSide | null;
+  lingual?: PerioSide | null;
+};
+export type PerioChart = { teeth: PerioTooth[] };
+/** Periodontograma del historial del paciente, con la evolución que lo contiene. */
+export type PerioChartEntry = {
+  noteId: string;
+  attendedAt: string;
+  status: "DRAFT" | "SIGNED";
+  dentist: Ref;
+  chart: PerioChart;
 };
 
 export type ClinicalNoteSummary = {

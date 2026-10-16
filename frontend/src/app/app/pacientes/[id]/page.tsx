@@ -19,7 +19,6 @@ const REVISION_LABELS: Record<PatientRevision["type"], string> = {
   DELETED: "Eliminó el registro",
 };
 
-export default async function PatientPage({ params }: PageProps<"/app/pacientes/[id]">) {
   const { id } = await params;
   const [patient, me] = await Promise.all([loadPatient(id), getMe()]);
   const appointments = await api<Appointment[]>(`/api/patients/${id}/appointments`);

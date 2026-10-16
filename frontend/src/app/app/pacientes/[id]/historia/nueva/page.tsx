@@ -13,7 +13,7 @@ function nowInBogota() {
 }
 
 export default async function NewNotePage({ params, searchParams }: PageProps<"/app/pacientes/[id]/historia/nueva">) {
-  const [{ id }, { appointmentId }] = await Promise.all([params, searchParams]);
+  const [{ id }, { appointmentId, periodontograma }] = await Promise.all([params, searchParams]);
   const me = await getMe();
   if (!canWriteClinical(me)) redirect(`/app/pacientes/${id}/historia`);
 
@@ -40,7 +40,12 @@ export default async function NewNotePage({ params, searchParams }: PageProps<"/
       <NoteEditor
         patientId={id}
         appointmentId={appointment?.id}
-        defaults={{ attendedAt: appointment?.startsAt ?? nowInBogota(), reason: appointment?.reason ?? undefined }}
+        defaults={{
+          attendedAt: appointment?.startsAt ?? nowInBogota(),
+          reason: appointment?.reason ?? undefined,
+          // Desde la pestaña Periodontograma la evolución abre con el periodontograma listo.
+          periodontogram: periodontograma === "1",
+        }}
       />
     </div>
   );
