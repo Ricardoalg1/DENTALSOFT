@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api";
 import { AGREEMENT_VERSION } from "@/lib/agreement";
 import { errorMessage, type FormState } from "@/lib/forms";
@@ -19,5 +20,6 @@ export async function acceptAgreement(_: FormState, formData: FormData): Promise
   } catch (e) {
     return { error: errorMessage(e) };
   }
+  revalidatePath("/app", "layout");
   redirect("/app");
 }
