@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lat.occlus.shared.security.AuthUser;
+import lat.occlus.treatment.TreatmentDtos.CupsImportRequest;
+import lat.occlus.treatment.TreatmentDtos.CupsImportResponse;
 import lat.occlus.treatment.TreatmentDtos.ItemStatusRequest;
 import lat.occlus.treatment.TreatmentDtos.ItemsRequest;
 import lat.occlus.treatment.TreatmentDtos.PlanRequest;
@@ -68,6 +70,12 @@ public class TreatmentController {
     @PreAuthorize("hasRole('ADMIN')")
     List<ProcedureResponse> loadExamples(@AuthenticationPrincipal Jwt jwt) {
         return priceList.loadExamples(AuthUser.from(jwt).clinicId());
+    }
+
+    @PostMapping("/api/procedures/import-cups")
+    @PreAuthorize("hasRole('ADMIN')")
+    CupsImportResponse importCups(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CupsImportRequest req) {
+        return priceList.importCups(AuthUser.from(jwt).clinicId(), req);
     }
 
     // ---------- Planes ----------

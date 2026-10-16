@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { api, getMe } from "@/lib/api";
 import { formatCOP } from "@/lib/format";
 import { ODONTOGRAM_CONDITIONS, PROCEDURE_CATEGORIES, type Procedure } from "@/lib/types";
+import { ImportCups } from "./import-cups";
 import { LoadExamples } from "./load-examples";
 import { ProcedureForm } from "./procedure-form";
 
@@ -31,6 +32,8 @@ export default async function PricesPage({ searchParams }: { searchParams: Promi
           Procedimientos que se usan en los presupuestos. Cambiar un precio no altera los planes ya presupuestados.
         </p>
       </div>
+
+      {isAdmin && <ImportCups existing={procedures.flatMap((p) => (p.cupsCode ? [p.cupsCode] : []))} />}
 
       {isAdmin && missingCups > 0 && (
         <div

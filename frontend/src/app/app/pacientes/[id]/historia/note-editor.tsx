@@ -4,16 +4,15 @@ import { RichTextarea } from "@/components/rich-textarea";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Activity, FileSignature, Save, Trash2 } from "lucide-react";
+import { FileSignature, Save, Trash2 } from "lucide-react";
 import { FormError } from "@/components/form-error";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Periodontogram } from "@/components/periodontogram";
 import { Textarea } from "@/components/ui/textarea";
-import { DIAGNOSIS_TYPES, type ClinicalNote, type Diagnosis, type DiagnosisType, type PerioTooth } from "@/lib/types";
+import { DIAGNOSIS_TYPES, type ClinicalNote, type Diagnosis, type DiagnosisType } from "@/lib/types";
 import { deleteNote, saveNote, signNote, type NoteInput } from "./actions";
 import { DiagnosisPicker } from "./diagnosis-picker";
 
@@ -25,7 +24,7 @@ type Props = {
   note?: ClinicalNote;
   appointmentId?: string;
   /** Valores iniciales para una evolución nueva (p. ej. desde una cita). */
-  defaults?: { attendedAt: string; reason?: string; periodontogram?: boolean };
+  defaults?: { attendedAt: string; reason?: string };
 };
 
 /** "2026-10-06T09:30:00-05:00" → "2026-10-06T09:30" (hora de Colombia, para <input type="datetime-local">). */
@@ -50,10 +49,6 @@ export function NoteEditor({ patientId, note, appointmentId, defaults }: Props) 
     while (r.length < 3) r.push(null);
     return r;
   });
-  // null = la evolución no lleva periodontograma.
-  const [perio, setPerio] = useState<PerioTooth[] | null>(
-    note?.periodontogram?.teeth ?? (defaults?.periodontogram ? [] : null),
-  );
   const [error, setError] = useState<string>();
   const [saved, setSaved] = useState<string>();
   const [confirming, setConfirming] = useState<"sign" | "delete" | null>(null);
@@ -67,7 +62,6 @@ export function NoteEditor({ patientId, note, appointmentId, defaults }: Props) 
     diagnosisMain: main?.code,
     diagnosisType: type || undefined,
     diagnosisRelated: related.filter((d): d is Diagnosis => d !== null).map((d) => d.code),
-    periodontogram: perio ? { teeth: perio } : null,
   });
 
   /** Guarda el borrador; devuelve su id o null si falló. */
@@ -204,34 +198,6 @@ export function NoteEditor({ patientId, note, appointmentId, defaults }: Props) 
         <CardContent className="grid gap-4">
           {field("procedures", "Procedimientos realizados", 4000, 4)}
           {field("plan", "Plan de tratamiento e indicaciones", 2000)}
-        </CardContent>
-      </Card>
-
-      <Card id="periodontograma" className="scroll-mt-4">
-        <CardHeader>
-          <CardTitle>Periodontograma</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          {perio === null ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <Button variant="outline" onClick={() => setPerio([])}>
-                <Activity /> Agregar periodontograma
-              </Button>
-              <p className="text-sm text-muted-foreground">Sondaje, recesión, sangrado y placa por sitio. Es opcional.</p>
-            </div>
-          ) : (
-            <>
-              <Periodontogram teeth={perio} onChange={setPerio} />
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPerio([])}>
-                  Limpiar datos
-                </Button>
-                <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setPerio(null)}>
-                  Quitar periodontograma
-                </Button>
-              </div>
-            </>
-          )}
         </CardContent>
       </Card>
 

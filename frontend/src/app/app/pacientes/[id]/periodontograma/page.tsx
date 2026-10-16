@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChartSpline, Pencil, Plus } from "lucide-react";
+import { ChartSpline, Pencil, Plus, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Timeline } from "@/components/app/timeline";
 import { Periodontogram } from "@/components/periodontogram";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, getMe } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import { perioStats } from "@/lib/periodontogram";
-import { canReadClinical, canWriteClinical, type PerioChartEntry } from "@/lib/types";
+import { canReadClinical, canWriteClinical, type PerioExam } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Periodontograma" };
@@ -18,43 +19,40 @@ export const metadata: Metadata = { title: "Periodontograma" };
 const mm = (n: number) => `${n.toLocaleString("es-CO", { maximumFractionDigits: 2 })} mm`;
 
 /**
- * Historial de periodontogramas del paciente. Cada uno se registra dentro de una evolución (y queda inmutable al
- * firmarla); aquí se comparan sus indicadores y se ve el elegido con ?nota=<id de la evolución>.
+ * Periodontogramas del paciente: cada control es un examen propio (borrador o firmado). La línea de tiempo salta
+ * entre fechas (?examen=<id>) y el comparativo muestra cómo evolucionan los indicadores.
  */
 export default async function PeriodontogramPage({ params, searchParams }: PageProps<"/app/pacientes/[id]/periodontograma">) {
-  const [{ id }, { nota }] = await Promise.all([params, searchParams]);
+  const [{ id }, { examen }] = await Promise.all([params, searchParams]);
   const me = await getMe();
   if (!canReadClinical(me)) redirect(`/app/pacientes/${id}`);
   const canWrite = canWriteClinical(me);
 
-  const entries = await api<PerioChartEntry[]>(`/api/patients/${id}/periodontal-charts`);
-  const selected = entries.find((e) => e.noteId === nota) ?? entries[0];
+  const exams = await api<PerioExam[]>(`/api/patients/${id}/periodontal-exams`);
+  const selected = exams.find((e) => e.id === examen) ?? exams[0];
   const base = `/app/pacientes/${id}/periodontograma`;
-  const newHref = `/app/pacientes/${id}/historia/nueva?periodontograma=1#periodontograma`;
 
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-lg font-semibold">Periodontograma</h2>
-          <p className="text-sm text-muted-foreground">
-            Cada periodontograma se registra dentro de una evolución y queda inmutable al firmarla.
-          </p>
+          <p className="text-sm text-muted-foreground">Un periodontograma por control. Al firmarlo queda inmutable.</p>
         </div>
         {canWrite && (
-          <Link href={newHref} className={buttonVariants()}>
+          <Link href={`${base}/nuevo`} className={buttonVariants()}>
             <Plus /> Nuevo periodontograma
           </Link>
         )}
       </div>
 
-      {entries.length === 0 ? (
+      {!selected ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
             <ChartSpline className="size-8 text-muted-foreground" />
             <p className="font-medium">El paciente aún no tiene periodontogramas</p>
             <p className="text-sm text-muted-foreground">
-              Registra sondaje, margen gingival, sangrado, placa, furcas y movilidad en una nueva evolución.
+              Registra sondaje, margen gingival, sangrado, placa, furcas y movilidad en un nuevo periodontograma.
             </p>
           </CardContent>
         </Card>
@@ -62,75 +60,109 @@ export default async function PeriodontogramPage({ params, searchParams }: PageP
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Historial</CardTitle>
-              <CardDescription>Compara la evolución de los indicadores entre controles.</CardDescription>
+              <CardTitle>Línea de tiempo</CardTitle>
+              <CardDescription>Elige una fecha para ver el periodontograma de ese control.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Profesional</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Sondaje medio</TableHead>
-                    <TableHead className="text-right">Inserción media</TableHead>
-                    <TableHead className="text-right">Placa</TableHead>
-                    <TableHead className="text-right">Sangrado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {entries.map((e) => {
-                    const s = perioStats(e.chart);
-                    const active = e.noteId === selected.noteId;
-                    return (
-                      <TableRow key={e.noteId} className={cn(active && "bg-muted/60")}>
-                        <TableCell>
-                          <Link
-                            href={`${base}?nota=${e.noteId}`}
-                            aria-current={active ? "true" : undefined}
-                            className={cn("text-primary hover:underline", active && "font-medium")}
-                          >
-                            {formatDateTime(e.attendedAt)}
-                          </Link>
-                        </TableCell>
-                        <TableCell>{e.dentist.name}</TableCell>
-                        <TableCell>
-                          {e.status === "SIGNED" ? <Badge variant="secondary">Firmado</Badge> : <Badge variant="outline">Borrador</Badge>}
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">{mm(s.meanPd)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{mm(s.meanCal)}</TableCell>
-                        <TableCell className="text-right tabular-nums">{Math.round(s.plaquePct)}%</TableCell>
-                        <TableCell className="text-right tabular-nums">{Math.round(s.bopPct)}%</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+              <Timeline
+                label="Fechas de los periodontogramas"
+                items={exams.map((e) => ({
+                  key: e.id,
+                  href: `${base}?examen=${e.id}`,
+                  label: formatDate(e.examinedAt),
+                  detail: e.status === "SIGNED" ? e.dentist.name : "Borrador",
+                  active: e.id === selected.id,
+                  draft: e.status === "DRAFT",
+                }))}
+              />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle className="flex flex-wrap items-center gap-2">
-                {formatDateTime(selected.attendedAt)}
+                {formatDateTime(selected.examinedAt)}
                 {selected.status === "SIGNED" ? <Badge variant="secondary">Firmado</Badge> : <Badge variant="outline">Borrador</Badge>}
               </CardTitle>
-              <CardDescription>{selected.dentist.name}</CardDescription>
+              <CardDescription>
+                {selected.dentist.name}
+                {selected.signedAt && ` · firmado el ${formatDateTime(selected.signedAt)}`}
+              </CardDescription>
               {canWrite && selected.status === "DRAFT" && selected.dentist.id === me.id && (
                 <CardAction>
-                  <Link
-                    href={`/app/pacientes/${id}/historia/${selected.noteId}`}
-                    className={buttonVariants({ variant: "outline", size: "sm" })}
-                  >
+                  <Link href={`${base}/${selected.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                     <Pencil /> Continuar
                   </Link>
                 </CardAction>
               )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="grid gap-4">
+              {selected.observations && (
+                <p className="text-sm whitespace-pre-line">
+                  <span className="text-muted-foreground">Observaciones: </span>
+                  {selected.observations}
+                </p>
+              )}
               <Periodontogram teeth={selected.chart.teeth} />
+              {selected.status === "SIGNED" &&
+                (selected.integrityOk ? (
+                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground" title={`SHA-256 ${selected.contentHash}`}>
+                    <ShieldCheck className="size-3.5" /> Contenido íntegro desde la firma
+                  </p>
+                ) : (
+                  <p className="flex items-center gap-1.5 text-xs text-destructive">
+                    <ShieldAlert className="size-3.5" /> El contenido no coincide con el registrado al firmar
+                  </p>
+                ))}
             </CardContent>
           </Card>
+
+          {exams.length > 1 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Comparativo de controles</CardTitle>
+                <CardDescription>Cómo evolucionan los indicadores entre periodontogramas.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Profesional</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Sondaje medio</TableHead>
+                      <TableHead className="text-right">Inserción media</TableHead>
+                      <TableHead className="text-right">Placa</TableHead>
+                      <TableHead className="text-right">Sangrado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {exams.map((e) => {
+                      const s = perioStats(e.chart);
+                      const active = e.id === selected.id;
+                      return (
+                        <TableRow key={e.id} className={cn(active && "bg-muted/60")}>
+                          <TableCell>
+                            <Link href={`${base}?examen=${e.id}`} className={cn("text-primary hover:underline", active && "font-medium")}>
+                              {formatDateTime(e.examinedAt)}
+                            </Link>
+                          </TableCell>
+                          <TableCell>{e.dentist.name}</TableCell>
+                          <TableCell>
+                            {e.status === "SIGNED" ? <Badge variant="secondary">Firmado</Badge> : <Badge variant="outline">Borrador</Badge>}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">{mm(s.meanPd)}</TableCell>
+                          <TableCell className="text-right tabular-nums">{mm(s.meanCal)}</TableCell>
+                          <TableCell className="text-right tabular-nums">{Math.round(s.plaquePct)}%</TableCell>
+                          <TableCell className="text-right tabular-nums">{Math.round(s.bopPct)}%</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>

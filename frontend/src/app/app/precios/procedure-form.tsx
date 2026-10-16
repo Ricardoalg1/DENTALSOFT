@@ -88,7 +88,19 @@ export function ProcedureForm({ procedure, initialCups }: { procedure?: Procedur
         />
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-cups`}>Código CUPS</Label>
-          <CupsPicker key={resetCount} id={`${p}-cups`} defaultValue={procedure?.cupsCode ?? initialCups?.code ?? ""} />
+          <CupsPicker
+            key={resetCount}
+            id={`${p}-cups`}
+            defaultValue={procedure?.cupsCode ?? initialCups?.code ?? ""}
+            onPick={(entry) => {
+              // Si el nombre está vacío, toma la descripción CUPS y su categoría.
+              const name = document.getElementById(`${p}-name`) as HTMLInputElement | null;
+              if (name && !name.value.trim()) name.value = entry.description.slice(0, 150);
+              const category = document.getElementById(`${p}-category`) as HTMLSelectElement | null;
+              const mapped = CUPS_PROCEDURE_CATEGORY[entry.category];
+              if (category && mapped && !procedure) category.value = mapped;
+            }}
+          />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor={`${p}-code`}>Código interno</Label>

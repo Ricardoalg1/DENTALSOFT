@@ -1,5 +1,10 @@
 package lat.occlus.clinical;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,7 +17,16 @@ final class DefaultConsentTemplates {
 
     record Example(String title, String body) {}
 
-    static final List<Example> EXAMPLES = List.of(
+    /**
+     * Plantillas por procedimiento en resources/consent-templates: primera línea = título, el resto = texto.
+     * Marcadores: {{declarante}}, {{paciente}}, {{documento}}, {{profesional}}, {{registro_profesional}},
+     * {{clinica}}, {{fecha}} y {{procedimiento}}.
+     */
+    private static final List<String> PROCEDURE_FILES = List.of(
+            "01-protesis-total.txt", "02-obturacion.txt", "03-cirugia.txt", "04-corona-dental.txt",
+            "05-endodoncia.txt", "06-fase-higienica.txt", "07-diseno-sonrisa.txt");
+
+    private static final List<Example> GENERAL = List.of(
             new Example("Consentimiento informado general para atención odontológica", """
                     {{declarante}} declaro que el(la) profesional {{profesional}} de {{clinica}} me explicó en un \
                     lenguaje claro el diagnóstico de salud oral del paciente y el tratamiento propuesto: {{procedimiento}}.
@@ -77,4 +91,21 @@ final class DefaultConsentTemplates {
                     representación legal para hacerlo.
 
                     Fecha: {{fecha}}."""));
+
+    static final List<Example> EXAMPLES = examples();
+
+    private static List<Example> examples() {
+        List<Example> all = new ArrayList<>(GENERAL);
+        for (String file : PROCEDURE_FILES) {
+            try (InputStream in = DefaultConsentTemplates.class.getResourceAsStream("/consent-templates/" + file)) {
+                if (in == null) throw new IllegalStateException("Falta la plantilla de consentimiento " + file);
+                String text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+                int newline = text.indexOf('\n');
+                all.add(new Example(text.substring(0, newline).strip(), text.substring(newline + 1).strip()));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return List.copyOf(all);
+    }
 }

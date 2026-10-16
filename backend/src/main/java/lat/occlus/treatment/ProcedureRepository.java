@@ -14,4 +14,6 @@ public interface ProcedureRepository extends JpaRepository<Procedure, UUID> {
     boolean existsByClinicIdAndName(UUID clinicId, String name);
 
     boolean existsByClinicIdAndNameAndIdNot(UUID clinicId, String name, UUID id);
+
+    boolean existsByClinicIdAndCupsCode(UUID clinicId, String cupsCode);
 }

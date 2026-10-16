@@ -257,71 +257,73 @@ class ClinicalRecordTests {
     // ---------- helpers ----------
 
     @Test
-    void periodontogramLivesWithTheDraftAndFreezesOnSigning() throws Exception {
-        String noteId = createNote(null);
+    void periodontalExamsAreIndependentAndFreezeOnSigning() throws Exception {
         String side = "{\"pd\":[3,4,6],\"gm\":[0,1,null],\"bop\":[2,0,0],\"suppuration\":[false,true,false],\"plaque\":[false,false,true],\"furcation\":[1]}";
         String chart = "{\"teeth\":[{\"tooth\":16,\"buccal\":" + side + ",\"mobility\":1,\"prognosis\":\"DOUBTFUL\",\"note\":\"Control\"},"
                 + "{\"tooth\":18,\"missing\":true,\"buccal\":" + side + "},{\"tooth\":21}]}";
+        String exams = "/api/patients/" + patientId + "/periodontal-exams";
 
-        call(token, put("/api/clinical-notes/" + noteId).content(withChart(chart)))
-                .andExpect(status().isOk())
+        // Un paciente puede tener varios periodontogramas.
+        String firstId = JsonPath.read(call(token, post(exams).content(exam("{\"teeth\":[]}")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("DRAFT"))
+                .andReturn().getResponse().getContentAsString(), "$.id");
+        String id = JsonPath.read(call(token, post(exams).content(exam(chart)))
+                .andExpect(status().isCreated())
                 // El ausente pierde sus datos y el diente vacío se descarta.
-                .andExpect(jsonPath("$.periodontogram.teeth.length()").value(2))
-                .andExpect(jsonPath("$.periodontogram.teeth[?(@.tooth==16)].buccal.pd[1]").value(containsInAnyOrder(4)))
-                .andExpect(jsonPath("$.periodontogram.teeth[0].buccal.bop[0]").value(2))
-                .andExpect(jsonPath("$.periodontogram.teeth[0].buccal.furcation[0]").value(1))
-                .andExpect(jsonPath("$.periodontogram.teeth[0].prognosis").value("DOUBTFUL"))
-                .andExpect(jsonPath("$.periodontogram.teeth[1].buccal").value(org.hamcrest.Matchers.nullValue()));
-        call(token, get("/api/clinical-notes/" + noteId)).andExpect(jsonPath("$.periodontogram.teeth.length()").value(2));
+                .andExpect(jsonPath("$.chart.teeth.length()").value(2))
+                .andExpect(jsonPath("$.chart.teeth[0].buccal.bop[0]").value(2))
+                .andExpect(jsonPath("$.chart.teeth[0].buccal.furcation[0]").value(1))
+                .andExpect(jsonPath("$.chart.teeth[0].prognosis").value("DOUBTFUL"))
+                .andExpect(jsonPath("$.chart.teeth[1].buccal").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.observations").value("Control semestral"))
+                .andReturn().getResponse().getContentAsString(), "$.id");
+        call(token, get(exams)).andExpect(jsonPath("$.length()").value(2));
 
-        // Validación: diente temporal, sondaje fuera de rango, sitios incompletos.
-        call(token, put("/api/clinical-notes/" + noteId).content(withChart("{\"teeth\":[{\"tooth\":55}]}")))
-                .andExpect(status().isBadRequest());
-        call(token, put("/api/clinical-notes/" + noteId).content(withChart(
-                "{\"teeth\":[{\"tooth\":11,\"buccal\":" + side.replace("[3,4,6]", "[3,4,99]").replace(",\"furcation\":[1]", "") + "}]}")))
-                .andExpect(status().isBadRequest());
-        call(token, put("/api/clinical-notes/" + noteId).content(withChart(
-                "{\"teeth\":[{\"tooth\":11,\"buccal\":" + side.replace("[3,4,6]", "[3,4]").replace(",\"furcation\":[1]", "") + "}]}")))
-                .andExpect(status().isBadRequest());
+        // Validación: diente temporal, sondaje fuera de rango, sitios incompletos, furca donde no hay, pronóstico inválido.
+        String noFurca = side.replace(",\"furcation\":[1]", "");
+        for (String bad : new String[] {
+                "{\"teeth\":[{\"tooth\":55}]}",
+                "{\"teeth\":[{\"tooth\":11,\"buccal\":" + noFurca.replace("[3,4,6]", "[3,4,99]") + "}]}",
+                "{\"teeth\":[{\"tooth\":11,\"buccal\":" + noFurca.replace("[3,4,6]", "[3,4]") + "}]}",
+                "{\"teeth\":[{\"tooth\":11,\"buccal\":" + side + "}]}",
+                "{\"teeth\":[{\"tooth\":16,\"prognosis\":\"MAYBE\"}]}"}) {
+            call(token, put("/api/periodontal-exams/" + id).content(exam(bad))).andExpect(status().isBadRequest());
+        }
 
-        // Furca: un incisivo no tiene; pronóstico fuera del catálogo.
-        call(token, put("/api/clinical-notes/" + noteId).content(withChart("{\"teeth\":[{\"tooth\":11,\"buccal\":" + side + "}]}")))
-                .andExpect(status().isBadRequest());
-        call(token, put("/api/clinical-notes/" + noteId).content(withChart("{\"teeth\":[{\"tooth\":16,\"prognosis\":\"MAYBE\"}]}")))
-                .andExpect(status().isBadRequest());
+        // Sin datos no se firma; el borrador vacío se puede eliminar.
+        call(token, post("/api/periodontal-exams/" + firstId + "/sign")).andExpect(status().isBadRequest());
+        call(token, delete("/api/periodontal-exams/" + firstId)).andExpect(status().isNoContent());
 
-        // Sin periodontograma en la petición, se elimina.
-        call(token, put("/api/clinical-notes/" + noteId).content(note(null, "K053", "[]")))
-                .andExpect(jsonPath("$.periodontogram").doesNotExist());
-        call(token, put("/api/clinical-notes/" + noteId).content(withChart(chart))).andExpect(status().isOk());
-
-        call(token, post("/api/clinical-notes/" + noteId + "/sign")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.periodontogram.teeth.length()").value(2));
-        call(token, put("/api/clinical-notes/" + noteId).content(withChart("{\"teeth\":[]}"))).andExpect(status().isConflict());
-
-        // Historial del paciente: el periodontograma aparece con su evolución.
-        call(token, get("/api/patients/" + patientId + "/periodontal-charts"))
+        call(token, post("/api/periodontal-exams/" + id + "/sign"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].noteId").value(noteId))
-                .andExpect(jsonPath("$[0].status").value("SIGNED"))
-                .andExpect(jsonPath("$[0].chart.teeth.length()").value(2));
+                .andExpect(jsonPath("$.status").value("SIGNED"))
+                .andExpect(jsonPath("$.integrityOk").value(true))
+                .andExpect(jsonPath("$.contentHash").isString());
+        call(token, put("/api/periodontal-exams/" + id).content(exam(chart))).andExpect(status().isConflict());
+        call(token, delete("/api/periodontal-exams/" + id)).andExpect(status().isConflict());
+        call(token, get(exams)).andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].integrityOk").value(true));
+
+        // Solo el autor edita un borrador; recepción no ve periodontogramas.
+        String other = createUserAndLogin(mvc, token, "DENTIST", true);
+        String othersDraft = JsonPath.read(call(other, post(exams).content(exam(chart)))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");
+        call(token, put("/api/periodontal-exams/" + othersDraft).content(exam(chart))).andExpect(status().isForbidden());
         String reception = createUserAndLogin(mvc, token, "RECEPTION", false);
-        call(reception, get("/api/patients/" + patientId + "/periodontal-charts")).andExpect(status().isForbidden());
+        call(reception, get(exams)).andExpect(status().isForbidden());
 
         // La BD lo protege aunque se use SQL directo.
         UUID clinicId = clinicId(token);
         assertThatThrownBy(() -> TenantContext.callAs(clinicId,
-                () -> jdbc.update("update periodontal_chart set data = '{}'::jsonb where note_id = ?::uuid", noteId)))
-                .hasStackTraceContaining("periodontograma no se puede modificar");
+                () -> jdbc.update("update periodontal_exam set observations = 'alterado' where id = ?::uuid", id)))
+                .hasStackTraceContaining("está firmado y no se puede modificar");
         assertThatThrownBy(() -> TenantContext.callAs(clinicId,
-                () -> jdbc.update("delete from periodontal_chart where note_id = ?::uuid", noteId)))
-                .hasStackTraceContaining("periodontograma no se puede modificar");
+                () -> jdbc.update("delete from periodontal_exam where id = ?::uuid", id)))
+                .hasStackTraceContaining("está firmado y no se puede modificar");
     }
 
-    private static String withChart(String chart) {
-        String base = note(null, "K053", "[]");
-        return base.substring(0, base.lastIndexOf('}')) + ",\"periodontogram\":" + chart + "}";
+    private static String exam(String chart) {
+        return "{\"observations\":\"Control semestral\",\"chart\":" + chart + "}";
     }
 
     private ResultActions call(String token, MockHttpServletRequestBuilder req) throws Exception {

@@ -1,0 +1,46 @@
+Consentimiento de prótesis total
+{{declarante}} declaro y manifiesto, en pleno uso de mis facultades mentales, libre y espontáneamente, que el(la) Dr(a). {{profesional}}, con registro profesional No. {{registro_profesional}}, del consultorio {{clinica}}, me informó lo siguiente:
+
+Usted tiene derecho a conocer el procedimiento al que va a ser sometido y las complicaciones más frecuentes que ocurren. Este documento intenta explicarle todas estas cuestiones; léalo atentamente y consulte todas las dudas que se le planteen. Le recordamos que, por imperativo legal, tendrá que firmar, usted o su representante legal, el consentimiento informado para que pueda realizarle dicho procedimiento. A propósito, declaro haber sido informado y haber comprendido acabadamente que el objeto del tratamiento es reemplazar los dientes naturales perdidos y rehabilitar la función estética y fonética de la cavidad bucal.
+
+Declaro que mi odontólogo ha examinado mi boca debidamente. Que se me han explicado otras alternativas a este tratamiento, con prótesis convencionales (fija con implante dental como anclaje de distinto tipo de prótesis, con un costo mayor), y que se han estudiado y considerado estos métodos que se me informaron, siendo mi voluntad que se me realice el tratamiento objeto del presente consentimiento.
+
+LIMITACIONES
+
+Al carecer de fijación mecánica al hueso, estos aparatos experimentan una cierta movilidad al comer, sobre todo el inferior. Una limitación estética derivada de esta inestabilidad es que, en prótesis completas, los dientes anteriores y superiores no siempre pueden montarse sobre los anteriores e inferiores; según las indicaciones técnicas y mecánicas derivadas de la confección de prótesis removible, en muchas ocasiones no será posible la reproducción de la posición de los dientes naturales. La duración de la prótesis removible es limitada, por lo que deberá renovarse periódicamente.
+
+RIESGOS TÍPICOS
+
+• Sensación extraña de ocupación.
+• Más producción de saliva de lo normal.
+• Disminución del sentido del gusto.
+• Dificultades de pronunciación de ciertos sonidos.
+• Es probable que se muerda fácilmente las mejillas o la lengua.
+• Algunas molestias (dolor, inflamación, ulceración) en las zonas donde apoyan las prótesis, sobre todo a la altura de los bordes.
+• Probablemente se muevan mucho al comer, al menos inicialmente, por lo que deberá masticar de los dos lados.
+
+CONSECUENCIAS DE NO REALIZAR EL TRATAMIENTO
+
+• Reabsorción ósea (del hueso del maxilar y de la mandíbula).
+• Problemas articulares y de oclusión.
+• Problemas en la digestión.
+• Alteración de la fonación y la estética.
+
+RECOMENDACIONES
+
+• Los primeros días procure cerrar la boca y masticar con cuidado para no morderse y no sobrecargar las encías.
+• Inicialmente, mastique suavemente alimentos blandos y no pegajosos, pasando poco a poco a comer productos más consistentes.
+• Para tratar heridas de mordeduras puede utilizar cicatrizantes.
+
+INDICACIONES
+
+• Lavar la prótesis y la boca después de cada comida para evitar la formación de sarro.
+• Quitarse la prótesis para dormir, para que los tejidos descansen.
+• Mientras la prótesis esté fuera de la boca conviene conservarla en agua para evitar golpes y deformaciones.
+• Es aconsejable darse masajes en las encías para mejorar la circulación y prevenir en lo posible su reabsorción.
+• Se debe realizar revisión cada seis meses para observar el estado de los dientes y mucosas, y realizar adaptaciones para corregir desajustes provocados por el cambio de forma de los maxilares y la posición de los dientes, que siempre ocurren con el paso del tiempo.
+• Acudir a consulta inmediata siempre que aparezcan heridas, llagas, dolor o inestabilidad de la prótesis.
+
+He leído las instrucciones de manejo, cuidado y mantenimiento que me ha entregado el(la) Dr(a). {{profesional}} y he comprendido todas las explicaciones que se me han facilitado en un lenguaje claro y sencillo; he podido realizar todas las observaciones y se me han aclarado todas las dudas, por lo que estoy completamente de acuerdo con lo consignado en este formato de consentimiento. Asimismo, entiendo que la colocación de la prótesis no constituye el acto final del tratamiento, sino que es necesario un proceso de adaptación que puede exigir retoques, por lo que me comprometo a regresar a la próxima consulta.
+
+Fecha: {{fecha}}.

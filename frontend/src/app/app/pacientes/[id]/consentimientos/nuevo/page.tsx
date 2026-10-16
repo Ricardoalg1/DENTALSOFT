@@ -5,6 +5,7 @@ import { api, getMe } from "@/lib/api";
 import { todayCO } from "@/lib/agenda-time";
 import { formatLongDate } from "@/lib/format";
 import { canWriteClinical, type ConsentTemplate } from "@/lib/types";
+import type { DocumentProfile } from "@/lib/documents";
 import { loadPatient } from "../../load-patient";
 import { ConsentForm } from "../consent-form";
 
@@ -14,7 +15,11 @@ export default async function NewConsentPage({ params }: PageProps<"/app/pacient
   const { id } = await params;
   const me = await getMe();
   if (!canWriteClinical(me)) redirect(`/app/pacientes/${id}/consentimientos`);
-  const [patient, templates] = await Promise.all([loadPatient(id), api<ConsentTemplate[]>("/api/consent-templates")]);
+  const [patient, templates, profile] = await Promise.all([
+    loadPatient(id),
+    api<ConsentTemplate[]>("/api/consent-templates"),
+    api<DocumentProfile>("/api/users/me/document-profile"),
+  ]);
 
   if (templates.length === 0) {
     return (
@@ -36,6 +41,7 @@ export default async function NewConsentPage({ params }: PageProps<"/app/pacient
       patient={patient}
       templates={templates}
       professionalName={me.fullName}
+      professionalRegistration={profile.registration}
       clinicName={me.clinicName}
       today={formatLongDate(todayCO())}
     />

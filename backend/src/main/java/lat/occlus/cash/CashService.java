@@ -31,6 +31,7 @@ public class CashService {
     private final SiteRepository sites;
     private final StaffAccess access;
     private final PaymentService paymentService;
+    private final ExpenseRepository expenses;
 
     /** Últimos turnos (abiertos y cerrados) de la clínica, sin el detalle de pagos. */
     @Transactional(readOnly = true)
@@ -80,11 +81,13 @@ public class CashService {
         return sessions.findByIdAndClinicId(id, clinicId).orElseThrow(() -> new NotFoundException("Caja no encontrada"));
     }
 
-    private static BigDecimal expectedCash(CashSession s, List<Payment> list) {
+    /** Base + efectivo recibido − efectivo que salió para gastos. */
+    private BigDecimal expectedCash(CashSession s, List<Payment> list) {
         return s.getOpeningAmount().add(list.stream()
-                .filter(p -> !p.isVoided() && p.getMethod() == PaymentMethod.CASH)
-                .map(Payment::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add));
+                        .filter(p -> !p.isVoided() && p.getMethod() == PaymentMethod.CASH)
+                        .map(Payment::getAmount)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add))
+                .subtract(expenses.sumFromSession(s.getId()));
     }
 
     private SessionResponse toResponse(CashSession s, boolean withPayments) {
@@ -107,6 +110,7 @@ public class CashService {
                 users.get(s.getClosedBy()), s.getClosedAt(), expected, s.getCountedCash(),
                 s.getCountedCash() == null ? null : s.getCountedCash().subtract(expected),
                 s.getNotes(), totals, collected, (int) list.stream().filter(Payment::isVoided).count(),
+                expenses.sumFromSession(s.getId()),
                 withPayments ? paymentService.toResponses(list) : null);
     }
 }

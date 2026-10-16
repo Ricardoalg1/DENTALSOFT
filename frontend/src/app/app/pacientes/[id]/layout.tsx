@@ -6,6 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { api, getMe } from "@/lib/api";
 import { ALERT_CONDITIONS, MEDICAL_CONDITIONS, canReadClinical, hasModule, type ClinicalBackground } from "@/lib/types";
 import { loadPatient } from "./load-patient";
+import { PatientContainer } from "./patient-container";
 import { PatientTabs } from "./patient-tabs";
 
 /** Encabezado común de la ficha: nombre, alertas médicas y pestañas. */
@@ -22,7 +23,7 @@ export default async function PatientLayout({ children, params }: LayoutProps<"/
   ];
 
   return (
-    <div className="grid max-w-5xl gap-6">
+    <PatientContainer>
       <Link href="/app/pacientes" className="inline-flex w-fit print:hidden items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Pacientes
       </Link>
@@ -68,6 +69,6 @@ export default async function PatientLayout({ children, params }: LayoutProps<"/
 
       <PatientTabs patientId={id} clinical={clinical} treatments={treatments} />
       {children}
-    </div>
+    </PatientContainer>
   );
 }

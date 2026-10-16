@@ -1,77 +1,66 @@
 package lat.occlus.clinical;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lat.occlus.clinical.ClinicalDtos.NoteStatus;
 import lat.occlus.clinical.ClinicalDtos.PerioChart;
-import lat.occlus.clinical.ClinicalDtos.PerioChartEntry;
+import lat.occlus.clinical.ClinicalDtos.PerioExamRequest;
+import lat.occlus.clinical.ClinicalDtos.PerioExamResponse;
 import lat.occlus.clinical.ClinicalDtos.PerioSide;
 import lat.occlus.clinical.ClinicalDtos.PerioTooth;
 import lat.occlus.clinical.ClinicalDtos.Ref;
+import lat.occlus.shared.security.AuthUser;
 import lat.occlus.shared.web.BadRequestException;
+import lat.occlus.shared.web.ConflictException;
+import lat.occlus.shared.web.ForbiddenException;
+import lat.occlus.shared.web.NotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Periodontograma de una evolución, con los campos del periodontograma de SEPA. Se guarda como JSON validado:
- * solo dientes permanentes (FDI) y valores dentro de rango; los dientes sin datos se descartan.
- * La inmutabilidad tras firmar la garantiza un trigger de Postgres.
+ * Periodontogramas: exámenes periodontales propios del paciente (puede tener varios, uno por control), con los
+ * campos del periodontograma de SEPA. Mismo ciclo que una evolución: borrador editable por su autor y, al firmarlo,
+ * inmutable (trigger tg_periodontal_exam_immutable) con un hash que calcula Postgres (periodontal_exam_hash).
+ * Los datos se guardan como JSON validado: solo dientes permanentes (FDI), valores en rango; dientes sin datos se descartan.
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
-class PeriodontalChartService {
+public class PeriodontalExamService {
 
+    private static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
+    /** Margen para diferencias de reloj entre el navegador y el servidor. */
+    private static final Duration CLOCK_SKEW = Duration.ofMinutes(5);
     private static final Set<Integer> TEETH = IntStream.rangeClosed(1, 4).boxed()
             .flatMap(q -> IntStream.rangeClosed(1, 8).mapToObj(n -> q * 10 + n))
             .collect(Collectors.toSet());
     private static final Set<String> PROGNOSES = Set.of("GOOD", "DOUBTFUL", "POOR", "HOPELESS");
-
-    private static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
+    private static final String SELECT = """
+            select e.id, e.patient_id, concat_ws(' ', p.first_name, p.middle_name, p.first_last_name, p.second_last_name) as patient_name,
+                   e.dentist_id, u.full_name as dentist_name, e.examined_at, e.observations, e.data::text as data,
+                   e.signed_at, e.content_hash, e.created_at, e.updated_at,
+                   e.signed_at is not null and e.content_hash = periodontal_exam_hash(e) as integrity_ok
+            from periodontal_exam e
+            join patient p on p.id = e.patient_id and p.clinic_id = e.clinic_id
+            join app_user u on u.id = e.dentist_id and u.clinic_id = e.clinic_id
+            """;
 
     private final JdbcTemplate jdbc;
     private final ObjectMapper mapper;
     private final ClinicalAccess access;
-
-    /** Los periodontogramas del paciente (borradores y firmados), del más reciente al más antiguo. */
-    @Transactional(readOnly = true)
-    public List<PerioChartEntry> byPatient(UUID clinicId, UUID patientId) {
-        access.requirePatient(clinicId, patientId);
-        List<PerioChartEntry> result = new ArrayList<>();
-        jdbc.query("""
-                select n.id, n.attended_at, n.signed_at, n.dentist_id, u.full_name, pc.data::text
-                from periodontal_chart pc
-                join clinical_note n on n.id = pc.note_id and n.clinic_id = pc.clinic_id
-                join app_user u on u.id = n.dentist_id and u.clinic_id = n.clinic_id
-                where pc.clinic_id = ? and pc.patient_id = ?
-                order by n.attended_at desc, n.id
-                limit 200""", rs -> {
-            UUID id = rs.getObject(1, UUID.class);
-            try {
-                result.add(new PerioChartEntry(id,
-                        rs.getTimestamp(2).toInstant().atZone(BOGOTA).toOffsetDateTime(),
-                        rs.getTimestamp(3) == null ? NoteStatus.DRAFT : NoteStatus.SIGNED,
-                        new Ref(rs.getObject(4, UUID.class), rs.getString(5)),
-                        mapper.readValue(rs.getString(6), PerioChart.class)));
-            } catch (JacksonException e) {
-                log.warn("Periodontograma ilegible en la evolución {}: {}", id, e.getOriginalMessage());
-            }
-        }, clinicId, patientId);
-        return result;
-    }
 
     /**
      * Entradas de furca de una cara: molares superiores 1 por vestibular y 2 por palatino (mesial y distal),
@@ -85,39 +74,113 @@ class PeriodontalChartService {
         return 0;
     }
 
-    /** Guarda (o reemplaza) el periodontograma del borrador; {@code null} o vacío lo elimina. Requiere la evolución ya persistida. */
-    void save(ClinicalNote note, PerioChart chart) {
-        PerioChart clean = clean(chart);
-        if (clean == null) {
-            jdbc.update("delete from periodontal_chart where note_id = ?", note.getId());
-            return;
-        }
+    @Transactional(readOnly = true)
+    public List<PerioExamResponse> byPatient(UUID clinicId, UUID patientId) {
+        access.requirePatient(clinicId, patientId);
+        return jdbc.query(SELECT + " where e.clinic_id = ? and e.patient_id = ? order by e.examined_at desc, e.id limit 200",
+                this::map, clinicId, patientId);
+    }
+
+    @Transactional(readOnly = true)
+    public PerioExamResponse get(UUID clinicId, UUID id) {
+        return find(clinicId, id);
+    }
+
+    @Transactional
+    public PerioExamResponse create(AuthUser me, UUID patientId, PerioExamRequest req) {
+        access.requireProfessional(me);
+        var patient = access.requirePatient(me.clinicId(), patientId);
+        UUID id = UUID.randomUUID();
         jdbc.update("""
-                insert into periodontal_chart (note_id, clinic_id, patient_id, data)
-                values (?, ?, ?, ?::jsonb)
-                on conflict (note_id) do update set data = excluded.data, updated_at = now()""",
-                note.getId(), note.getClinicId(), note.getPatientId(), mapper.writeValueAsString(clean));
+                insert into periodontal_exam (id, clinic_id, patient_id, dentist_id, examined_at, observations, data)
+                values (?, ?, ?, ?, ?, ?, ?::jsonb)""",
+                id, me.clinicId(), patient.getId(), me.userId(), ts(examinedAt(req, Instant.now())),
+                clean(req.observations()), mapper.writeValueAsString(clean(req.chart())));
+        return find(me.clinicId(), id);
     }
 
-    /** Periodontogramas de varias evoluciones en una consulta. */
-    Map<UUID, PerioChart> byNotes(List<UUID> noteIds) {
-        if (noteIds.isEmpty()) return Map.of();
-        String marks = String.join(",", Collections.nCopies(noteIds.size(), "?"));
-        Map<UUID, PerioChart> result = new java.util.HashMap<>();
-        jdbc.query("select note_id, data::text from periodontal_chart where note_id in (" + marks + ")", rs -> {
-            UUID id = rs.getObject("note_id", UUID.class);
-            try {
-                result.put(id, mapper.readValue(rs.getString(2), PerioChart.class));
-            } catch (JacksonException e) {
-                // Borradores guardados con el formato anterior (antes de los campos de SEPA): se muestran sin periodontograma.
-                log.warn("Periodontograma ilegible en la evolución {}: {}", id, e.getOriginalMessage());
-            }
-        }, noteIds.toArray());
-        return result;
+    /** Editar un borrador. Solo su autor; los firmados no se tocan. */
+    @Transactional
+    public PerioExamResponse update(AuthUser me, UUID id, PerioExamRequest req) {
+        var exam = findDraftOwnedBy(me, id);
+        jdbc.update("update periodontal_exam set examined_at = ?, observations = ?, data = ?::jsonb, updated_at = now() where id = ?",
+                ts(examinedAt(req, exam.examinedAt().toInstant())), clean(req.observations()),
+                mapper.writeValueAsString(clean(req.chart())), id);
+        return find(me.clinicId(), id);
     }
 
+    @Transactional
+    public void deleteDraft(AuthUser me, UUID id) {
+        findDraftOwnedBy(me, id);
+        jdbc.update("delete from periodontal_exam where id = ?", id);
+    }
+
+    /** Firma: a partir de aquí el periodontograma es inmutable. El hash incluye la fecha de firma. */
+    @Transactional
+    public PerioExamResponse sign(AuthUser me, UUID id) {
+        var exam = findDraftOwnedBy(me, id);
+        if (exam.chart().teeth().isEmpty()) throw new BadRequestException("Para firmar registra al menos un dato en el periodontograma");
+        Instant signedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        // Una sola sentencia: después de firmar, el trigger ya no permite tocar la fila.
+        jdbc.update("""
+                update periodontal_exam e set signed_at = ?, content_hash = periodontal_exam_hash(row(
+                    e.id, e.clinic_id, e.patient_id, e.dentist_id, e.examined_at, e.observations, e.data,
+                    ?::timestamptz, null, e.created_at, e.updated_at)::periodontal_exam)
+                where e.id = ? and e.signed_at is null""",
+                ts(signedAt), ts(signedAt), id);
+        return find(me.clinicId(), id);
+    }
+
+    private PerioExamResponse find(UUID clinicId, UUID id) {
+        return jdbc.query(SELECT + " where e.clinic_id = ? and e.id = ?", this::map, clinicId, id).stream().findFirst()
+                .orElseThrow(() -> new NotFoundException("Periodontograma no encontrado"));
+    }
+
+    private PerioExamResponse findDraftOwnedBy(AuthUser me, UUID id) {
+        access.requireProfessional(me);
+        var exam = find(me.clinicId(), id);
+        if (exam.status() == NoteStatus.SIGNED) throw new ConflictException("El periodontograma está firmado y no se puede modificar");
+        if (!exam.dentist().id().equals(me.userId())) {
+            throw new ForbiddenException("Solo el profesional que lo registró puede editar o firmar este periodontograma");
+        }
+        return exam;
+    }
+
+    private Instant examinedAt(PerioExamRequest req, Instant fallback) {
+        Instant at = req.examinedAt() == null ? fallback : req.examinedAt().toInstant();
+        if (at.isAfter(Instant.now().plus(CLOCK_SKEW))) throw new BadRequestException("La fecha del examen no puede ser futura");
+        return at.truncatedTo(ChronoUnit.MICROS);
+    }
+
+    private PerioExamResponse map(ResultSet rs, int row) throws SQLException {
+        var signedAt = rs.getTimestamp("signed_at");
+        return new PerioExamResponse(
+                rs.getObject("id", UUID.class),
+                new Ref(rs.getObject("patient_id", UUID.class), rs.getString("patient_name")),
+                new Ref(rs.getObject("dentist_id", UUID.class), rs.getString("dentist_name")),
+                rs.getTimestamp("examined_at").toInstant().atZone(BOGOTA).toOffsetDateTime(),
+                signedAt == null ? NoteStatus.DRAFT : NoteStatus.SIGNED,
+                rs.getString("observations"),
+                mapper.readValue(rs.getString("data"), PerioChart.class),
+                signedAt == null ? null : signedAt.toInstant(),
+                rs.getString("content_hash"),
+                signedAt == null ? null : rs.getBoolean("integrity_ok"),
+                rs.getTimestamp("created_at").toInstant(),
+                rs.getTimestamp("updated_at").toInstant());
+    }
+
+    /** Instante como timestamptz (el driver de Postgres lo envía con zona, sin depender de la del JVM). */
+    private static java.time.OffsetDateTime ts(Instant instant) {
+        return instant.atOffset(java.time.ZoneOffset.UTC);
+    }
+
+    private static String clean(String s) {
+        return s == null || s.isBlank() ? null : s.trim();
+    }
+
+    /** Valida y normaliza; nunca null (sin datos = lista vacía). */
     private PerioChart clean(PerioChart chart) {
-        if (chart == null || chart.teeth() == null) return null;
+        if (chart == null || chart.teeth() == null) return new PerioChart(List.of());
         Set<Integer> seen = new HashSet<>();
         List<PerioTooth> result = new ArrayList<>();
         for (PerioTooth t : chart.teeth()) {
@@ -143,7 +206,7 @@ class PeriodontalChartService {
                     && buccal == null && lingual == null) continue;
             result.add(new PerioTooth(n, null, implant ? true : null, mobility, prognosis, width, note, buccal, lingual));
         }
-        return result.isEmpty() ? null : new PerioChart(result);
+        return new PerioChart(result);
     }
 
     /** Tres valores por arreglo; una cara sin ningún dato se descarta. */

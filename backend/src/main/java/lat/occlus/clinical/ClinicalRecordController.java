@@ -16,6 +16,8 @@ import lat.occlus.clinical.ClinicalDtos.NoteResponse;
 import lat.occlus.clinical.ClinicalDtos.NoteSummary;
 import lat.occlus.clinical.ClinicalDtos.OdontogramEntryResponse;
 import lat.occlus.clinical.ClinicalDtos.OdontogramRequest;
+import lat.occlus.clinical.ClinicalDtos.PerioExamRequest;
+import lat.occlus.clinical.ClinicalDtos.PerioExamResponse;
 import lat.occlus.shared.security.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -34,7 +36,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Historia clínica: antecedentes, evoluciones y odontograma.
+ * Historia clínica: antecedentes, evoluciones, odontograma y periodontogramas.
  * El @PreAuthorize de la clase deja fuera a recepción en TODOS los endpoints; escribir además
  * exige ser profesional (lo valida {@link ClinicalAccess} en los servicios).
  */
@@ -48,7 +50,7 @@ public class ClinicalRecordController {
     private final ClinicalNoteService notes;
     private final OdontogramService odontogram;
     private final Icd10Service icd10;
-    private final PeriodontalChartService periodontalCharts;
+    private final PeriodontalExamService periodontal;
 
     // ---------- CIE-10 ----------
 
@@ -135,10 +137,39 @@ public class ClinicalRecordController {
 
     // ---------- Periodontograma ----------
 
-    /** Historial de periodontogramas del paciente; cada uno vive dentro de una evolución. */
-    @GetMapping("/api/patients/{patientId}/periodontal-charts")
-    List<ClinicalDtos.PerioChartEntry> periodontalCharts(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID patientId) {
-        return periodontalCharts.byPatient(AuthUser.from(jwt).clinicId(), patientId);
+    /** Periodontogramas del paciente (borradores y firmados), del más reciente al más antiguo. */
+    @GetMapping("/api/patients/{patientId}/periodontal-exams")
+    List<PerioExamResponse> periodontalExams(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID patientId) {
+        return periodontal.byPatient(AuthUser.from(jwt).clinicId(), patientId);
+    }
+
+    @PostMapping("/api/patients/{patientId}/periodontal-exams")
+    @ResponseStatus(HttpStatus.CREATED)
+    PerioExamResponse createPeriodontalExam(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID patientId,
+                                            @Valid @RequestBody PerioExamRequest req) {
+        return periodontal.create(AuthUser.from(jwt), patientId, req);
+    }
+
+    @GetMapping("/api/periodontal-exams/{id}")
+    PerioExamResponse periodontalExam(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
+        return periodontal.get(AuthUser.from(jwt).clinicId(), id);
+    }
+
+    @PutMapping("/api/periodontal-exams/{id}")
+    PerioExamResponse updatePeriodontalExam(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
+                                            @Valid @RequestBody PerioExamRequest req) {
+        return periodontal.update(AuthUser.from(jwt), id, req);
+    }
+
+    @DeleteMapping("/api/periodontal-exams/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deletePeriodontalExam(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
+        periodontal.deleteDraft(AuthUser.from(jwt), id);
+    }
+
+    @PostMapping("/api/periodontal-exams/{id}/sign")
+    PerioExamResponse signPeriodontalExam(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
+        return periodontal.sign(AuthUser.from(jwt), id);
     }
 
     // ---------- Odontograma ----------

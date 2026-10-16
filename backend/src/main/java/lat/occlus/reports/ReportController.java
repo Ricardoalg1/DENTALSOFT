@@ -19,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +33,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportController {
 
     private final ReportService service;
+    private final ReportTableService tables;
+
+    /** Informe tabular del centro de informes (fechas por defecto: el mes en curso). */
+    @GetMapping("/tables/{key}")
+    ReportDtos.TableReport table(@AuthenticationPrincipal Jwt jwt, @PathVariable String key,
+                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                                 @RequestParam(required = false) UUID siteId) {
+        var today = LocalDate.now(java.time.ZoneId.of("America/Bogota"));
+        return tables.table(AuthUser.from(jwt).clinicId(), key, from == null ? today.withDayOfMonth(1) : from,
+                to == null ? today : to, siteId);
+    }
+
+    @GetMapping("/tables/{key}.csv")
+    ResponseEntity<byte[]> tableCsv(@AuthenticationPrincipal Jwt jwt, @PathVariable String key,
+                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                                    @RequestParam(required = false) UUID siteId) {
+        var report = table(jwt, key, from, to, siteId);
+        return ResponseEntity.ok()
+                .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename("%s.csv".formatted(report.key())).build().toString())
+                .body(tables.csv(report).getBytes(StandardCharsets.UTF_8));
+    }
 
     @GetMapping
     Report report(@AuthenticationPrincipal Jwt jwt,

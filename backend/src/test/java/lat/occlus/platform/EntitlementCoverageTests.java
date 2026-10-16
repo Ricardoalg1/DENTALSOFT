@@ -31,7 +31,8 @@ class EntitlementCoverageTests {
     /** Núcleo: siempre disponible mientras la suscripción dé acceso (se valida su estado, no un módulo). */
     private static final Set<Class<?>> CORE = Set.of(PatientController.class, AppointmentController.class,
             ScheduleController.class, SiteController.class, UserController.class, ProfessionalController.class,
-            AnnouncementController.class, OutreachController.class, DocumentBrandingController.class);
+            AnnouncementController.class, OutreachController.class, DocumentBrandingController.class,
+            lat.occlus.biosafety.BiosafetyController.class);
 
     @Autowired
     @Qualifier("requestMappingHandlerMapping")

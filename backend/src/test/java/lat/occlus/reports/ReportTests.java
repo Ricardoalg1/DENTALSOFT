@@ -130,6 +130,24 @@ class ReportTests {
     }
 
     @Test
+    void everyTableReportRunsAndExports() throws Exception {
+        for (String key : List.of("ingresos", "gastos", "cuadre-caja", "cartera", "anulaciones", "presupuestos-pendientes",
+                "citas", "archivo-gestion", "archivo-historico", "cumpleanos", "residuos", "inventarios",
+                "movimientos-inventario", "actividades", "oportunidad-citas", "cop", "fev-rips")) {
+            call(get("/api/reports/tables/" + key + "?from=" + yesterday.minusYears(1) + "&to=" + today), admin)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.key").value(key))
+                    .andExpect(jsonPath("$.columns").isNotEmpty());
+            call(get("/api/reports/tables/" + key + ".csv"), admin).andExpect(status().isOk());
+        }
+        // Con los datos del escenario: los ingresos del periodo y la cartera.
+        call(get("/api/reports/tables/ingresos?from=" + yesterday + "&to=" + today), admin)
+                .andExpect(jsonPath("$.rows").isNotEmpty())
+                .andExpect(jsonPath("$.totals.valor").isNumber());
+        call(get("/api/reports/tables/no-existe"), admin).andExpect(status().isNotFound());
+    }
+
+    @Test
     void siteFilterAndEmptyPeriods() throws Exception {
         String north = JsonPath.read(json(post("/api/sites").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Sede Norte\"}")), "$.id");

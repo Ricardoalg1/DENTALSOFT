@@ -15,7 +15,7 @@ import { unstable_rethrow } from "next/navigation";
 import { api, getMe } from "@/lib/api";
 import type { AgreementStatus } from "@/lib/agreement";
 import type { SubscriptionState } from "@/lib/platform";
-import { ROLE_LABELS, canCollect, canReadClinical } from "@/lib/types";
+import { ROLE_LABELS, canCollect, canManageCash, canReadClinical } from "@/lib/types";
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const me = await getMe();
@@ -52,6 +52,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           isAdmin={me.role === "ADMIN"}
           clinical={canReadClinical(me)}
           cash={canCollect(me)}
+          manageCash={canManageCash(me)}
           platform={me.role === "ADMIN" && (await platformAccess())}
           messaging={me.role === "ADMIN" || me.role === "RECEPTION"}
           modules={me.modules}

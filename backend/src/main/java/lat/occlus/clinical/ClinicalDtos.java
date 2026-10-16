@@ -54,9 +54,7 @@ public final class ClinicalDtos {
             DiagnosisType diagnosisType,
             @Size(max = 3) List<@Size(max = 5) String> diagnosisRelated,
             @Size(max = 4000) String procedures,
-            @Size(max = 2000) String plan,
-            /** Periodontograma del borrador; null = la evolución no lleva periodontograma. */
-            @Valid PerioChart periodontogram) {}
+            @Size(max = 2000) String plan) {}
 
     public record AddendumRequest(@NotBlank @Size(max = 2000) String text) {}
 
@@ -74,7 +72,6 @@ public final class ClinicalDtos {
             /** Solo para firmadas: el contenido actual coincide con el hash guardado al firmar. */
             Boolean integrityOk,
             List<AddendumResponse> addenda,
-            PerioChart periodontogram,
             Instant createdAt, Instant updatedAt) {}
 
     /** Fila de los listados generales (sin el contenido clínico completo). */
@@ -125,6 +122,20 @@ public final class ClinicalDtos {
 
     public record PerioChart(@NotNull @Size(max = 32) List<@Valid PerioTooth> teeth) {}
 
-    /** Periodontograma del historial del paciente, con los datos de la evolución que lo contiene. */
-    public record PerioChartEntry(UUID noteId, OffsetDateTime attendedAt, NoteStatus status, Ref dentist, PerioChart chart) {}
+    /**
+     * Crear o editar el borrador de un periodontograma (examen periodontal propio del paciente; puede tener varios).
+     * {@code examinedAt} null = ahora.
+     */
+    public record PerioExamRequest(
+            OffsetDateTime examinedAt,
+            @Size(max = 1000) String observations,
+            @NotNull @Valid PerioChart chart) {}
+
+    public record PerioExamResponse(
+            UUID id, Ref patient, Ref dentist, OffsetDateTime examinedAt, NoteStatus status,
+            String observations, PerioChart chart,
+            Instant signedAt, String contentHash,
+            /** Solo para firmados: el contenido actual coincide con el hash guardado al firmar. */
+            Boolean integrityOk,
+            Instant createdAt, Instant updatedAt) {}
 }

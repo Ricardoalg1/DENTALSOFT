@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   GM_MAX,
@@ -37,6 +37,8 @@ const ART_SCALE = 1.4;
 const ART_X = (TOOTH_W - ART_W * ART_SCALE) / 2;
 const ART_PAD = 5;
 const MM = 5; // px por mm en la gráfica
+const CHART_W = LABEL_W + TOOTH_W * 16 + QUAD_GAP + 16; // ancho natural de la tabla (con su relleno)
+const MAX_ZOOM = 1.6;
 
 /** Filas del periodontograma, en el orden del formato de SEPA. */
 type SiteRow = "bop" | "suppuration" | "plaque" | "gm" | "pd";
@@ -128,6 +130,19 @@ export function Periodontogram({ teeth, onChange }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const defs = useId().replace(/:/g, "");
   const stats = perioStats({ teeth });
+  const frame = useRef<HTMLDivElement>(null);
+  // Con espacio de sobra, la tabla se amplía para ocupar todo el ancho; en pantallas estrechas se desplaza.
+  const [zoom, setZoom] = useState(1);
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const fit = entry.contentRect.width / CHART_W;
+      setZoom(Math.min(MAX_ZOOM, Math.max(1, Math.floor(fit * 100) / 100)));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const edit = (n: number, change: (t: PerioTooth) => PerioTooth) => onChange?.(updateTooth(teeth, n, change));
   const editSide = (n: number, face: Face, change: (s: PerioSide) => PerioSide) =>
@@ -161,8 +176,8 @@ export function Periodontogram({ teeth, onChange }: Props) {
   return (
     <div className="grid gap-3" ref={root}>
       <PerioArtDefs id={defs} />
-      <div className="overflow-x-auto rounded-lg border bg-card">
-        <div style={{ width: LABEL_W + TOOTH_W * 16 + QUAD_GAP + 16 }} className="grid gap-8 px-2 py-4">
+      <div ref={frame} className="overflow-x-auto rounded-lg border bg-card">
+        <div style={{ width: CHART_W, zoom }} className="grid gap-8 px-2 py-4">
           <Arch title="SUPERIOR" arch="u" upper quadrants={UPPER_QUADRANTS} layout={UPPER_LAYOUT} ctx={ctx} />
           <Arch title="INFERIOR" arch="l" upper={false} quadrants={LOWER_QUADRANTS} layout={LOWER_LAYOUT} ctx={ctx} />
         </div>

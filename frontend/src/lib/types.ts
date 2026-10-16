@@ -293,7 +293,6 @@ export type ClinicalNote = {
   contentHash: string | null;
   integrityOk: boolean | null;
   addenda: { id: string; author: Ref; text: string; createdAt: string }[];
-  periodontogram: PerioChart | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -330,13 +329,20 @@ export type PerioTooth = {
   lingual?: PerioSide | null;
 };
 export type PerioChart = { teeth: PerioTooth[] };
-/** Periodontograma del historial del paciente, con la evolución que lo contiene. */
-export type PerioChartEntry = {
-  noteId: string;
-  attendedAt: string;
-  status: "DRAFT" | "SIGNED";
+/** Periodontograma: examen periodontal propio del paciente (puede tener varios). Inmutable al firmarlo. */
+export type PerioExam = {
+  id: string;
+  patient: Ref;
   dentist: Ref;
+  examinedAt: string;
+  status: "DRAFT" | "SIGNED";
+  observations: string | null;
   chart: PerioChart;
+  signedAt: string | null;
+  contentHash: string | null;
+  integrityOk: boolean | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ClinicalNoteSummary = {
@@ -445,7 +451,7 @@ export type Consent = {
 };
 
 /** Marcadores que se reemplazan al firmar un consentimiento. */
-export const CONSENT_PLACEHOLDERS = ["declarante", "paciente", "documento", "profesional", "clinica", "fecha", "procedimiento"] as const;
+export const CONSENT_PLACEHOLDERS = ["declarante", "paciente", "documento", "profesional", "registro_profesional", "clinica", "fecha", "procedimiento"] as const;
 
 // ---------- Tratamientos, pagos y caja ----------
 export const PROCEDURE_CATEGORIES = {
@@ -566,7 +572,130 @@ export type Payment = {
   voidReason: string | null;
   clinicName: string;
   clinicNit: string | null;
+  kind: PaymentKind;
+  /** Día del ingreso (YYYY-MM-DD). */
+  incomeDate: string;
+  dentist: Ref | null;
+  payerName: string | null;
+  payerDocument: string | null;
+  concept: string | null;
+  paymentTerm: PaymentTerm;
+  items: PaymentLine[];
+  financingId: string | null;
 };
+
+export const EXPENSE_CATEGORIES = {
+  SUPPLIES: "Insumos y materiales",
+  LAB: "Laboratorio dental",
+  PAYROLL: "Nómina y honorarios",
+  RENT: "Arriendo",
+  UTILITIES: "Servicios públicos",
+  MAINTENANCE: "Mantenimiento",
+  EQUIPMENT: "Equipos",
+  MARKETING: "Publicidad",
+  TAXES: "Impuestos",
+  BIOSAFETY: "Bioseguridad",
+  OTHER: "Otros",
+} as const;
+export type ExpenseCategory = keyof typeof EXPENSE_CATEGORIES;
+
+export type Expense = {
+  id: string;
+  site: Ref;
+  cashSessionId: string | null;
+  expenseDate: string;
+  category: ExpenseCategory;
+  description: string;
+  supplierName: string | null;
+  supplierDocument: string | null;
+  invoiceNumber: string | null;
+  amount: number;
+  method: PaymentMethod;
+  reference: string | null;
+  createdBy: Ref | null;
+  createdAt: string;
+  voidedAt: string | null;
+  voidedBy: Ref | null;
+  voidReason: string | null;
+};
+
+export const FINANCING_FREQUENCIES = { WEEKLY: "Semanal", BIWEEKLY: "Quincenal", MONTHLY: "Mensual" } as const;
+export type FinancingFrequency = keyof typeof FINANCING_FREQUENCIES;
+export const FINANCING_STATUS = { ACTIVE: "Al día", OVERDUE: "En mora", PAID: "Pagado", CANCELLED: "Cancelado" } as const;
+export type FinancingStatus = keyof typeof FINANCING_STATUS;
+export const INSTALLMENT_STATUS = { PAID: "Pagada", PARTIAL: "Abonada", PENDING: "Pendiente", OVERDUE: "Vencida" } as const;
+export type InstallmentStatus = keyof typeof INSTALLMENT_STATUS;
+
+export type Financing = {
+  id: string;
+  patient: Ref;
+  patientDocument: string;
+  plan: Ref | null;
+  concept: string;
+  totalAmount: number;
+  downPayment: number;
+  installments: number;
+  frequency: FinancingFrequency;
+  firstDue: string;
+  notes: string | null;
+  createdBy: Ref | null;
+  createdAt: string;
+  cancelledAt: string | null;
+  cancelledBy: Ref | null;
+  cancelReason: string | null;
+  paid: number;
+  balance: number;
+  overdue: number;
+  status: FinancingStatus;
+  nextDue: string | null;
+  /** Cuota 0 = cuota inicial. */
+  schedule: { number: number; dueDate: string; amount: number; paid: number; status: InstallmentStatus }[];
+};
+
+export const PAYMENT_KINDS = {
+  SALE: "Recibo",
+  ACCOUNT: "Abono a cuenta",
+} as const;
+export type PaymentKind = keyof typeof PAYMENT_KINDS;
+
+export const PAYMENT_TERMS = { CASH: "Contado", CREDIT: "Crédito" } as const;
+export type PaymentTerm = keyof typeof PAYMENT_TERMS;
+
+export const DISCOUNT_TYPES = { PERCENT: "%", AMOUNT: "$" } as const;
+export type DiscountType = keyof typeof DISCOUNT_TYPES;
+
+/** Línea del detalle de un ingreso (procedimiento cobrado). */
+export type PaymentLine = {
+  position: number;
+  procedure: Ref | null;
+  description: string;
+  cupsCode: string | null;
+  quantity: number;
+  purpose: string | null;
+  unitPrice: number;
+  subtotal: number;
+  discountType: DiscountType | null;
+  discountValue: number;
+  discount: number;
+  total: number;
+  diagnosisMain: string | null;
+  diagnosisRelated: string | null;
+};
+
+/**
+ * Finalidad de la tecnología en salud (RIPS, Resolución 2275 de 2023): las de uso odontológico más frecuente.
+ * Verifica la tabla de referencia vigente de SISPRO para casos especiales.
+ */
+export const RIPS_PURPOSES = {
+  "11": "Valoración integral para la promoción y mantenimiento",
+  "12": "Detección temprana de enfermedad general",
+  "14": "Protección específica",
+  "15": "Diagnóstico",
+  "16": "Tratamiento",
+  "17": "Rehabilitación",
+  "18": "Paliación",
+  "44": "Otra",
+} as const;
 
 export type CashSession = {
   id: string;
@@ -583,6 +712,7 @@ export type CashSession = {
   totals: { method: PaymentMethod; count: number; total: number }[];
   collected: number;
   voidedCount: number;
+  cashExpenses: number;
   payments: Payment[] | null;
 };
 

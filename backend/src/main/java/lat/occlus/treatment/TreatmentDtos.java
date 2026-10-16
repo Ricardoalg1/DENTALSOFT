@@ -33,6 +33,20 @@ public final class TreatmentDtos {
             OdontogramCondition treatsCondition,
             Boolean active) {}
 
+    /** Un código del catálogo CUPS para crear un procedimiento con su descripción como nombre. */
+    public record CupsImportItem(
+            @NotBlank @Pattern(regexp = "[A-Za-z0-9]{1,10}", message = "Código CUPS inválido") String cupsCode,
+            @NotBlank @Size(max = 150) String name,
+            @NotNull ProcedureCategory category) {}
+
+    /** Importar varios códigos CUPS a la lista de precios, todos con el mismo precio inicial. */
+    public record CupsImportRequest(
+            @NotNull @Size(min = 1, max = 200) List<@Valid @NotNull CupsImportItem> items,
+            @NotNull @DecimalMin("0") @Digits(integer = 12, fraction = 2) BigDecimal price) {}
+
+    /** {@code skipped}: ya había un procedimiento con ese código CUPS o ese nombre. */
+    public record CupsImportResponse(int created, int skipped) {}
+
     public record ProcedureResponse(
             UUID id, String code, String name, ProcedureCategory category, String cupsCode, BigDecimal price,
             boolean perTooth, OdontogramCondition treatsCondition, boolean active) {}

@@ -42,6 +42,7 @@ public class ConsentService {
     private final PatientFileService fileService;
     private final ClinicRepository clinics;
     private final ClinicalAccess access;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     // ---------- Plantillas ----------
 
@@ -140,6 +141,7 @@ public class ConsentService {
                 "paciente", patient.fullName(),
                 "documento", patientDocument,
                 "profesional", professional.getFullName(),
+                "registro_profesional", registration(me),
                 "clinica", clinic.getName(),
                 "fecha", LONG_DATE.format(signedAt.atZone(BOGOTA)),
                 "procedimiento", procedure == null ? "el procedimiento explicado por el profesional" : procedure)));
@@ -168,6 +170,13 @@ public class ConsentService {
 
     private Consent find(UUID clinicId, UUID id) {
         return consents.findByIdAndClinicId(id, clinicId).orElseThrow(() -> new NotFoundException("Consentimiento no encontrado"));
+    }
+
+    /** Registro profesional del perfil de documentos (Mi cuenta); vacío si no lo ha registrado. */
+    private String registration(AuthUser me) {
+        return jdbc.queryForList("select registration from user_document_profile where clinic_id = ? and user_id = ?",
+                        String.class, me.clinicId(), me.userId())
+                .stream().filter(r -> r != null && !r.isBlank()).findFirst().orElse("(sin registrar)");
     }
 
     /** Reemplaza {{marcador}} por su valor; los marcadores desconocidos quedan tal cual. */

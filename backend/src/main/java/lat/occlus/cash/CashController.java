@@ -15,6 +15,7 @@ import lat.occlus.cash.CashDtos.SessionResponse;
 import lat.occlus.cash.CashDtos.VoidRequest;
 import lat.occlus.shared.security.AuthUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -89,6 +91,21 @@ public class CashController {
     PaymentResponse register(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID patientId,
                              @Valid @RequestBody PaymentRequest req) {
         return paymentsService.register(AuthUser.from(jwt), patientId, req);
+    }
+
+    /** Ingresos de la clínica (Recaudos) entre dos fechas; por defecto, el día de hoy. */
+    @GetMapping("/api/payments")
+    @PreAuthorize(CAN_MANAGE_CASH)
+    lat.occlus.shared.web.PageResponse<PaymentResponse> searchPayments(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate to,
+            @RequestParam(required = false) UUID siteId, @RequestParam(required = false) PaymentKind kind,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+        var today = java.time.LocalDate.now(java.time.ZoneId.of("America/Bogota"));
+        return paymentsService.search(AuthUser.from(jwt).clinicId(), from == null ? today : from, to == null ? today : to,
+                siteId, kind, q, page, size);
     }
 
     @GetMapping("/api/payments/{id}")

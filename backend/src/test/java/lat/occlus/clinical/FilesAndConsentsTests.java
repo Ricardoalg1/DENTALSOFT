@@ -154,6 +154,18 @@ class FilesAndConsentsTests {
     }
 
     @Test
+    void procedureTemplatesFillTheirMarkers() throws Exception {
+        String json = mvc.perform(post("/api/consent-templates/examples").header("Authorization", bearer(token)))
+                .andReturn().getResponse().getContentAsString();
+        java.util.List<String> ids = JsonPath.read(json, "$[?(@.title == 'Consentimiento de cirugía')].id");
+        sign(token, patientId, ids.getFirst(), "Paciente", "Diente 38")
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.body").value(org.hamcrest.Matchers.containsString("elemento(s): Diente 38")))
+                .andExpect(jsonPath("$.body").value(org.hamcrest.Matchers.containsString("registro profesional No. (sin registrar)")))
+                .andExpect(jsonPath("$.body").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("{{"))));
+    }
+
+    @Test
     void minorMustBeSignedByGuardian() throws Exception {
         String minor = createPatient(token, "60000002", LocalDate.now().minusYears(10).toString(), "Carmen Díaz");
         String templateId = loadExamplesAndPickFirst();
@@ -221,7 +233,7 @@ class FilesAndConsentsTests {
     private String loadExamplesAndPickFirst() throws Exception {
         String json = mvc.perform(post("/api/consent-templates/examples").header("Authorization", bearer(token)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$.length()").value(11))
                 .andReturn().getResponse().getContentAsString();
         // El ejemplo de autorización de datos no lleva procedimiento: estas pruebas usan el consentimiento general.
         java.util.List<String> ids = JsonPath.read(json, "$[?(@.title =~ /Consentimiento informado general.*/)].id");

@@ -10,6 +10,7 @@ import { api, getMe } from "@/lib/api";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { ODONTOGRAM_CONDITIONS, SURFACES, canReadClinical, canWriteClinical, type OdontogramEntry } from "@/lib/types";
 import { ClinicDocumentHeader } from "@/components/app/document-identity";
+import { Timeline, type TimelineItem } from "@/components/app/timeline";
 import { Odontogram } from "./odontogram";
 
 export const metadata: Metadata = { title: "Odontograma" };
@@ -73,12 +74,40 @@ export default async function OdontogramPage({ params, searchParams }: PageProps
           <CardTitle>Historial de cambios</CardTitle>
           <CardDescription>Nada se borra: cada marca queda con quién la registró y quién la quitó.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="grid gap-4">
+          <Timeline label="Fechas con cambios en el odontograma" items={timeline(history, base, date)} />
           <HistoryList entries={history} />
         </CardContent>
       </Card>
     </div>
   );
+}
+
+/** Día (YYYY-MM-DD, hora de Colombia) de un instante ISO. */
+const bogotaDay = (iso: string) =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
+
+/** Un punto por cada día con cambios (de lo más reciente a lo más antiguo), más el estado actual. */
+function timeline(entries: OdontogramEntry[], base: string, date: string | null): TimelineItem[] {
+  const changes = new Map<string, number>();
+  for (const e of entries) {
+    for (const at of [e.createdAt, e.removedAt]) {
+      if (!at) continue;
+      const day = bogotaDay(at);
+      changes.set(day, (changes.get(day) ?? 0) + 1);
+    }
+  }
+  const days = [...changes.entries()].sort(([a], [b]) => b.localeCompare(a));
+  return [
+    { key: "now", href: base, label: "Actual", detail: "Vigente", active: !date },
+    ...days.map(([day, count]) => ({
+      key: day,
+      href: `${base}?at=${day}`,
+      label: formatDate(day),
+      detail: `${count} ${count === 1 ? "cambio" : "cambios"}`,
+      active: date === day,
+    })),
+  ];
 }
 
 function HistoryList({ entries }: { entries: OdontogramEntry[] }) {

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 import lat.occlus.shared.web.ConflictException;
 import lat.occlus.shared.web.NotFoundException;
+import lat.occlus.treatment.TreatmentDtos.CupsImportRequest;
+import lat.occlus.treatment.TreatmentDtos.CupsImportResponse;
 import lat.occlus.treatment.TreatmentDtos.ProcedureRequest;
 import lat.occlus.treatment.TreatmentDtos.ProcedureResponse;
 import lombok.RequiredArgsConstructor;
@@ -63,6 +65,34 @@ public class PriceListService {
         procedures.flush();
         return list(clinicId, true);
     }
+
+    /**
+     * Crea un procedimiento por cada código CUPS que la clínica aún no tenga (ni por código ni por nombre).
+     * Se cobran por diente los de categorías que se hacen sobre un diente concreto.
+     */
+    @Transactional
+    public CupsImportResponse importCups(UUID clinicId, CupsImportRequest req) {
+        int created = 0;
+        for (var item : req.items()) {
+            String code = item.cupsCode().trim().toUpperCase(java.util.Locale.ROOT);
+            String name = item.name().trim();
+            if (procedures.existsByClinicIdAndCupsCode(clinicId, code) || procedures.existsByClinicIdAndName(clinicId, name)) continue;
+            var p = new Procedure();
+            p.setClinicId(clinicId);
+            p.setName(name);
+            p.setCategory(item.category());
+            p.setCupsCode(code);
+            p.setPrice(req.price());
+            p.setPerTooth(PER_TOOTH.contains(item.category()));
+            procedures.saveAndFlush(p);
+            created++;
+        }
+        return new CupsImportResponse(created, req.items().size() - created);
+    }
+
+    private static final java.util.Set<ProcedureCategory> PER_TOOTH = java.util.EnumSet.of(
+            ProcedureCategory.RESTORATIVE, ProcedureCategory.ENDODONTICS, ProcedureCategory.SURGERY,
+            ProcedureCategory.PROSTHODONTICS);
 
     static ProcedureResponse toResponse(Procedure p) {
         return new ProcedureResponse(p.getId(), p.getCode(), p.getName(), p.getCategory(), p.getCupsCode(), p.getPrice(),

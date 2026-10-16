@@ -1,0 +1,10 @@
+Consentimiento de diseño de sonrisa - bordes en resina
+{{declarante}} declaro y manifiesto, en pleno uso de mis facultades mentales, libre y espontáneamente, que el(la) Dr(a). {{profesional}}, con registro profesional No. {{registro_profesional}}, del consultorio {{clinica}}, me informó lo siguiente:
+
+De manera clara, sobre el procedimiento de diseño de sonrisa ({{procedimiento}}), sus beneficios, limitaciones, riesgos y posibles complicaciones, incluyendo sensibilidad dental, fracturas, desgaste, cambios de color y necesidad de controles posteriores.
+
+Entiendo que los resultados pueden variar según mis condiciones orales y hábitos personales. Asimismo, autorizo al(a la) Dr(a). {{profesional}} para realizar el tratamiento odontológico correspondiente.
+
+Declaro haber resuelto todas mis dudas y acepto voluntariamente la realización del procedimiento.
+
+Fecha: {{fecha}}.

@@ -38,7 +38,7 @@ public class Icd10Service {
     }
 
     /** Normaliza un código ("k02.1" → "K021") y verifica que exista. null o vacío → null. */
-    String validCode(String code) {
+    public String validCode(String code) {
         if (code == null || code.isBlank()) return null;
         String normalized = code.trim().toUpperCase().replace(".", "");
         if (!catalog.existsById(normalized)) {

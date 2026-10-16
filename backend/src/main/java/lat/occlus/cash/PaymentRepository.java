@@ -17,6 +17,7 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
     @Query("""
             select coalesce(sum(p.amount), 0) from Payment p
-            where p.clinicId = :clinicId and p.patientId = :patientId and p.voidedAt is null""")
+            where p.clinicId = :clinicId and p.patientId = :patientId and p.voidedAt is null
+              and p.kind = lat.occlus.cash.PaymentKind.ACCOUNT""")
     BigDecimal sumPaid(UUID clinicId, UUID patientId);
 }

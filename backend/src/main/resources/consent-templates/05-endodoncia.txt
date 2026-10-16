@@ -1,0 +1,12 @@
+Consentimiento de endodoncia
+{{declarante}} declaro y manifiesto, en pleno uso de mis facultades mentales, libre y espontáneamente, que el(la) Dr(a). {{profesional}}, con registro profesional No. {{registro_profesional}}, del consultorio {{clinica}}, me informó lo siguiente:
+
+En términos coloquiales, que necesito un tratamiento de conducto (endodoncia) en mi diente/molar: {{procedimiento}}. El tratamiento consiste en la limpieza del sistema de conductos radiculares con la finalidad de eliminar, en la medida de lo posible, bacterias, cálculos pulpares y tejido necrótico, entre otros. Debido a que en una raíz pueden existir numerosos conductos accesorios inaccesibles a los instrumentos, pero susceptibles a sustancias irrigadoras medicadas, es posible disminuir las bacterias, pero no garantizar un espacio totalmente estéril.
+
+Referidas al futuro del tratamiento: una vez finalizado el tratamiento es necesario realizar la restauración definitiva del diente. Si dicha reconstrucción no fuese la indicada, se retrasase en exceso, el paciente tuviera hábitos de apretamiento (bruxismo) o mordiese accidentalmente alimentos muy duros sobre los dientes desvitalizados, podrían producirse fisuras verticales o fracturas radiculares que empeorarían el pronóstico restaurador, pudiendo llegar a implicar la necesidad de extraer el diente.
+
+Podrán ser necesarias revisiones y radiografías algún tiempo después de realizar el tratamiento para comprobar su evolución y pronóstico definitivo. Puede producirse algún cambio de coloración externa en la corona o bien necesitarse algún otro procedimiento, como el retratamiento no quirúrgico o la cirugía periapical, si con el primer tratamiento no se consiguiesen los objetivos, ya que en el organismo humano nunca podemos tener a priori la garantía absoluta del éxito.
+
+Todas mis dudas han sido aclaradas y estoy completamente de acuerdo con lo consignado en este formato de consentimiento. Si al momento de la intervención surgiera una situación anatomopatológica distinta y más grave a la prevista, doy mi consentimiento para que se actúe del modo más conocido, según la ciencia y conciencia respecto a lo programado, por el exclusivo interés de mi salud. Asimismo, doy consentimiento para la administración de anestesia local que se aplicará para la realización de dicho tratamiento.
+
+Fecha: {{fecha}}.

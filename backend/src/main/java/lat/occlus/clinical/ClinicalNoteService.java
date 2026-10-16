@@ -51,7 +51,6 @@ public class ClinicalNoteService {
     private final ClinicalAccess access;
     private final DocumentBrandingService documentBranding;
     private final Icd10Service icd10;
-    private final PeriodontalChartService perio;
 
     @Transactional(readOnly = true)
     public List<NoteResponse> byPatient(UUID clinicId, UUID patientId) {
@@ -146,8 +145,7 @@ public class ClinicalNoteService {
             defaultAttendedAt = appointment.getStartsAt();
         }
         apply(note, req, defaultAttendedAt);
-        perio.save(notes.saveAndFlush(note), req.periodontogram());
-        return toResponses(List.of(note)).getFirst();
+        return toResponses(List.of(notes.saveAndFlush(note))).getFirst();
     }
 
     /** Editar un borrador. Solo su autor; las firmadas no se tocan (se usan notas aclaratorias). */
@@ -155,8 +153,7 @@ public class ClinicalNoteService {
     public NoteResponse update(AuthUser me, UUID id, NoteRequest req) {
         var note = findDraftOwnedBy(me, id);
         apply(note, req, note.getAttendedAt());
-        perio.save(notes.saveAndFlush(note), req.periodontogram());
-        return toResponses(List.of(note)).getFirst();
+        return toResponses(List.of(notes.saveAndFlush(note))).getFirst();
     }
 
     @Transactional
@@ -262,7 +259,6 @@ public class ClinicalNoteService {
                         n.getDiagnosisRelated2(), n.getDiagnosisRelated3()))
                 .toList());
 
-        Map<UUID, ClinicalDtos.PerioChart> charts = perio.byNotes(list.stream().map(ClinicalNote::getId).toList());
         return list.stream().map(n -> {
             var p = patientById.get(n.getPatientId());
             var related = Stream.of(n.getDiagnosisRelated1(), n.getDiagnosisRelated2(), n.getDiagnosisRelated3())
@@ -276,7 +272,7 @@ public class ClinicalNoteService {
                     dx.get(n.getDiagnosisMain()), n.getDiagnosisType(), related,
                     n.getProcedures(), n.getPlan(), n.getSignedAt(), n.getContentHash(),
                     n.isSigned() ? n.computeHash().equals(n.getContentHash()) : null,
-                    notesAddenda, charts.get(n.getId()), n.getCreatedAt(), n.getUpdatedAt());
+                    notesAddenda, n.getCreatedAt(), n.getUpdatedAt());
         }).toList();
     }
 

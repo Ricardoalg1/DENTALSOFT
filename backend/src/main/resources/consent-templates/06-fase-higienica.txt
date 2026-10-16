@@ -1,0 +1,32 @@
+Consentimiento de fase higiénica
+{{declarante}} declaro y manifiesto, en pleno uso de mis facultades mentales, libre y espontáneamente, que el(la) Dr(a). {{profesional}}, con registro profesional No. {{registro_profesional}}, del consultorio {{clinica}}, me informó lo siguiente:
+
+Usted tiene derecho a conocer el procedimiento al que va a ser sometido y las complicaciones más frecuentes que ocurren. Este documento intenta explicarle todas estas cuestiones; léalo atentamente y consulte todas las dudas que se le planteen. Le recordamos que, por imperativo legal, tendrá que firmar, usted o su representante legal, el consentimiento informado para que pueda realizarle dicho procedimiento.
+
+A propósito, declaro haber sido informado y haber comprendido acabadamente el objeto del tratamiento, que es la eliminación de los factores irritativos e infecciosos presentes en los tejidos que rodean al diente y/o implante (encía, hueso alveolar, ligamento periodontal, cemento radicular, superficie del implante), para conseguir el mantenimiento de los mismos en el tiempo, su función y estética, evitando movilidad, pérdida de hueso y caída de los mismos.
+
+El tratamiento propuesto consiste en la eliminación de placa y cálculo (sarro) con curetas o ultrasonido (instrumentos afilados para el raspaje), en la cantidad de sesiones necesarias según el caso clínico y, de ser necesario, la cirugía de encía a colgajo para eliminar las bolsas infecciosas, el agregado o reducción de tejido blando (injerto o gingivectomía), o aumentar el volumen de encía y tratar los defectos óseos. Estos procedimientos persiguen detener el avance de la enfermedad y limitar los daños generados, debiendo, con control periódico y supervisión profesional, mantener los resultados obtenidos en el tiempo.
+
+Estoy de acuerdo con ser sometido a anestesia local, sabiendo los riesgos que ello implica, delegando al odontólogo la elección del tipo de anestesia. Entiendo perfectamente que, durante y a continuación del procedimiento previsto, cirugía o tratamiento, pueden surgir condiciones que, según el criterio del profesional, requieran un plan de tratamiento complementario o alternativo, relacionado directamente con el éxito del tratamiento. También apruebo cualquier modificación en diseño, materiales o mantenimiento si se considera que es para mi beneficio. En caso de ser necesario se podrán utilizar biomateriales como complemento al tratamiento.
+
+RIESGOS Y EFECTOS ADVERSOS
+
+Entiendo que mis encías pueden sangrar, inflamarse o infectarse localmente, y experimentar una molestia posterior al tratamiento. Si los problemas perduran durante más de unos pocos días me comunicaré con el odontólogo.
+
+Entiendo que mantener mi boca abierta durante el tratamiento puede hacer que mi mandíbula quede endurecida y adolorida temporalmente, y tal vez me sea difícil abrir bien la boca durante varios días.
+
+A medida que cicatriza el tejido de mi encía, el mismo puede encogerse un poco y dejar expuesta parte de la superficie de la raíz. Esto puede hacer que mis dientes se vuelvan más sensibles al calor o al frío y afectar el aspecto estético con la aparición de espacios entre los dientes, lo cual puede generar atrapamiento de comida, aumentar la movilidad de los dientes y generar un aspecto de diente largo.
+
+Entiendo que, dependiendo de mi condición dental actual, problemas de salud existentes, medicamentos que pueda estar tomando, predisposición genética o factores irritantes locales (tabaco, ortodoncia, prótesis mal adaptadas), estos métodos por sí solos tal vez no reviertan por completo los efectos de la enfermedad periodontal ni prevengan problemas futuros.
+
+Entiendo que todos los medicamentos son potencialmente peligrosos y pueden tener efectos secundarios y contraindicaciones con otras drogas. Por lo tanto, es fundamental que le informe a mi odontólogo todos los medicamentos que estoy tomando en la actualidad.
+
+Como tratamiento alternativo a la periodoncia se puede considerar la exodoncia de la o las piezas afectadas, eliminando así los factores causales de la enfermedad, necesitando posteriormente la reposición de las piezas perdidas con prótesis fijas, removibles o implantes.
+
+Entiendo que, si no se aplica ningún tratamiento, o el tratamiento comenzado es interrumpido o discontinuado, mi enfermedad periodontal puede continuar y probablemente empeorar. Esto puede causar una mayor inflamación e infección del tejido de la encía, caries por encima y por debajo del borde de la encía, deterioro del hueso que rodea el diente y, finalmente, la pérdida de ciertos dientes, así como afectar el estado de salud general.
+
+Entiendo que se harán todos los esfuerzos razonables para asegurar que mi afección sea tratada apropiadamente, pero no es posible garantizar resultados perfectos. Mediante mi firma, doy fe de que he recibido información adecuada sobre el tratamiento propuesto, de que entiendo dicha información y de que todas mis preguntas han sido contestadas satisfactoriamente.
+
+El resultado del tratamiento depende en parte de que me comprometa a cepillarme los dientes y a usar el hilo dental después de cada comida, a recibir limpiezas según me sean indicadas, a seguir una dieta saludable, a evitar el tabaco y a cumplir con un plan de cuidado en el hogar que se me enseñará en este consultorio. Otorgo mi consentimiento para la realización del tratamiento periodontal.
+
+Fecha: {{fecha}}.

@@ -195,7 +195,8 @@ public class ReportService {
                     group by pl.patient_id),
                 paid as (
                     select patient_id, sum(amount) as v, max(received_at) as last_at
-                    from payment where clinic_id = ? and voided_at is null group by patient_id),
+                    -- Solo abonos: un recibo de venta se cobra y se paga en el mismo acto, no abona a la deuda.
+                    from payment where clinic_id = ? and voided_at is null and kind = 'ACCOUNT' group by patient_id),
                 balances as (
                     select pt.id, pt.first_name, pt.middle_name, pt.first_last_name, pt.second_last_name,
                            pt.document_type, pt.document_number, pt.phone,

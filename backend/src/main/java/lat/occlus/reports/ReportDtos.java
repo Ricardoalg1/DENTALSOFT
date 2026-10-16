@@ -61,4 +61,14 @@ public final class ReportDtos {
 
     public record Debtor(UUID patientId, String fullName, String document, String phone, BigDecimal done,
                          BigDecimal paid, BigDecimal balance, Instant lastPaymentAt) {}
+
+    // ---------- Centro de informes ----------
+
+    public enum ColumnType { TEXT, NUMBER, MONEY, DATE, DATETIME }
+
+    public record Column(String key, String label, ColumnType type) {}
+
+    /** Informe tabular: {@code truncated} = había más filas que el máximo mostrado. */
+    public record TableReport(String key, String title, String description, List<Column> columns,
+                              List<Map<String, Object>> rows, Map<String, Object> totals, boolean truncated) {}
 }

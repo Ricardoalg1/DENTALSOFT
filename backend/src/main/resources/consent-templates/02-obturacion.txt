@@ -1,0 +1,22 @@
+Consentimiento de obturación
+{{declarante}} declaro y manifiesto, en pleno uso de mis facultades mentales, libre y espontáneamente, que el(la) Dr(a). {{profesional}}, con registro profesional No. {{registro_profesional}}, del consultorio {{clinica}}, me informó lo siguiente:
+
+DECLARO que mi odontólogo(a) me ha explicado que es conveniente en mi situación proceder a realizar una obturación o restauración en un diente o molar, dándome la siguiente información:
+
+1. El propósito principal de la intervención es restaurar los tejidos dentarios duros y proteger la pulpa, para conservar el diente/molar y su función, restableciendo al mismo tiempo, siempre que sea posible, la estética adecuada.
+
+2. Me ha explicado que el tratamiento que voy a recibir implica la administración de anestesia local, que consiste en proporcionar, mediante una inyección, sustancias que provocan un bloqueo reversible de los nervios, de tal manera que se inhibe transitoriamente la sensibilidad con el fin de realizar el tratamiento sin dolor. Me ha explicado que tendré la sensación de adormecimiento del labio o de la cara, que normalmente desaparecerá en dos o tres horas.
+
+También me ha explicado que la administración de la anestesia puede provocar, en el punto en el que se administre la inyección, ulceración de la mucosa y dolor y, menos frecuentemente, limitaciones en el movimiento de apertura de la boca.
+
+Comprendo que, aunque de mis antecedentes personales no se deducen posibles alergias o hipersensibilidad al agente anestésico, la anestesia puede provocar reacciones.
+
+3. La intervención consiste en eliminar de la cavidad el tejido cariado y rellenarla posteriormente con materiales como resina y adhesivos para conseguir un sellado hermético, conservando la integridad de la pieza dental: {{procedimiento}}.
+
+Mi odontólogo(a) me ha advertido que es frecuente que se produzca una mayor sensibilidad, sobre todo al frío, que normalmente desaparecerá de modo espontáneo. También me ha recomendado que vuelva a la consulta lo más pronto posible si advierto signos de movilidad o alteraciones de la oclusión (mordida), pues en ese caso sería preciso ajustarla, para aliviar el dolor e impedir la formación de una enfermedad periodontal y/o trauma.
+
+He comprendido lo que se me ha explicado de forma clara, con un lenguaje sencillo, habiendo resuelto todas las dudas que se me han planteado y la información complementaria que he solicitado.
+
+Estoy satisfecho(a) con la información recibida y he comprendido el alcance y los riesgos de este tratamiento; por ello, DOY MI CONSENTIMIENTO para que se me practique el tratamiento de obturación.
+
+Fecha: {{fecha}}.

@@ -8,13 +8,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-/** Pago o abono de un paciente (recibo de caja). El trigger tg_payment_immutable solo permite anularlo. */
+/**
+ * Ingreso de un paciente (recibo de caja): abono a su cuenta o recibo de venta con detalle de procedimientos
+ * ({@link PaymentItem}). El trigger tg_payment_immutable solo permite anularlo.
+ */
 @Entity
 @Getter
 @Setter
@@ -28,6 +32,8 @@ public class Payment {
     private UUID clinicId;
     private UUID patientId;
     private UUID planId;
+    /** Abono a un financiamiento (cuotas). */
+    private UUID financingId;
     private UUID cashSessionId;
     private long receiptNumber;
     private BigDecimal amount;
@@ -41,6 +47,24 @@ public class Payment {
 
     @CreationTimestamp
     private Instant receivedAt;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentKind kind = PaymentKind.ACCOUNT;
+
+    /** Día del ingreso (Colombia), para informes y cuadres. */
+    private LocalDate incomeDate;
+
+    /** Profesional que atendió (opcional). */
+    private UUID dentistId;
+
+    /** Tercero a cuyo nombre se expide (null = el paciente). */
+    private String payerName;
+    private String payerDocument;
+
+    private String concept;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentTerm paymentTerm = PaymentTerm.CASH;
 
     private Instant voidedAt;
     private UUID voidedBy;

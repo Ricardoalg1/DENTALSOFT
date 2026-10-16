@@ -78,6 +78,28 @@ class TreatmentAndCashTests {
         call(get("/api/procedures"), reception).andExpect(jsonPath("$.length()").value(14));
     }
 
+    @Test
+    void importsProceduresFromCups() throws Exception {
+        String body = """
+                {"price":120000,"items":[
+                  {"cupsCode":"230101","name":"EXODONCIA DE DIENTE PERMANENTE UNIRRADICULAR","category":"SURGERY"},
+                  {"cupsCode":"890203","name":"CONSULTA DE CONTROL POR ODONTOLOGIA GENERAL","category":"DIAGNOSIS"}]}""";
+        String reception = createUserAndLogin(mvc, admin, "RECEPTION", false);
+        call(post("/api/procedures/import-cups").contentType(MediaType.APPLICATION_JSON).content(body), reception)
+                .andExpect(status().isForbidden());
+        call(post("/api/procedures/import-cups").contentType(MediaType.APPLICATION_JSON).content(body), admin)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.created").value(2))
+                .andExpect(jsonPath("$.skipped").value(0));
+        // Repetir no duplica: ya existen por código CUPS.
+        call(post("/api/procedures/import-cups").contentType(MediaType.APPLICATION_JSON).content(body), admin)
+                .andExpect(jsonPath("$.created").value(0))
+                .andExpect(jsonPath("$.skipped").value(2));
+        call(get("/api/procedures"), admin)
+                .andExpect(jsonPath("$[?(@.cupsCode=='230101')].perTooth").value(org.hamcrest.Matchers.contains(true)))
+                .andExpect(jsonPath("$[?(@.cupsCode=='890203')].perTooth").value(org.hamcrest.Matchers.contains(false)));
+    }
+
     // ---------- Planes ----------
 
     @Test
@@ -304,6 +326,127 @@ class TreatmentAndCashTests {
                 "{\"tooth\":%d,\"surface\":%s,\"condition\":\"%s\"}".formatted(
                         tooth, surface == null ? "null" : "\"" + surface + "\"", condition)), admin)
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void saleReceiptWithDetailDoesNotTouchTheAccount() throws Exception {
+        openCash(admin, "0");
+        String sale = """
+                {"siteId":"%s","method":"CASH","kind":"SALE","concept":"Atención del día","payerName":"Empresa SAS",
+                 "payerDocument":"NIT 900123456","items":[
+                  {"procedureId":"%s","description":"Resina de fotocurado","cupsCode":"232101","quantity":2,"purpose":"16",
+                   "unitPrice":100000,"discountType":"PERCENT","discountValue":10,"diagnosisMain":"K02.1"},
+                  {"description":"Profilaxis","quantity":1,"unitPrice":80000,"discountType":"AMOUNT","discountValue":5000}]}"""
+                .formatted(siteId, resinId);
+        String json = call(post("/api/patients/" + patientId + "/payments").contentType(MediaType.APPLICATION_JSON).content(sale), admin)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.kind").value("SALE"))
+                // 2 × 100.000 − 10 % = 180.000; 80.000 − 5.000 = 75.000.
+                .andExpect(jsonPath("$.amount").value(255000.0))
+                .andExpect(jsonPath("$.items.length()").value(2))
+                .andExpect(jsonPath("$.items[0].total").value(180000.0))
+                .andExpect(jsonPath("$.items[0].discount").value(20000.0))
+                .andExpect(jsonPath("$.items[0].diagnosisMain").value("K021"))
+                .andExpect(jsonPath("$.items[0].procedure.name").value("Resina de fotocurado"))
+                .andExpect(jsonPath("$.payerName").value("Empresa SAS"))
+                .andReturn().getResponse().getContentAsString();
+        // El recibo de venta no se descuenta del estado de cuenta; el abono sí.
+        call(get("/api/patients/" + patientId + "/account"), admin).andExpect(jsonPath("$.paid").value(0));
+        pay("50000", "CASH").andExpect(status().isCreated()).andExpect(jsonPath("$.kind").value("ACCOUNT"));
+        call(get("/api/patients/" + patientId + "/account"), admin).andExpect(jsonPath("$.paid").value(50000.0));
+
+        // Listado de Recaudos: los dos ingresos de hoy; filtrado por tipo.
+        call(get("/api/payments"), admin).andExpect(jsonPath("$.totalElements").value(2));
+        call(get("/api/payments?kind=SALE&q=Empresa"), admin)
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id").value((String) JsonPath.read(json, "$.id")));
+
+        // Validaciones: venta sin detalle, abono con detalle, descuento mayor que la línea, crédito, fecha futura.
+        String base = "{\"siteId\":\"" + siteId + "\",\"method\":\"CASH\",";
+        String line = "{\"description\":\"X\",\"quantity\":1,\"unitPrice\":1000";
+        for (String bad : new String[] {
+                base + "\"kind\":\"SALE\",\"items\":[]}",
+                base + "\"amount\":1000,\"items\":[" + line + "}]}",
+                base + "\"kind\":\"SALE\",\"items\":[" + line + ",\"discountType\":\"AMOUNT\",\"discountValue\":2000}]}",
+                base + "\"kind\":\"SALE\",\"paymentTerm\":\"CREDIT\",\"items\":[" + line + "}]}",
+                base + "\"amount\":1000,\"incomeDate\":\"2999-01-01\"}"}) {
+            call(post("/api/patients/" + patientId + "/payments").contentType(MediaType.APPLICATION_JSON).content(bad), admin)
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Test
+    void cashExpensesReduceTheExpectedCash() throws Exception {
+        String sessionId = openCash(admin, "100000");
+        pay("50000", "CASH").andExpect(status().isCreated());
+        String expense = """
+                {"siteId":"%s","category":"SUPPLIES","description":"Guantes de nitrilo","supplierName":"Dental Sur",
+                 "supplierDocument":"NIT 800111222","amount":30000,"method":"CASH","fromCash":true}""".formatted(siteId);
+        String id = JsonPath.read(call(post("/api/expenses").contentType(MediaType.APPLICATION_JSON).content(expense), admin)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.cashSessionId").value(sessionId))
+                .andReturn().getResponse().getContentAsString(), "$.id");
+        // Un gasto por transferencia no sale de la caja.
+        call(post("/api/expenses").contentType(MediaType.APPLICATION_JSON).content(
+                expense.replace("\"CASH\",\"fromCash\":true", "\"TRANSFER\"")), admin).andExpect(status().isCreated());
+        call(post("/api/expenses").contentType(MediaType.APPLICATION_JSON).content(
+                expense.replace("\"CASH\"", "\"TRANSFER\"")), admin).andExpect(status().isBadRequest());
+        // Base 100.000 + efectivo 50.000 − gasto 30.000.
+        call(get("/api/cash-sessions/" + sessionId), admin)
+                .andExpect(jsonPath("$.expectedCash").value(120000.0))
+                .andExpect(jsonPath("$.cashExpenses").value(30000.0));
+        call(get("/api/expenses"), admin).andExpect(jsonPath("$.totalElements").value(2));
+
+        String reception = createUserAndLogin(mvc, admin, "RECEPTION", false);
+        String dentist = createUserAndLogin(mvc, admin, "DENTIST", true);
+        call(get("/api/expenses"), dentist).andExpect(status().isForbidden());
+        call(post("/api/expenses/" + id + "/void").contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"Duplicado\"}"), reception)
+                .andExpect(status().isForbidden());
+        call(post("/api/expenses/" + id + "/void").contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"Duplicado\"}"), admin)
+                .andExpect(status().isOk());
+        call(get("/api/cash-sessions/" + sessionId), admin).andExpect(jsonPath("$.expectedCash").value(150000.0));
+    }
+
+    @Test
+    void financingScheduleIsCoveredInOrder() throws Exception {
+        openCash(admin, "0");
+        String firstDue = java.time.LocalDate.now(java.time.ZoneId.of("America/Bogota")).plusDays(30).toString();
+        String body = """
+                {"concept":"Ortodoncia","totalAmount":300000,"downPayment":60000,"installments":3,
+                 "frequency":"MONTHLY","firstDue":"%s"}""".formatted(firstDue);
+        String financing = call(post("/api/patients/" + patientId + "/financings").contentType(MediaType.APPLICATION_JSON).content(body), admin)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.schedule.length()").value(4))
+                .andExpect(jsonPath("$.schedule[1].amount").value(80000.0))
+                .andExpect(jsonPath("$.schedule[3].dueDate").value(java.time.LocalDate.parse(firstDue).plusMonths(2).toString()))
+                .andExpect(jsonPath("$.status").value("ACTIVE"))
+                .andReturn().getResponse().getContentAsString();
+        String financingId = JsonPath.read(financing, "$.id");
+
+        // 100.000 cubren la cuota inicial (60.000) y 40.000 de la primera cuota.
+        call(post("/api/patients/" + patientId + "/payments").contentType(MediaType.APPLICATION_JSON).content(
+                "{\"siteId\":\"%s\",\"amount\":100000,\"method\":\"CASH\",\"financingId\":\"%s\"}".formatted(siteId, financingId)), admin)
+                .andExpect(status().isCreated());
+        call(get("/api/financings/" + financingId), admin)
+                .andExpect(jsonPath("$.paid").value(100000.0))
+                .andExpect(jsonPath("$.balance").value(200000.0))
+                .andExpect(jsonPath("$.schedule[0].status").value("PAID"))
+                .andExpect(jsonPath("$.schedule[1].status").value("PARTIAL"))
+                .andExpect(jsonPath("$.nextDue").value(firstDue));
+        call(get("/api/financings?status=ACTIVE&q=ortodon"), admin).andExpect(jsonPath("$.length()").value(1));
+        call(get("/api/patients/" + patientId + "/account"), admin).andExpect(jsonPath("$.paid").value(100000.0));
+
+        // Validaciones y permisos.
+        call(post("/api/patients/" + patientId + "/financings").contentType(MediaType.APPLICATION_JSON).content(
+                body.replace("\"downPayment\":60000", "\"downPayment\":300000")), admin).andExpect(status().isBadRequest());
+        String reception = createUserAndLogin(mvc, admin, "RECEPTION", false);
+        call(post("/api/financings/" + financingId + "/cancel").contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"Desiste\"}"), reception)
+                .andExpect(status().isForbidden());
+        call(post("/api/financings/" + financingId + "/cancel").contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"Desiste\"}"), admin)
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
+        call(post("/api/patients/" + patientId + "/payments").contentType(MediaType.APPLICATION_JSON).content(
+                "{\"siteId\":\"%s\",\"amount\":1000,\"method\":\"CASH\",\"financingId\":\"%s\"}".formatted(siteId, financingId)), admin)
+                .andExpect(status().isBadRequest());
     }
 
     private ResultActions openCashRequest(String token, String base) throws Exception {

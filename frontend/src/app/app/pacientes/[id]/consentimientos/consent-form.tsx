@@ -19,6 +19,8 @@ type Props = {
   patient: Patient;
   templates: ConsentTemplate[];
   professionalName: string;
+  /** Registro profesional de quien atiende (Mi cuenta → documentos). */
+  professionalRegistration: string;
   clinicName: string;
   today: string;
 };
@@ -28,7 +30,7 @@ function preview(body: string, values: Record<string, string>) {
   return body.replace(/\{\{(\w+)\}\}/g, (match, key: string) => values[key] ?? match);
 }
 
-export function ConsentForm({ patient, templates, professionalName, clinicName, today }: Props) {
+export function ConsentForm({ patient, templates, professionalName, professionalRegistration, clinicName, today }: Props) {
   const minor = patient.age < 18;
   const [templateId, setTemplateId] = useState(templates[0]?.id ?? "");
   const [procedure, setProcedure] = useState("");
@@ -59,12 +61,13 @@ export function ConsentForm({ patient, templates, professionalName, clinicName, 
             paciente: patient.fullName,
             documento: patientDocument,
             profesional: professionalName,
+            registro_profesional: professionalRegistration || "(sin registrar)",
             clinica: clinicName,
             fecha: today,
             procedimiento: procedure.trim() || "el procedimiento explicado por el profesional",
           })
         : "",
-    [template, declarant, patient.fullName, patientDocument, professionalName, clinicName, today, procedure],
+    [template, declarant, patient.fullName, patientDocument, professionalName, professionalRegistration, clinicName, today, procedure],
   );
 
   function chooseSigner(guardian: boolean) {

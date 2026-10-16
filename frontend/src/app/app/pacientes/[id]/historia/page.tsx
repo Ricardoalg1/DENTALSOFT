@@ -30,8 +30,6 @@ import {
   type ClinicalNote,
 } from "@/lib/types";
 import { AddendumForm } from "./addendum-form";
-import { Periodontogram } from "@/components/periodontogram";
-import { hasPerioData } from "@/lib/periodontogram";
 
 export const metadata: Metadata = { title: "Historia clínica" };
 
@@ -223,15 +221,6 @@ function NoteCard({
           <Row label="Procedimientos">{note.procedures}</Row>
           <Row label="Plan e indicaciones">{note.plan}</Row>
         </dl>
-
-        {hasPerioData(note.periodontogram) && (
-          <details className="rounded-lg border px-3 py-2">
-            <summary className="cursor-pointer text-sm font-medium">Periodontograma</summary>
-            <div className="mt-3">
-              <Periodontogram teeth={note.periodontogram!.teeth} />
-            </div>
-          </details>
-        )}
 
         {note.addenda.length > 0 && (
           <div className="grid gap-2 border-l-2 border-primary/40 pl-3">
