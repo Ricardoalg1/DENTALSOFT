@@ -1,0 +1,45 @@
+---
+import Layout from "../layouts/PublicLayout.astro";
+export const prerender = true;
+
+const items: [string, string][] = [
+  ["Infraestructura en la nube", "Occlus se aloja en Amazon Web Services. AWS cuenta con certificaciones propias, como ISO 27001; esa certificación es de AWS y no de Occlus."],
+  ["Cifrado", "La conexión viaja cifrada (HTTPS). Los datos de la base de datos y los archivos clínicos se guardan cifrados en reposo con el cifrado gestionado de AWS."],
+  ["Cada clínica, aislada", "La información de cada clínica está separada y la base de datos aplica ese aislamiento por sí misma, aunque una consulta de la aplicación fallara."],
+  ["Accesos controlados", "Permisos por rol (administración, odontología, recepción, auxiliares), sesiones que se pueden revocar y bloqueo temporal tras varios intentos fallidos de ingreso."],
+  ["Historia clínica trazable", "Cada cambio queda registrado con quién y cuándo. Las evoluciones firmadas no se editan: se corrigen con notas aclaratorias que conservan lo anterior."],
+  ["Copias de seguridad", "La base de datos tiene copias automáticas con recuperación a un momento específico dentro del periodo de retención configurado, y los archivos conservan versiones."],
+  ["Protección de datos personales", "Política de tratamiento conforme a la Ley 1581 de 2012, acuerdo de encargo con cada clínica y autorización de pacientes que se firma en la plataforma."],
+  ["Firmas y documentos", "Los consentimientos y documentos llevan el membrete de la clínica, la firma y una huella que permite verificar que el contenido no cambió."],
+];
+---
+
+<Layout title="Seguridad" description="Cómo Occlus protege la información de tu clínica: nube, cifrado, aislamiento, copias y trazabilidad.">
+  <article class="mx-auto max-w-3xl space-y-8 px-6 py-16">
+    <header class="space-y-3">
+      <p class="eyebrow">Tu información, protegida</p>
+      <h1 class="text-4xl font-semibold tracking-tight">Seguridad de la información</h1>
+      <p class="leading-8 text-muted-foreground">
+        Los datos de tus pacientes son sensibles. Esto es lo que hacemos para cuidarlos y lo que sabrás de nosotros sin letra pequeña.
+      </p>
+    </header>
+    <ul class="grid gap-4 sm:grid-cols-2">
+      {items.map(([title, text]) => (
+        <li class="soft rounded-2xl border p-5">
+          <h2 class="text-lg font-semibold">{title}</h2>
+          <p class="mt-2 text-sm leading-7 text-muted-foreground">{text}</p>
+        </li>
+      ))}
+    </ul>
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold">Lo que acordamos contigo</h2>
+      <p class="leading-8 text-muted-foreground">
+        La disponibilidad del servicio, el soporte y los tiempos de recuperación se definen en la propuesta y el acuerdo de servicio de cada clínica. Si ocurre un incidente que afecte tus datos, te avisamos y colaboramos en la gestión.
+      </p>
+      <p class="leading-8 text-muted-foreground">
+        Consulta cómo tratamos los datos personales en la <a class="text-primary underline" href="/privacidad">política de privacidad</a>.
+      </p>
+    </section>
+    <a href="/demo" class="btn">Habla con nosotros</a>
+  </article>
+</Layout>

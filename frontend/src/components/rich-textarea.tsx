@@ -1,10 +1,27 @@
 "use client";
 
 import * as React from "react";
-import { Bold, Italic, List, ListOrdered } from "lucide-react";
+import { Bold, Italic, List, ListOrdered, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+
+/** Reconocimiento de voz del navegador (Chrome, Edge, Safari). No está en los tipos estándar de TypeScript. */
+type Recognition = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((e: { resultIndex: number; results: { length: number; [i: number]: { isFinal: boolean; 0: { transcript: string } } } }) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
+};
+const speechCtor = (): (new () => Recognition) | null => {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+};
 
 const LIST_LINE = /^(\s*)([-*•]|\d+[.)])\s(.*)$/;
 
@@ -30,6 +47,14 @@ function lineBounds(value: string, start: number, end: number) {
  */
 export function RichTextarea({ className, onKeyDown, ...props }: React.ComponentProps<typeof Textarea>) {
   const ref = React.useRef<HTMLTextAreaElement>(null);
+  const recognition = React.useRef<Recognition | null>(null);
+  const [listening, setListening] = React.useState(false);
+  const [voiceError, setVoiceError] = React.useState<string>();
+  const supported = React.useSyncExternalStore(
+    () => () => {},
+    () => speechCtor() !== null,
+    () => false,
+  );
   const max = typeof props.maxLength === "number" ? props.maxLength : Infinity;
 
   function apply(next: string, start: number, end?: number) {
@@ -37,6 +62,47 @@ export function RichTextarea({ className, onKeyDown, ...props }: React.Component
     if (!el || next.length > max) return;
     setNative(el, next, start, end);
   }
+
+  /** Inserta lo dictado en la posición del cursor, cuidando los espacios. */
+  function insertDictation(text: string) {
+    const el = ref.current;
+    if (!el || !text) return;
+    const { value, selectionStart: s, selectionEnd: e } = el;
+    const before = value.slice(0, s);
+    const lead = before && !/\s$/.test(before) ? " " : "";
+    const insert = lead + text;
+    apply(before + insert + value.slice(e), s + insert.length);
+  }
+
+  function toggleDictation() {
+    if (listening) {
+      recognition.current?.stop();
+      return;
+    }
+    const Ctor = speechCtor();
+    if (!Ctor) return;
+    setVoiceError(undefined);
+    const r = new Ctor();
+    r.lang = "es-CO";
+    r.continuous = true;
+    r.interimResults = false;
+    r.onresult = (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) insertDictation(e.results[i][0].transcript.trim());
+      }
+    };
+    r.onerror = (e) => {
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") setVoiceError("Permite el micrófono en el navegador para dictar.");
+      else if (e.error !== "no-speech" && e.error !== "aborted") setVoiceError("No se pudo dictar. Intenta de nuevo.");
+    };
+    r.onend = () => setListening(false);
+    recognition.current = r;
+    ref.current?.focus();
+    r.start();
+    setListening(true);
+  }
+
+  React.useEffect(() => () => recognition.current?.stop(), []);
 
   function wrapSelection(marker: string) {
     const el = ref.current;
@@ -119,7 +185,27 @@ export function RichTextarea({ className, onKeyDown, ...props }: React.Component
         <Button type="button" variant="ghost" size="icon-xs" aria-label="Lista numerada" title="Lista numerada" onMouseDown={(e) => e.preventDefault()} onClick={() => toggleList(true)} disabled={props.disabled}>
           <ListOrdered />
         </Button>
+        {supported && (
+          <>
+            <span className="mx-1 h-4 w-px bg-border" aria-hidden />
+            <Button
+              type="button"
+              variant={listening ? "destructive" : "ghost"}
+              size="icon-xs"
+              aria-label={listening ? "Detener dictado" : "Dictar por voz"}
+              aria-pressed={listening}
+              title={listening ? "Detener dictado" : "Dictar por voz (el audio lo procesa el servicio de voz de tu navegador)"}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={toggleDictation}
+              disabled={props.disabled}
+            >
+              {listening ? <MicOff /> : <Mic />}
+            </Button>
+            {listening && <span className="ml-1 animate-pulse text-xs text-destructive">Escuchando…</span>}
+          </>
+        )}
       </div>
+      {voiceError && <p className="text-xs text-destructive">{voiceError}</p>}
       <Textarea ref={ref} className={cn(className)} onKeyDown={handleKeyDown} {...props} />
     </div>
   );

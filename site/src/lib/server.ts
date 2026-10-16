@@ -9,6 +9,7 @@ export const publicPages = new Set([
   "/blog",
   "/privacidad",
   "/condiciones",
+  "/seguridad",
   "/blog/organizar-agenda-clinica",
   "/blog/control-insumos-odontologia",
   "/blog/seguimiento-presupuestos",

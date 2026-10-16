@@ -221,9 +221,11 @@ class FilesAndConsentsTests {
     private String loadExamplesAndPickFirst() throws Exception {
         String json = mvc.perform(post("/api/consent-templates/examples").header("Authorization", bearer(token)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$.length()").value(4))
                 .andReturn().getResponse().getContentAsString();
-        return JsonPath.read(json, "$[0].id");
+        // El ejemplo de autorización de datos no lleva procedimiento: estas pruebas usan el consentimiento general.
+        java.util.List<String> ids = JsonPath.read(json, "$[?(@.title =~ /Consentimiento informado general.*/)].id");
+        return ids.getFirst();
     }
 
     private ResultActions sign(String token, String patient, String templateId, String relationship, String procedure)

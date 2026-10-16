@@ -1,6 +1,6 @@
 "use client";
 import { RichText } from "@/components/rich-text";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Bell, CircleAlert, Info, TriangleAlert, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import type { ClinicAnnouncement } from "@/lib/platform";
@@ -9,6 +9,23 @@ import { cn } from "@/lib/utils";
 const POLL_MS = 30_000;
 const REPEAT_MS = 25_000;
 const MUTE_KEY = "occlus-bell-muted";
+const MUTE_EVENT = "occlus-bell-muted-change";
+// La preferencia de silencio vive en localStorage; useSyncExternalStore evita el desajuste entre servidor y navegador.
+const subscribeMute = (cb: () => void) => {
+  window.addEventListener(MUTE_EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(MUTE_EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+};
+const readMute = () => {
+  try {
+    return localStorage.getItem(MUTE_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
 
 const ICONS = { INFO: Info, WARNING: TriangleAlert, CRITICAL: CircleAlert } as const;
 
@@ -21,7 +38,7 @@ export function NotificationBell() {
   const [items, setItems] = useState<ClinicAnnouncement[]>([]);
   const [open, setOpen] = useState(false);
   const [fresh, setFresh] = useState<Set<string>>(new Set()); // los que estaban sin leer al abrir el panel
-  const [muted, setMuted] = useState(false);
+  const muted = useSyncExternalStore(subscribeMute, readMute, () => false);
   const known = useRef<Set<string> | null>(null);
   const ctx = useRef<AudioContext | null>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -51,9 +68,6 @@ export function NotificationBell() {
   }, [muted]);
 
   useEffect(() => {
-    try {
-      setMuted(localStorage.getItem(MUTE_KEY) === "1");
-    } catch {}
     // Los navegadores solo permiten sonido tras una interacción: la primera lo habilita.
     const unlock = () => {
       try {
@@ -87,6 +101,8 @@ export function NotificationBell() {
   }, [chime]);
 
   useEffect(() => {
+    // Carga inicial de datos del servidor al montar.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
     const id = setInterval(() => {
       if (document.visibilityState === "visible") void load();
@@ -138,11 +154,10 @@ export function NotificationBell() {
   }
 
   function toggleMute() {
-    const next = !muted;
-    setMuted(next);
     try {
-      localStorage.setItem(MUTE_KEY, next ? "1" : "0");
+      localStorage.setItem(MUTE_KEY, muted ? "0" : "1");
     } catch {}
+    window.dispatchEvent(new Event(MUTE_EVENT));
   }
 
   return (

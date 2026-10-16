@@ -13,28 +13,6 @@ final class DefaultConsentTemplates {
     record Example(String title, String body) {}
 
     static final List<Example> EXAMPLES = List.of(
-            new Example("Autorización para el tratamiento de datos personales (Ley 1581 de 2012)", """
-                    {{declarante}} autorizo de manera previa, expresa e informada a {{clinica}}, como responsable del \
-                    tratamiento, para recolectar, almacenar, usar y consultar los datos personales y de salud del \
-                    paciente, incluida su historia clínica, con las siguientes finalidades: prestar la atención \
-                    odontológica, gestionar citas, tratamientos, pagos y facturación, cumplir las obligaciones legales \
-                    en materia de salud y contactar al paciente para recordatorios y seguimiento de su atención.
-
-                    Entiendo que los datos de salud son sensibles y que no estoy obligado(a) a suministrarlos, aunque sin ellos \
-                    la clínica no podrá prestar el servicio. Sé que la clínica usa la plataforma Occlus como encargado para \
-                    almacenar y procesar esta información con medidas de seguridad, y que puede apoyarse en proveedores \
-                    tecnológicos, incluidos algunos ubicados fuera de Colombia.
-
-                    Como titular tengo derecho a conocer, actualizar y rectificar mis datos, a solicitar prueba de esta \
-                    autorización, a ser informado sobre su uso, a presentar quejas ante la Superintendencia de Industria \
-                    y Comercio y a revocar la autorización o solicitar la supresión de mis datos cuando no exista un \
-                    deber legal de conservarlos (la historia clínica debe conservarse por el plazo que exige la normatividad \
-                    de salud). Puedo ejercer estos derechos ante {{clinica}} por sus canales de atención.
-
-                    Si firmo en nombre de un menor de edad o de una persona que no puede firmar, declaro que tengo la \
-                    representación legal para hacerlo.
-
-                    Fecha: {{fecha}}."""),
             new Example("Consentimiento informado general para atención odontológica", """
                     {{declarante}} declaro que el(la) profesional {{profesional}} de {{clinica}} me explicó en un \
                     lenguaje claro el diagnóstico de salud oral del paciente y el tratamiento propuesto: {{procedimiento}}.
@@ -75,6 +53,28 @@ final class DefaultConsentTemplates {
                     Entiendo que puede haber molestias durante algunos días y que, aunque el pronóstico suele ser favorable, \
                     en algunos casos el tratamiento no es exitoso y se requiere repetirlo, una cirugía complementaria \
                     o la extracción del diente.
+
+                    Fecha: {{fecha}}."""),
+            new Example("Autorización para el tratamiento de datos personales (Ley 1581 de 2012)", """
+                    {{declarante}} autorizo de manera previa, expresa e informada a {{clinica}}, como responsable del \
+                    tratamiento, para recolectar, almacenar, usar y consultar los datos personales y de salud del \
+                    paciente, incluida su historia clínica, con las siguientes finalidades: prestar la atención \
+                    odontológica, gestionar citas, tratamientos, pagos y facturación, cumplir las obligaciones legales \
+                    en materia de salud y contactar al paciente para recordatorios y seguimiento de su atención.
+
+                    Entiendo que los datos de salud son sensibles y que no estoy obligado(a) a suministrarlos, aunque sin ellos \
+                    la clínica no podrá prestar el servicio. Sé que la clínica usa la plataforma Occlus como encargado para \
+                    almacenar y procesar esta información con medidas de seguridad, y que puede apoyarse en proveedores \
+                    tecnológicos, incluidos algunos ubicados fuera de Colombia.
+
+                    Como titular tengo derecho a conocer, actualizar y rectificar mis datos, a solicitar prueba de esta \
+                    autorización, a ser informado sobre su uso, a presentar quejas ante la Superintendencia de Industria \
+                    y Comercio y a revocar la autorización o solicitar la supresión de mis datos cuando no exista un \
+                    deber legal de conservarlos (la historia clínica debe conservarse por el plazo que exige la normatividad \
+                    de salud). Puedo ejercer estos derechos ante {{clinica}} por sus canales de atención.
+
+                    Si firmo en nombre de un menor de edad o de una persona que no puede firmar, declaro que tengo la \
+                    representación legal para hacerlo.
 
                     Fecha: {{fecha}}."""));
 }

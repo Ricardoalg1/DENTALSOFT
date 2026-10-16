@@ -10,10 +10,12 @@ import { cn } from "@/lib/utils";
  * Barra lateral fija en pantallas grandes; en celular y tableta es un panel que se abre con el botón de menú.
  */
 export function AppSidebar({ clinicName, children }: { clinicName: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  // El menú recuerda en qué página se abrió: al navegar a otra, se cierra solo.
+  const [openAt, setOpenAt] = useState<string | null>(null);
+  const open = openAt === pathname;
+  const setOpen = (value: boolean) => setOpenAt(value ? pathname : null);
 
-  useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);

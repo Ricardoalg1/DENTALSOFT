@@ -17,6 +17,7 @@ import {
   Users,
   UserRound,
   MessageSquare,
+  HeartHandshake,
   ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -63,6 +64,12 @@ const ITEMS: Item[] = [
     icon: MessageSquare,
     messagingOnly: true,
     module: "MESSAGING",
+  },
+  {
+    href: "/app/seguimiento",
+    label: "Seguimiento",
+    icon: HeartHandshake,
+    messagingOnly: true,
   },
   {
     href: "/app/historias",

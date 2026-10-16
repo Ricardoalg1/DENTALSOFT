@@ -7,6 +7,8 @@ import java.util.Set;
 import lat.occlus.TestcontainersConfiguration;
 import lat.occlus.appointment.AppointmentController;
 import lat.occlus.appointment.ScheduleController;
+import lat.occlus.clinical.DocumentBrandingController;
+import lat.occlus.patient.OutreachController;
 import lat.occlus.patient.PatientController;
 import lat.occlus.site.SiteController;
 import lat.occlus.user.ProfessionalController;
@@ -29,7 +31,7 @@ class EntitlementCoverageTests {
     /** Núcleo: siempre disponible mientras la suscripción dé acceso (se valida su estado, no un módulo). */
     private static final Set<Class<?>> CORE = Set.of(PatientController.class, AppointmentController.class,
             ScheduleController.class, SiteController.class, UserController.class, ProfessionalController.class,
-            AnnouncementController.class);
+            AnnouncementController.class, OutreachController.class, DocumentBrandingController.class);
 
     @Autowired
     @Qualifier("requestMappingHandlerMapping")
