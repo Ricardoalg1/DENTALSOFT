@@ -31,7 +31,7 @@ services:
       SUBSCRIPTIONS_SCHEDULER: ${SUBSCRIPTIONS_SCHEDULER:-true}
       SUBSCRIPTION_GRACE_DAYS: ${SUBSCRIPTION_GRACE_DAYS:-7}
       PAYMENTS_SIMULATED: "false"
-      PUBLIC_URL: https://${PUBLIC_DOMAIN}
+      PUBLIC_URL: https://${PUBLIC_APP_DOMAIN:-occlusapp.com}
       WOMPI_ENABLED: ${WOMPI_ENABLED:-false}
       WOMPI_ENVIRONMENT: ${WOMPI_ENVIRONMENT:-production}
       WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
@@ -74,7 +74,7 @@ services:
     environment:
       API_URL: http://backend:8080
       SELF_REGISTRATION: ${SELF_REGISTRATION:-false}
-      PUBLIC_SITE_URL: https://${PUBLIC_DOMAIN:?Configura el dominio}
+      PUBLIC_SITE_URL: https://${PUBLIC_APP_DOMAIN:-occlusapp.com}
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/bff/health',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
@@ -90,7 +90,7 @@ services:
       dockerfile: site/Dockerfile
       args:
         SITE_URL: https://${PUBLIC_DOMAIN:?Configura el dominio}
-        PUBLIC_APP_URL: https://${PUBLIC_DOMAIN}
+        PUBLIC_APP_URL: https://${PUBLIC_APP_DOMAIN:-occlusapp.com}
     restart: unless-stopped
     logging: *bounded-logs
     environment:
@@ -125,6 +125,7 @@ services:
     logging: *bounded-logs
     environment:
       PUBLIC_DOMAIN: ${PUBLIC_DOMAIN}
+      PUBLIC_APP_DOMAIN: ${PUBLIC_APP_DOMAIN:-occlusapp.com}
       TLS_EMAIL: ${TLS_EMAIL:?Configura el correo para TLS}
     ports: ["80:80", "443:443", "443:443/udp"]
     volumes:

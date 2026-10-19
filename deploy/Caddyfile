@@ -1,7 +1,7 @@
 {
   email {$TLS_EMAIL}
 }
-{$PUBLIC_DOMAIN}, www.{$PUBLIC_DOMAIN}, occlusapp.com, www.occlusapp.com {
+{$PUBLIC_DOMAIN}, www.{$PUBLIC_DOMAIN} {
   encode zstd gzip
   header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
@@ -12,8 +12,30 @@
     Referrer-Policy strict-origin-when-cross-origin
     Permissions-Policy "camera=(), microphone=(), geolocation=()"
   }
+  @app_paths path /app* /ingresar* /registro* /pago* /salir*
+  redir @app_paths https://{$PUBLIC_APP_DOMAIN}{uri} 308
   reverse_proxy edge:80 {
     # Sobrescribe cualquier valor enviado por el cliente.
+    header_up X-Occlus-Client-IP {remote_host}
+  }
+}
+
+{$PUBLIC_APP_DOMAIN}, www.{$PUBLIC_APP_DOMAIN} {
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+    -Server
+    Referrer-Policy strict-origin-when-cross-origin
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  }
+  @www host www.{$PUBLIC_APP_DOMAIN}
+  redir @www https://{$PUBLIC_APP_DOMAIN}{uri} 308
+  @root path /
+  redir @root https://{$PUBLIC_APP_DOMAIN}/ingresar 302
+  reverse_proxy edge:80 {
     header_up X-Occlus-Client-IP {remote_host}
   }
 }
