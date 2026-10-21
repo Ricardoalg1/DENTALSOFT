@@ -32,7 +32,7 @@ class EntitlementCoverageTests {
     private static final Set<Class<?>> CORE = Set.of(PatientController.class, AppointmentController.class,
             ScheduleController.class, SiteController.class, UserController.class, ProfessionalController.class,
             AnnouncementController.class, OutreachController.class, DocumentBrandingController.class,
-            lat.occlus.biosafety.BiosafetyController.class);
+            lat.occlus.biosafety.BiosafetyController.class, lat.occlus.migration.MigrationController.class);
 
     @Autowired
     @Qualifier("requestMappingHandlerMapping")

@@ -60,6 +60,26 @@ public class PatientFileService {
                 access.userRefs(List.of(me.userId())).get(me.userId()));
     }
 
+    public enum ImportOutcome { CREATED, DUPLICATE, INVALID_TYPE }
+
+    /**
+     * Migración: guarda un documento traído del programa anterior. No lanza excepción por formato no
+     * permitido (devuelve INVALID_TYPE) para que el lote siga con los demás archivos; si el mismo contenido
+     * ya está en el paciente, no lo repite.
+     */
+    @Transactional
+    public ImportOutcome importDocument(AuthUser me, UUID patientId, byte[] content, String originalFilename,
+                                       FileCategory category) {
+        if (category == FileCategory.SIGNATURE) throw new BadRequestException("Categoría no válida");
+        var type = FileType.detect(content);
+        if (type.isEmpty()) return ImportOutcome.INVALID_TYPE;
+        if (files.existsByClinicIdAndPatientIdAndSha256AndRemovedAtIsNull(me.clinicId(), patientId, sha256(content))) {
+            return ImportOutcome.DUPLICATE;
+        }
+        store(me, patientId, content, type.get(), category, baseName(originalFilename), originalFilename);
+        return ImportOutcome.CREATED;
+    }
+
     /** Guarda el contenido en S3 y registra los metadatos. Lo usan también los consentimientos (firmas). */
     PatientFile store(AuthUser me, UUID patientId, byte[] content, FileType type, FileCategory category,
                       String title, String originalFilename) {
