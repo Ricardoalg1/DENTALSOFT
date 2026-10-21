@@ -20,6 +20,11 @@ public record MessagingProperties(
             return liveEnabled && clinicId != null && notBlank(accessToken) && notBlank(phoneNumberId)
                     && notBlank(appSecret) && notBlank(verifyToken);
         }
+
+        /** Meta puede validar el endpoint antes de que activemos los envíos de producción. */
+        public boolean webhookConfigured() {
+            return notBlank(verifyToken);
+        }
         @Override public String toString() { return "WhatsApp[credentials=REDACTED]"; }
     }
 

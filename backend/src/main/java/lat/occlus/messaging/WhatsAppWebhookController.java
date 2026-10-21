@@ -30,7 +30,7 @@ public class WhatsAppWebhookController {
  @GetMapping
  public ResponseEntity<String> verify(@RequestParam("hub.mode") String mode,
   @RequestParam("hub.verify_token") String token,@RequestParam("hub.challenge") String challenge) {
-  if(!config.whatsapp().configured() || !"subscribe".equals(mode) || !equal(token,config.whatsapp().verifyToken())) throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Verificación rechazada.");
+  if(!config.whatsapp().webhookConfigured() || !"subscribe".equals(mode) || !equal(token,config.whatsapp().verifyToken())) throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Verificación rechazada.");
   return ResponseEntity.ok().contentType(org.springframework.http.MediaType.TEXT_PLAIN).body(challenge);
  }
  @PostMapping
