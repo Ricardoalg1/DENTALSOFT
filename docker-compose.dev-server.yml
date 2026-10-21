@@ -1,0 +1,55 @@
+# Servidor de desarrollo en AWS: mismo stack que producción, pero con PostgreSQL y almacenamiento S3
+# propios dentro del servidor. Nunca usa la RDS ni el bucket de producción (ver docs/flujo-ramas-entornos.md).
+#
+# Uso (en el servidor de desarrollo, rama development):
+#   docker compose --env-file .env.development -f docker-compose.production.yml -f docker-compose.dev-server.yml up -d --build
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}
+    environment:
+      POSTGRES_DB: occlus
+      POSTGRES_USER: occlus
+      POSTGRES_PASSWORD: ${DB_MIGRATION_PASSWORD}
+      APP_DB_PASSWORD: ${DB_PASSWORD}
+      TZ: America/Bogota
+    volumes:
+      - dev-pgdata:/var/lib/postgresql/data
+      - ./deploy/dev-server/postgres-init.sh:/docker-entrypoint-initdb.d/01-app-role.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U occlus -d occlus"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [internal]
+  # Compatible con S3 (como en desarrollo local). s3.json lo genera el servidor con claves propias.
+  storage:
+    image: chrislusf/seaweedfs:latest
+    restart: unless-stopped
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -master.volumeSizeLimitMB=256
+    volumes:
+      - dev-storage:/data
+      - ./deploy/dev-server/s3.json:/etc/seaweedfs/s3.json:ro
+    networks: [internal]
+  backend:
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/occlus
+      DB_USER: occlus_app
+      DB_MIGRATION_USER: occlus
+      STORAGE_ENDPOINT: http://storage:8333
+      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY}
+      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY}
+      STORAGE_PATH_STYLE: "true"
+      STORAGE_BUCKET: occlus-files
+    depends_on:
+      postgres: {condition: service_healthy}
+      storage: {condition: service_started}
+  frontend:
+    build:
+      args:
+        OCCLUS_ENV: development
+volumes:
+  dev-pgdata:
+  dev-storage:
