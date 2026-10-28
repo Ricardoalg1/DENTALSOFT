@@ -28,11 +28,11 @@ class PaymentPropertiesTests {
     void anActiveGatewayNeedsAPublicUrl() {
         var live = wompi("sandbox", "pub_test_a", "prv_test_a");
         var off = new PaymentProperties.Epayco(false, null, null, null, true, null);
-        assertThatThrownBy(() -> new PaymentProperties(false, "", live, off)).hasMessageContaining("public-url");
-        assertThatThrownBy(() -> new PaymentProperties(false, "occlus.lat", live, off)).hasMessageContaining("public-url");
-        assertThat(new PaymentProperties(false, "https://occlus.lat", live, off).anyLive()).isTrue();
+        assertThatThrownBy(() -> new PaymentProperties(false, "", live, off, null)).hasMessageContaining("public-url");
+        assertThatThrownBy(() -> new PaymentProperties(false, "occlus.lat", live, off, null)).hasMessageContaining("public-url");
+        assertThat(new PaymentProperties(false, "https://occlus.lat", live, off, null).anyLive()).isTrue();
         // Sin pasarelas reales no hace falta (solo pagos manuales o simulados).
-        assertThat(new PaymentProperties(true, null, null, null).anyLive()).isFalse();
+        assertThat(new PaymentProperties(true, null, null, null, null).anyLive()).isFalse();
     }
 
     @Test
@@ -41,10 +41,18 @@ class PaymentPropertiesTests {
     }
 
     @Test
+    void mercadoPagoNeedsItsKeysAndDetectsTestCredentials() {
+        assertThatThrownBy(() -> new PaymentProperties.MercadoPago(true, "APP_USR-1", "", null)).hasMessageContaining("faltan llaves");
+        assertThat(new PaymentProperties.MercadoPago(true, "TEST-123", "s", null).test()).isTrue();
+        assertThat(new PaymentProperties.MercadoPago(true, "APP_USR-123", "s", null).baseUrl()).isEqualTo("https://api.mercadopago.com");
+    }
+
+    @Test
     void secretsNeverAppearInToString() {
         var w = new PaymentProperties.Wompi(true, "sandbox", "pub_test_PUBLIC", "prv_test_SECRETKEY", "SECRET_EVENTS", "SECRET_INTEGRITY", null);
         var e = new PaymentProperties.Epayco(true, "CUST", "PUBKEY", "SECRET_PKEY", true, null);
-        String all = new PaymentProperties(false, "https://occlus.lat", w, e).toString() + w + e;
+        var m = new PaymentProperties.MercadoPago(true, "APP_USR-SECRET_TOKEN", "SECRET_WEBHOOK", null);
+        String all = new PaymentProperties(false, "https://occlus.lat", w, e, m).toString() + w + e + m;
         assertThat(all).doesNotContain("SECRET").doesNotContain("prv_test").doesNotContain("PUBKEY");
     }
 }

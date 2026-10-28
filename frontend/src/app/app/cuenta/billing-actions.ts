@@ -18,7 +18,7 @@ async function run<T>(fn: () => Promise<T>): Promise<Outcome<T>> {
   }
 }
 
-const provider = z.enum(["WOMPI", "EPAYCO"]);
+const provider = z.enum(["WOMPI", "EPAYCO", "MERCADOPAGO"]);
 
 /** Crea el intento de pago y devuelve a dónde enviar a la persona. Solo el administrador de la clínica puede. */
 export async function startCheckout(p: string) {

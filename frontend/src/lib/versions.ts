@@ -6,6 +6,15 @@ export type VersionEntry = { version: string; date: string; title: string; chang
 
 export const VERSIONS: VersionEntry[] = [
   {
+    version: "1.2",
+    date: "2026-10-27",
+    title: "Pago de la suscripción con Mercado Pago",
+    changes: [
+      "Las clínicas pueden pagar su suscripción con Mercado Pago (Checkout Pro), además de Wompi y ePayco.",
+      "Confirmación por webhook firmado y consulta directa del pago a Mercado Pago.",
+    ],
+  },
+  {
     version: "1.1",
     date: "2026-10-21",
     title: "Migración de datos desde otros programas",
