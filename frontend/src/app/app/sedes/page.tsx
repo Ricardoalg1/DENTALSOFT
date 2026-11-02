@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { api, getMe } from "@/lib/api";
 import type { Site } from "@/lib/types";
 import { CreateSiteForm } from "./create-site-form";
+import { EditSiteDialog } from "./edit-site-dialog";
 
 export const metadata: Metadata = { title: "Sedes" };
 
@@ -28,6 +29,7 @@ export default async function SitesPage() {
                   <TableHead>Dirección</TableHead>
                   <TableHead>Ciudad</TableHead>
                   <TableHead>Teléfono</TableHead>
+                  {isAdmin && <TableHead className="w-0" />}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -37,6 +39,11 @@ export default async function SitesPage() {
                     <TableCell>{s.address ?? "—"}</TableCell>
                     <TableCell>{s.city ?? "—"}</TableCell>
                     <TableCell>{s.phone ?? "—"}</TableCell>
+                    {isAdmin && (
+                      <TableCell>
+                        <EditSiteDialog site={s} />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

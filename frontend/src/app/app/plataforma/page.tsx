@@ -66,7 +66,7 @@ export default async function PlatformOverviewPage() {
           <AlertDescription>
             La pasarela <strong>simulada</strong> está activa: no cobra dinero real.{" "}
             {o.gatewayMode === "simulated"
-              ? "Solo sirve para probar el ciclo; los pagos reales se registran a mano o se activa Wompi/ePayco."
+              ? "Solo sirve para probar el ciclo; los pagos reales se registran a mano o se activa Wompi, ePayco o Mercado Pago."
               : "Hay pasarelas reales activas al mismo tiempo: apaga la simulada en producción (PAYMENTS_SIMULATED=false)."}
           </AlertDescription>
         </Alert>
@@ -75,7 +75,7 @@ export default async function PlatformOverviewPage() {
         <Alert>
           <Info />
           <AlertDescription>
-            No hay ninguna pasarela de pago activa: los clientes no pueden pagar en línea y los cobros se registran a mano. Para activar Wompi o ePayco
+            No hay ninguna pasarela de pago activa: los clientes no pueden pagar en línea y los cobros se registran a mano. Para activar Wompi, ePayco o Mercado Pago
             configura sus llaves (ver docs/phase-13-payments.md).
           </AlertDescription>
         </Alert>

@@ -22,6 +22,7 @@ public final class AgendaDtos {
             @NotNull UUID siteId,
             @NotNull OffsetDateTime startsAt,
             @NotNull @Min(5) @Max(480) Integer durationMinutes,
+            VisitType visitType,
             @Size(max = 200) String reason,
             @Size(max = 1000) String notes) {}
 
@@ -33,7 +34,7 @@ public final class AgendaDtos {
 
     /** Las fechas salen en hora de Colombia (-05:00). */
     public record AppointmentResponse(
-            UUID id, OffsetDateTime startsAt, OffsetDateTime endsAt, AppointmentStatus status,
+            UUID id, OffsetDateTime startsAt, OffsetDateTime endsAt, AppointmentStatus status, VisitType visitType,
             String reason, String notes, String cancellationReason,
             PatientRef patient, Ref dentist, Ref site) {}
 

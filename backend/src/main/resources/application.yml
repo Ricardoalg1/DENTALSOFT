@@ -77,6 +77,10 @@ occlus:
       public-key: ${EPAYCO_PUBLIC_KEY:}
       p-key: ${EPAYCO_P_KEY:}
       test: ${EPAYCO_TEST:true}
+    mercadopago:
+      enabled: ${MERCADOPAGO_ENABLED:false}
+      access-token: ${MERCADOPAGO_ACCESS_TOKEN:}
+      webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET:}
   marketing:
     public-key: ${SITE_PUBLIC_API_KEY:}
     admin-user-ids: ${OCCLUS_PLATFORM_ADMIN_IDS:}

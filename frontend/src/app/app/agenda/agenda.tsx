@@ -22,7 +22,7 @@ import { NativeSelect } from "@/components/native-select";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { minutesBetween, nowWall, todayCO, toWall, wallToApi } from "@/lib/agenda-time";
-import type { Appointment, Professional, ScheduleBlock, Site, TimeOff } from "@/lib/types";
+import { VISIT_TYPES, type Appointment, type Professional, type ScheduleBlock, type Site, type TimeOff } from "@/lib/types";
 import { saveAppointment } from "./actions";
 import { AppointmentDetailsDialog } from "./appointment-details-dialog";
 import { AppointmentFormDialog, type AppointmentDraft } from "./appointment-form-dialog";
@@ -163,6 +163,7 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
       siteId: a.site.id,
       startsAt: wallToApi(start),
       durationMinutes: Math.round((end.getTime() - start.getTime()) / 60000),
+      visitType: a.visitType ?? undefined,
       reason: a.reason ?? undefined,
       notes: a.notes ?? undefined,
     });
@@ -181,7 +182,11 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
         <p className="text-[11px] opacity-80">{arg.timeText}</p>
         <p className="truncate font-medium">{a.patient.fullName}</p>
         {!dentistId && <p className="truncate text-[11px] opacity-80">{a.dentist.name}</p>}
-        {a.reason && <p className="truncate text-[11px] opacity-80">{a.reason}</p>}
+        {(a.visitType || a.reason) && (
+          <p className="truncate text-[11px] opacity-80">
+            {[a.visitType && VISIT_TYPES[a.visitType], a.reason].filter(Boolean).join(" · ")}
+          </p>
+        )}
       </div>
     );
   }
@@ -274,9 +279,11 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
           sites={sites}
           presetPatient={patientForNext}
           onClose={() => setDraft(null)}
-          onSaved={() => {
+          onSaved={(saved) => {
             setDraft(null);
             setPatientForNext(null);
+            // Se abre el detalle para enviar de una vez la invitación por WhatsApp.
+            setSelected(saved);
             refetch();
           }}
         />

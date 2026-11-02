@@ -5,6 +5,9 @@ COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml 
 RUN pnpm install --frozen-lockfile
 COPY frontend/ ./
 COPY shared/ /build/shared/
+# Entorno que muestra el logo junto a la versión (development, test o production).
+ARG OCCLUS_ENV=production
+ENV NEXT_PUBLIC_OCCLUS_ENV=$OCCLUS_ENV
 RUN pnpm build
 
 FROM node:22-alpine

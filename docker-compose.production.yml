@@ -43,6 +43,9 @@ services:
       EPAYCO_PUBLIC_KEY: ${EPAYCO_PUBLIC_KEY:-}
       EPAYCO_P_KEY: ${EPAYCO_P_KEY:-}
       EPAYCO_TEST: ${EPAYCO_TEST:-false}
+      MERCADOPAGO_ENABLED: ${MERCADOPAGO_ENABLED:-false}
+      MERCADOPAGO_ACCESS_TOKEN: ${MERCADOPAGO_ACCESS_TOKEN:-}
+      MERCADOPAGO_WEBHOOK_SECRET: ${MERCADOPAGO_WEBHOOK_SECRET:-}
       SITE_ANALYTICS_ENABLED: ${SITE_ANALYTICS_ENABLED:-false}
       SITE_RETENTION_ENABLED: ${SITE_RETENTION_ENABLED:-false}
       SITE_RETENTION_DAYS: ${SITE_RETENTION_DAYS:-0}
@@ -55,6 +58,7 @@ services:
       # Credenciales temporales AWS mediante el rol IAM de la instancia.
       MESSAGING_SCHEDULER: "false"
       WHATSAPP_LIVE_ENABLED: "false"
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-}
       MESSAGING_AI_ENABLED: "false"
       SPRINGDOC_API_DOCS_ENABLED: "false"
       SPRINGDOC_SWAGGER_UI_ENABLED: "false"
@@ -68,7 +72,11 @@ services:
     volumes: ["./deploy/certs/global-bundle.pem:/app/certs/global-bundle.pem:ro"]
     networks: [internal]
   frontend:
-    build: {context: ., dockerfile: frontend/Dockerfile}
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        OCCLUS_ENV: ${OCCLUS_ENV:-production}
     restart: unless-stopped
     logging: *bounded-logs
     environment:

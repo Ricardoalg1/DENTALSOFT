@@ -37,3 +37,21 @@ Para producción se mantienen backups, cifrado, eliminación protegida y acceso 
 
 La RDS de test en AWS es una instancia adicional con coste. Hasta aprobar ese coste, el entorno `test` debe usar PostgreSQL efímero/local en CI; la base productiva no se reutiliza.
 
+
+## Servidor de desarrollo en AWS
+
+Instancia `occlus-dev` (t3.small, us-east-2, IP elástica `77.113.133.109`), separada de producción:
+
+- Grupo de seguridad `occlus-dev` (solo 80/443): no está autorizado en la RDS de producción.
+- Rol `occlus-dev-ec2-role` solo con Session Manager: no tiene acceso al bucket de producción.
+- PostgreSQL y almacenamiento S3 (SeaweedFS) corren en el mismo servidor, con claves aleatorias en `/opt/occlus/.env.development`.
+- Enlaces (sin DNS propio, vía sslip.io): aplicación `https://app-77-113-133-109.sslip.io`, sitio `https://sitio-77-113-133-109.sslip.io`.
+
+Actualizar con la rama `development` (Session Manager → `occlus-dev`):
+
+```sh
+cd /opt/occlus && git pull
+docker compose --env-file .env.development -f docker-compose.production.yml -f docker-compose.dev-server.yml up -d --build
+```
+
+El logo muestra «Desarrollo vX.Y» porque la imagen se construye con `OCCLUS_ENV=development`. Para test o producción, `OCCLUS_ENV` vale `test` o `production` (predeterminado) y el logo muestra solo `vX.Y`.

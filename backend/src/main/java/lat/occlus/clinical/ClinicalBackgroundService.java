@@ -52,6 +52,40 @@ public class ClinicalBackgroundService {
         return toResponse(backgrounds.saveAndFlush(bg));
     }
 
+    /** Antecedentes traídos de otro programa (texto libre). */
+    public record ImportedBackground(String allergies, String medications, String surgicalHistory,
+                                     String familyHistory, String observations) {
+        public boolean isEmpty() {
+            return allergies == null && medications == null && surgicalHistory == null
+                    && familyHistory == null && observations == null;
+        }
+    }
+
+    /**
+     * Migración: completa los campos vacíos con lo que traía el programa anterior, sin pisar lo que ya se
+     * registró en Occlus. La llama un administrador (no escribe una atención, solo traslada datos), por eso
+     * no exige ser profesional. El paciente lo valida quien llama.
+     */
+    @Transactional
+    public void importLegacy(UUID clinicId, UUID userId, UUID patientId, ImportedBackground data) {
+        if (data.isEmpty()) return;
+        var bg = backgrounds.findByClinicIdAndPatientId(clinicId, patientId).orElseGet(() -> {
+            var created = new ClinicalBackground();
+            created.setClinicId(clinicId);
+            created.setPatientId(patientId);
+            return created;
+        });
+        boolean changed = false;
+        if (bg.getAllergies() == null && data.allergies() != null) { bg.setAllergies(data.allergies()); changed = true; }
+        if (bg.getMedications() == null && data.medications() != null) { bg.setMedications(data.medications()); changed = true; }
+        if (bg.getSurgicalHistory() == null && data.surgicalHistory() != null) { bg.setSurgicalHistory(data.surgicalHistory()); changed = true; }
+        if (bg.getFamilyHistory() == null && data.familyHistory() != null) { bg.setFamilyHistory(data.familyHistory()); changed = true; }
+        if (bg.getObservations() == null && data.observations() != null) { bg.setObservations(data.observations()); changed = true; }
+        if (!changed) return;
+        bg.setUpdatedBy(userId);
+        backgrounds.save(bg);
+    }
+
     private BackgroundResponse toResponse(ClinicalBackground bg) {
         var updatedBy = access.userRefs(Collections.singleton(bg.getUpdatedBy())).get(bg.getUpdatedBy());
         return new BackgroundResponse(

@@ -11,4 +11,6 @@ public interface PatientFileRepository extends JpaRepository<PatientFile, UUID> 
 
     List<PatientFile> findByClinicIdAndPatientIdAndCategoryNotAndRemovedAtIsNullOrderByCreatedAtDesc(
             UUID clinicId, UUID patientId, FileCategory excluded);
+
+    boolean existsByClinicIdAndPatientIdAndSha256AndRemovedAtIsNull(UUID clinicId, UUID patientId, String sha256);
 }
