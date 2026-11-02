@@ -1,4 +1,4 @@
-# Etapa 13 — Pagos con Wompi y ePayco, sesiones revocables y módulos por plan
+# Etapa 13 — Pagos con Wompi, ePayco y Mercado Pago, sesiones revocables y módulos por plan
 
 ## Qué quedó listo
 
@@ -76,6 +76,23 @@ Pueden estar activas las dos a la vez; la clínica ve un botón por cada una. Si
 3. Con una tarjeta **rechazada**: la clínica ve el mensaje y queda un evento «Cobro fallido».
 4. Wompi: guardar una tarjeta y ejecutar el proceso de suscripciones con la prueba vencida; debe cobrar la fuente.
 5. **ePayco, en particular**: confirmar que la confirmación llega con los campos `x_ref_payco`, `x_transaction_id`, `x_amount`, `x_currency_code`, `x_signature`, `x_id_invoice`, y que `https://secure.epayco.co/validation/v1/reference/<ref_payco>` devuelve `data.x_cod_response`. Si alguno difiere, solo hay que ajustar `EpaycoCheckout`.
+
+## Mercado Pago (Checkout Pro)
+
+Agregado el 2026-10-27. Mismo modelo que ePayco: **cada periodo lo paga la clínica** desde `Mi cuenta → Pagar con Mercado Pago` (sin cobro automático). Probado solo contra un Mercado Pago simulado.
+
+1. El backend crea una **preferencia** (`POST /checkout/preferences`) con la referencia `occ-<uuid>` en `external_reference`, el valor en COP, `back_urls` hacia `/pago?c=<intento>` y `notification_url` hacia `/api/webhooks/mercadopago`. La persona paga en la página de Mercado Pago (tarjeta, PSE, Efecty… según lo que tenga activo la cuenta).
+2. Al volver, Mercado Pago agrega `?payment_id=…`; la página consulta `GET /v1/payments/{id}` (o busca por la referencia si no viene el id).
+3. **Webhook**: cabecera `x-signature: ts=…,v1=…`. `v1` es HMAC-SHA256, con la clave secreta de webhooks, de `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`. Firma inválida: 401. Con firma válida, igual se consulta el pago y se cruzan referencia, monto y moneda.
+4. Estados: `approved` → pagado; `pending`, `in_process`, `authorized`, `in_mediation` → en proceso; `rejected`, `cancelled`, `refunded`, `charged_back` → rechazado.
+
+```sh
+MERCADOPAGO_ENABLED=true
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-...   # de prueba: TEST-... (usa la página de pago de pruebas)
+MERCADOPAGO_WEBHOOK_SECRET=...         # Tus integraciones → la aplicación → Webhooks → clave secreta
+```
+
+En **Tus integraciones → la aplicación → Webhooks**: URL `https://<dominio de la app>/api/webhooks/mercadopago`, evento **Pagos**. Probar con usuarios y tarjetas de prueba de Mercado Pago antes de cobrar de verdad (aprobado, rechazado y pendiente).
 
 ## Sesiones revocables
 

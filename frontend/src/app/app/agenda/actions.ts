@@ -15,6 +15,8 @@ const appointmentSchema = z.object({
   siteId: z.uuid("Selecciona una sede"),
   startsAt: z.iso.datetime({ offset: true, message: "Fecha y hora inválidas" }),
   durationMinutes: z.number().int().min(5).max(480),
+  // Opcional para no romper las citas anteriores a los tipos; el formulario lo exige.
+  visitType: z.enum(["FIRST_VISIT", "CONTROL", "TREATMENT", "PREVENTION"], "Selecciona el tipo de cita").optional(),
   reason: z.string().trim().max(200).optional(),
   notes: z.string().trim().max(1000).optional(),
 });
@@ -40,6 +42,14 @@ export async function saveAppointment(id: string | null, input: AppointmentInput
   );
   if (result.ok) revalidatePath(`/app/pacientes/${parsed.data.patientId}`);
   return result;
+}
+
+export type WhatsAppInvite = { phone: string | null; message: string; url: string | null };
+
+/** Mensaje de invitación a la cita y enlace wa.me para enviarlo desde WhatsApp Web. */
+export async function appointmentInvite(id: string): Promise<ActionResult<WhatsAppInvite>> {
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: "Cita no válida" };
+  return run(() => api<WhatsAppInvite>(`/api/appointments/${id}/whatsapp-invite`));
 }
 
 const statusSchema = z.object({

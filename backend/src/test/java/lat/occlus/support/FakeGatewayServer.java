@@ -14,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/** Imita las APIs de Wompi y ePayco que usa la aplicación (solo lo necesario, sin red externa). */
+/** Imita las APIs de Wompi, ePayco y Mercado Pago que usa la aplicación (solo lo necesario, sin red externa). */
 public final class FakeGatewayServer {
 
     public static final class Tx {
@@ -34,6 +34,10 @@ public final class FakeGatewayServer {
     public final Map<String, Tx> wompiTx = new ConcurrentHashMap<>();
     public final List<JsonNode> wompiPosts = new CopyOnWriteArrayList<>();
     public final Map<String, Map<String, Object>> epaycoData = new ConcurrentHashMap<>();
+    /** Mercado Pago: pagos por id y preferencias recibidas. */
+    public final Map<String, Map<String, Object>> mpPayments = new ConcurrentHashMap<>();
+    public final List<JsonNode> mpPreferences = new CopyOnWriteArrayList<>();
+    public final List<String> mpAuthHeaders = new CopyOnWriteArrayList<>();
     /** Estado con el que nace una transacción creada por POST /transactions. */
     public volatile String postStatus = "APPROVED";
     public volatile int postFlipAfterGets = -1;
@@ -48,6 +52,7 @@ public final class FakeGatewayServer {
         }
         server.createContext("/v1/", this::wompi);
         server.createContext("/validation/", this::epayco);
+        server.createContext("/mp/", this::mercadoPago);
         server.start();
     }
 
@@ -116,6 +121,34 @@ public final class FakeGatewayServer {
             return;
         }
         reply(ex, 200, Map.of("success", true, "data", data));
+    }
+
+    public void putMercadoPago(String id, String status, String amount, String reference) {
+        mpPayments.put(id, Map.of("id", Long.parseLong(id), "status", status, "status_detail", status.equals("approved") ? "accredited" : "cc_rejected_other_reason",
+                "transaction_amount", new java.math.BigDecimal(amount), "currency_id", "COP", "external_reference", reference));
+    }
+
+    private void mercadoPago(HttpExchange ex) throws IOException {
+        String path = ex.getRequestURI().getPath().substring("/mp".length());
+        String query = ex.getRequestURI().getRawQuery();
+        mpAuthHeaders.add(String.valueOf(ex.getRequestHeaders().getFirst("Authorization")));
+        if (ex.getRequestMethod().equals("POST") && path.equals("/checkout/preferences")) {
+            JsonNode body = json.readTree(new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            mpPreferences.add(body);
+            reply(ex, 201, Map.of("id", "pref-" + (++sequence), "init_point", "https://www.mercadopago.com.co/checkout/v1/redirect?pref_id=pref-" + sequence,
+                    "sandbox_init_point", "https://sandbox.mercadopago.com.co/checkout/v1/redirect?pref_id=pref-" + sequence));
+        } else if (path.equals("/v1/payments/search") && query != null) {
+            String ref = "";
+            for (String kv : query.split("&")) if (kv.startsWith("external_reference=")) ref = java.net.URLDecoder.decode(kv.substring(19), StandardCharsets.UTF_8);
+            String r = ref;
+            reply(ex, 200, Map.of("results", mpPayments.values().stream().filter(p -> r.equals(p.get("external_reference"))).toList()));
+        } else if (path.startsWith("/v1/payments/")) {
+            var p = mpPayments.get(path.substring("/v1/payments/".length()));
+            if (p == null) reply(ex, 404, Map.of("message", "Payment not found"));
+            else reply(ex, 200, p);
+        } else {
+            reply(ex, 404, Map.of("error", "unknown " + path));
+        }
     }
 
     private Map<String, Object> txJson(Tx tx) {

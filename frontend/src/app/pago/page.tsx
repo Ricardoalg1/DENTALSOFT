@@ -8,9 +8,12 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v.slice(0, 120) : undefined);
 
 /**
- * Aquí vuelve la persona desde la pasarela. Wompi agrega ?id=<transacción>; ePayco, ?ref_payco=<referencia>.
+ * Aquí vuelve la persona desde la pasarela. Wompi agrega ?id=<transacción>; ePayco, ?ref_payco=<referencia>;
+ * Mercado Pago, ?payment_id=<pago> («null» si no alcanzó a pagar).
  * Esos datos solo sirven para preguntar a la pasarela: el resultado lo decide la consulta, no la URL.
  */
+const mercadoPagoId = (v: string | undefined) => (v && /^\d{1,20}$/.test(v) ? v : undefined);
+
 export default async function PaymentReturnPage({ searchParams }: PageProps<"/pago">) {
   const sp = await searchParams;
   const checkout = one(sp.c);
@@ -19,7 +22,7 @@ export default async function PaymentReturnPage({ searchParams }: PageProps<"/pa
       <div className="grid w-full max-w-md gap-6 rounded-2xl border bg-card p-8">
         <Logo />
         {checkout && UUID.test(checkout) ? (
-          <PaymentResult checkoutId={checkout} providerRef={one(sp.id) ?? one(sp.ref_payco)} />
+          <PaymentResult checkoutId={checkout} providerRef={one(sp.id) ?? one(sp.ref_payco) ?? mercadoPagoId(one(sp.payment_id))} />
         ) : (
           <p className="text-sm text-muted-foreground">No encontramos el pago. Si ya pagaste, tu suscripción se actualizará sola en unos minutos.</p>
         )}

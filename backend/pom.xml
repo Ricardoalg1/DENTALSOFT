@@ -36,6 +36,12 @@
 			<artifactId>pdfbox</artifactId>
 			<version>3.0.6</version>
 		</dependency>
+		<!-- Lectura de Excel (.xlsx/.xls) para la migración desde otros programas. -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.5.1</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
