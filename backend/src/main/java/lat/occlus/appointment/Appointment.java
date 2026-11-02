@@ -38,6 +38,9 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     private AppointmentStatus status = AppointmentStatus.SCHEDULED;
 
+    @Enumerated(EnumType.STRING)
+    private VisitType visitType;
+
     private String reason;
     private String notes;
     private String cancellationReason;

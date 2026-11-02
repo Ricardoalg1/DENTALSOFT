@@ -20,6 +20,7 @@ import {
   Import,
   LayoutDashboard,
   LayoutGrid,
+  MessageCircle,
   MessageSquare,
   Package,
   Receipt,
@@ -97,6 +98,7 @@ const ITEMS: Item[] = [
     children: [
       { href: "/app/equipo", label: "Equipo", icon: Users, adminOnly: true },
       { href: "/app/sedes", label: "Sedes", icon: Building2 },
+      { href: "/app/mensajes-citas", label: "Mensajes de citas", icon: MessageCircle, adminOnly: true },
       { href: "/app/precios", label: "Lista de precios", icon: Tags, module: "TREATMENTS_CASH" },
       { href: "/app/cups", label: "Catálogo CUPS", icon: BookOpen },
       { href: "/app/historias/plantillas", label: "Plantillas de consentimiento", icon: FileSignature, adminOnly: true, module: "CLINICAL_RECORD" },

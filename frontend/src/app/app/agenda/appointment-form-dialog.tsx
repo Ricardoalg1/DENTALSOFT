@@ -29,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CO_OFFSET, minutesBetween, timeOf } from "@/lib/agenda-time";
-import type { Appointment, Professional, Site } from "@/lib/types";
+import { VISIT_TYPES, type Appointment, type Professional, type Site, type VisitType } from "@/lib/types";
 import { saveAppointment } from "./actions";
 import { PatientPicker, type PickedPatient } from "./patient-picker";
 
@@ -111,6 +111,7 @@ export function AppointmentFormDialog({
       siteId: String(formData.get("siteId")),
       startsAt: `${formData.get("date")}T${formData.get("time")}:00${CO_OFFSET}`,
       durationMinutes: Number(formData.get("duration")),
+      visitType: String(formData.get("visitType")) as VisitType,
       reason: String(formData.get("reason") ?? "") || undefined,
       notes: String(formData.get("notes") ?? "") || undefined,
     };
@@ -222,18 +223,30 @@ export function AppointmentFormDialog({
               defaultValue={String(initial?.duration)}
             />
           </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="reason" className="flex items-center gap-2">
-              <FileText className="size-4 text-primary" />
-              Motivo
-            </Label>
-            <Input
-              id="reason"
-              name="reason"
-              maxLength={200}
-              placeholder="Ej.: valoración, control de ortodoncia"
-              defaultValue={editing?.reason ?? ""}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <NativeSelect
+              name="visitType"
+              label={
+                <span className="flex items-center gap-2">
+                  <FileText className="size-4 text-primary" />
+                  Motivo
+                </span>
+              }
+              required
+              placeholder="Selecciona…"
+              options={VISIT_TYPES}
+              defaultValue={editing?.visitType ?? ""}
             />
+            <div className="grid gap-1.5">
+              <Label htmlFor="reason">Detalle (opcional)</Label>
+              <Input
+                id="reason"
+                name="reason"
+                maxLength={200}
+                placeholder="Ej.: control de ortodoncia"
+                defaultValue={editing?.reason ?? ""}
+              />
+            </div>
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="notes" className="flex items-center gap-2">

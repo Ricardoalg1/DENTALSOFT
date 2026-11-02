@@ -157,12 +157,23 @@ export type AppointmentStatus = keyof typeof APPOINTMENT_STATUS;
 
 export type Professional = { id: string; fullName: string };
 
+/** Tipo de cita: decide el mensaje de invitación por WhatsApp. */
+export const VISIT_TYPES = {
+  FIRST_VISIT: "Primera vez",
+  CONTROL: "Control",
+  TREATMENT: "Tratamiento",
+  PREVENTION: "P&P (promoción y prevención)",
+} as const;
+export type VisitType = keyof typeof VISIT_TYPES;
+
 export type Appointment = {
   id: string;
   /** ISO con offset de Colombia, p. ej. 2026-10-12T09:00:00-05:00 */
   startsAt: string;
   endsAt: string;
   status: AppointmentStatus;
+  /** Nulo en citas creadas antes de que existieran los tipos. */
+  visitType: VisitType | null;
   reason: string | null;
   notes: string | null;
   cancellationReason: string | null;

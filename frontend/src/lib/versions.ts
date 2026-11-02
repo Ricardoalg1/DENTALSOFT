@@ -6,6 +6,17 @@ export type VersionEntry = { version: string; date: string; title: string; chang
 
 export const VERSIONS: VersionEntry[] = [
   {
+    version: "1.3",
+    date: "2026-11-01",
+    title: "Invitaciones a citas por WhatsApp Web",
+    changes: [
+      "Motivo de la cita: primera vez, control, tratamiento o P&P.",
+      "Botón «Enviar invitación por WhatsApp» al agendar: abre WhatsApp Web (wa.me) con el mensaje listo para el paciente.",
+      "Mensaje editable por clínica para cada motivo, con datos de la cita, el profesional y la sede, y vista previa.",
+      "Edición de sedes (nombre, dirección, ciudad y teléfono).",
+    ],
+  },
+  {
     version: "1.2",
     date: "2026-10-27",
     title: "Pago de la suscripción con Mercado Pago",
