@@ -138,6 +138,8 @@ public class AppointmentService {
         a.setSiteId(site.getId());
         a.setStartsAt(start.toInstant());
         a.setEndsAt(end.toInstant());
+        // Sin tipo (p. ej. al mover una cita antigua en el calendario) se conserva el que tenga.
+        if (req.visitType() != null) a.setVisitType(req.visitType());
         a.setReason(clean(req.reason()));
         a.setNotes(clean(req.notes()));
     }
@@ -164,7 +166,7 @@ public class AppointmentService {
             return new AppointmentResponse(a.getId(),
                     a.getStartsAt().atZone(BOGOTA).toOffsetDateTime(),
                     a.getEndsAt().atZone(BOGOTA).toOffsetDateTime(),
-                    a.getStatus(), a.getReason(), a.getNotes(), a.getCancellationReason(),
+                    a.getStatus(), a.getVisitType(), a.getReason(), a.getNotes(), a.getCancellationReason(),
                     new PatientRef(p.getId(), p.fullName(), p.getDocumentType(), p.getDocumentNumber(), p.getPhone()),
                     new Ref(d.getId(), d.getFullName()),
                     new Ref(s.getId(), s.getName()));

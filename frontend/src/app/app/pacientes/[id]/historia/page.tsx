@@ -30,6 +30,8 @@ import {
   type ClinicalNote,
 } from "@/lib/types";
 import { AddendumForm } from "./addendum-form";
+import { LegacyRecords } from "./legacy-records";
+import type { LegacyRecord } from "@/lib/migration";
 
 export const metadata: Metadata = { title: "Historia clínica" };
 
@@ -42,13 +44,14 @@ export default async function ClinicalRecordPage({
   if (!canReadClinical(me)) redirect(`/app/pacientes/${id}`);
   const sp = await searchParams;
   const page = Math.max(0, Math.min(1000000, Math.trunc(Number(sp.page) || 0)));
-  const [background, result, patient, mail] = await Promise.all([
+  const [background, result, patient, mail, legacy] = await Promise.all([
     api<ClinicalBackground>(`/api/patients/${id}/clinical-background`),
     api<Page<ClinicalNote>>(
       `/api/patients/${id}/clinical-notes/page?page=${page}&size=10`,
     ),
     loadPatient(id),
     api<{ emailEnabled: boolean }>("/api/clinical-export/status"),
+    api<LegacyRecord[]>(`/api/patients/${id}/legacy-records`),
   ]);
   const notes = result.content;
   const canWrite = canWriteClinical(me);
@@ -138,6 +141,8 @@ export default async function ClinicalRecordPage({
           href={(p) => `/app/pacientes/${id}/historia?page=${p}`}
         />
       </section>
+
+      <LegacyRecords records={legacy} />
     </div>
   );
 }

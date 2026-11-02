@@ -13,6 +13,7 @@ const TABS = [
   { href: "/app/plataforma/auditoria", label: "Auditoría" },
   { href: "/app/plataforma/planes", label: "Planes" },
   { href: "/app/plataforma/avisos", label: "Avisos" },
+  { href: "/app/plataforma/versiones", label: "Versiones" },
 ];
 
 export function PlatformNav({ unread }: { unread: number }) {

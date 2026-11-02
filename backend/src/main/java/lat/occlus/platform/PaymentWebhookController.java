@@ -43,6 +43,15 @@ class PaymentWebhookController {
         return handle("EPAYCO", new HostedCheckout.WebhookInput("", params, Map.of()));
     }
 
+    /** Mercado Pago: JSON con data.id; también lo repite en la URL (?data.id=…&type=payment), que es lo que se firma. */
+    @PostMapping("/mercadopago")
+    ResponseEntity<Void> mercadopago(@RequestBody(required = false) String raw, @RequestParam Map<String, String> params,
+                                     @RequestHeader HttpHeaders headers) {
+        Map<String, String> flat = new HashMap<>();
+        headers.forEach((k, v) -> flat.put(k.toLowerCase(), v.isEmpty() ? "" : v.getFirst()));
+        return handle("MERCADOPAGO", new HostedCheckout.WebhookInput(raw == null ? "" : raw, params, flat));
+    }
+
     private ResponseEntity<Void> handle(String provider, HostedCheckout.WebhookInput input) {
         var gateway = gateways.hostedAnyState(provider).filter(HostedCheckout::enabled);
         if (gateway.isEmpty()) return ResponseEntity.notFound().build();

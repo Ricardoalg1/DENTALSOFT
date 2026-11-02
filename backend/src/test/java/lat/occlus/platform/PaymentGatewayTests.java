@@ -51,6 +51,8 @@ class PaymentGatewayTests {
     static final String INTEGRITY_SECRET = "test_integrity_secreto";
     static final String EPAYCO_CUSTOMER = "4321";
     static final String EPAYCO_PKEY = "p_key_secreta";
+    static final String MP_TOKEN = "TEST-1234-token";
+    static final String MP_SECRET = "mp_webhook_secreto";
 
     @DynamicPropertySource
     static void gateways(DynamicPropertyRegistry r) {
@@ -67,6 +69,10 @@ class PaymentGatewayTests {
         r.add("occlus.payments.epayco.public-key", () -> "epayco_pub");
         r.add("occlus.payments.epayco.p-key", () -> EPAYCO_PKEY);
         r.add("occlus.payments.epayco.validation-url", () -> FAKE.baseUrl() + "/validation");
+        r.add("occlus.payments.mercadopago.enabled", () -> "true");
+        r.add("occlus.payments.mercadopago.access-token", () -> MP_TOKEN);
+        r.add("occlus.payments.mercadopago.webhook-secret", () -> MP_SECRET);
+        r.add("occlus.payments.mercadopago.base-url", () -> FAKE.baseUrl() + "/mp");
     }
 
     @Autowired MockMvc mvc;
@@ -432,6 +438,67 @@ class PaymentGatewayTests {
         assertThat(string("select status from clinic_subscription where clinic_id = ?", c.clinicId())).isEqualTo("ACTIVE");
     }
 
+    // ---------- Mercado Pago ----------
+
+    @Test
+    void mercadoPagoCheckoutCreatesAPreferenceAndASignedWebhookSettlesTheCharge() throws Exception {
+        Client c = createClient(mvc, platform, "ESENCIAL", 14, null, null);
+        String body = start(c, "MERCADOPAGO").andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        String id = JsonPath.read(body, "$.checkoutId");
+        String reference = "occ-" + id;
+        // Credenciales de prueba: página de pago de pruebas. El token nunca vuelve al navegador.
+        assertThat((String) JsonPath.read(body, "$.redirectUrl")).startsWith("https://sandbox.mercadopago.com.co/");
+        assertThat(body).doesNotContain(MP_TOKEN);
+        var pref = FAKE.mpPreferences.getLast();
+        assertThat(pref.path("external_reference").asString()).isEqualTo(reference);
+        assertThat(pref.path("items").get(0).path("unit_price").decimalValue()).isEqualByComparingTo("99000");
+        assertThat(pref.path("items").get(0).path("currency_id").asString()).isEqualTo("COP");
+        assertThat(pref.path("back_urls").path("success").asString()).isEqualTo("https://occlus.test/pago?c=" + id);
+        assertThat(pref.path("notification_url").asString()).isEqualTo("https://occlus.test/api/webhooks/mercadopago");
+        assertThat(FAKE.mpAuthHeaders.getLast()).isEqualTo("Bearer " + MP_TOKEN);
+
+        // Firma inválida: 401 y nada cambia.
+        mpWebhook("9001", "ts=1,v1=deadbeef").andExpect(status().isUnauthorized());
+        // Firma válida, pago pendiente: no se aplica.
+        FAKE.putMercadoPago("9001", "in_process", "99000", reference);
+        mpWebhook("9001", mpSignature("9001", "req-1", "1700000000")).andExpect(status().isOk());
+        assertThat(string("select status from subscription_checkout where id = ?::uuid", id)).isEqualTo("CREATED");
+        // Aprobado al consultarlo: se aplica una sola vez aunque el aviso se repita.
+        FAKE.putMercadoPago("9001", "approved", "99000", reference);
+        mpWebhook("9001", mpSignature("9001", "req-1", "1700000000")).andExpect(status().isOk());
+        mpWebhook("9001", mpSignature("9001", "req-1", "1700000000")).andExpect(status().isOk());
+        assertThat(string("select status from subscription_checkout where id = ?::uuid", id)).isEqualTo("APPROVED");
+        assertThat(count("select count(*) from subscription_charge where clinic_id = ? and status = 'PAID' and provider_ref = '9001'", c.clinicId())).isEqualTo(1);
+        assertThat(events(c, "PAYMENT_RECEIVED")).isEqualTo(1);
+    }
+
+    @Test
+    void mercadoPagoAmountMismatchIsFlaggedAndRejectionsAreRecorded() throws Exception {
+        Client c = createClient(mvc, platform, "ESENCIAL", 14, null, null);
+        String id = JsonPath.read(start(c, "MERCADOPAGO").andReturn().getResponse().getContentAsString(), "$.checkoutId");
+        FAKE.putMercadoPago("9101", "approved", "1000", "occ-" + id);
+        mpWebhook("9101", mpSignature("9101", "req-2", "1700000001")).andExpect(status().isOk());
+        assertThat(string("select status from subscription_checkout where id = ?::uuid", id)).isEqualTo("CREATED");
+        assertThat(events(c, "PAYMENT_REVIEW")).isEqualTo(1);
+
+        String id2 = JsonPath.read(start(c, "MERCADOPAGO").andReturn().getResponse().getContentAsString(), "$.checkoutId");
+        FAKE.putMercadoPago("9102", "rejected", "99000", "occ-" + id2);
+        mpWebhook("9102", mpSignature("9102", "req-3", "1700000002")).andExpect(status().isOk());
+        assertThat(string("select status from subscription_checkout where id = ?::uuid", id2)).isEqualTo("DECLINED");
+        assertThat(count("select count(*) from subscription_charge where clinic_id = ? and status = 'PAID'", c.clinicId())).isZero();
+    }
+
+    @Test
+    void mercadoPagoReturnConfirmsWithThePaymentIdOrByReference() throws Exception {
+        Client c = createClient(mvc, platform, "ESENCIAL", 14, null, null);
+        String id = JsonPath.read(start(c, "MERCADOPAGO").andReturn().getResponse().getContentAsString(), "$.checkoutId");
+        FAKE.putMercadoPago("9201", "approved", "99000", "occ-" + id);
+        // Sin el id del pago (volvió sin parámetros): se busca por la referencia.
+        call(post("/api/subscription/checkout/" + id + "/refresh").contentType(MediaType.APPLICATION_JSON).content("{}"), c.token())
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+        assertThat(string("select status from clinic_subscription where clinic_id = ?", c.clinicId())).isEqualTo("ACTIVE");
+    }
+
     // ---------- Cuentas que no se cobran ----------
 
     @Test
@@ -482,6 +549,22 @@ class PaymentGatewayTests {
         return java.util.Map.of("x_ref_payco", ref, "x_transaction_id", tx, "x_amount", amount, "x_currency_code", currency,
                 "x_id_invoice", invoice, "x_cod_response", code, "x_response", code.equals("1") ? "Aceptada" : "Rechazada",
                 "x_signature", epaycoSignature(ref, tx, amount, currency));
+    }
+
+    private static String mpSignature(String dataId, String requestId, String ts) throws Exception {
+        var mac = javax.crypto.Mac.getInstance("HmacSHA256");
+        mac.init(new javax.crypto.spec.SecretKeySpec(MP_SECRET.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+        String manifest = "id:" + dataId + ";request-id:" + requestId + ";ts:" + ts + ";";
+        return "ts=" + ts + ",v1=" + java.util.HexFormat.of().formatHex(mac.doFinal(manifest.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+    }
+
+    /** Como lo envía Mercado Pago: id en la URL y en el cuerpo; x-request-id fijo según la firma. */
+    private ResultActions mpWebhook(String paymentId, String signature) throws Exception {
+        String requestId = signature.contains("v1=deadbeef") ? "req-x" : "req-" + switch (paymentId) {
+            case "9001" -> "1"; case "9101" -> "2"; case "9102" -> "3"; default -> "x"; };
+        return mvc.perform(post("/api/webhooks/mercadopago").queryParam("data.id", paymentId).queryParam("type", "payment")
+                .contentType(MediaType.APPLICATION_JSON).header("x-signature", signature).header("x-request-id", requestId)
+                .content("{\"action\":\"payment.updated\",\"type\":\"payment\",\"data\":{\"id\":\"%s\"}}".formatted(paymentId)));
     }
 
     private void sql(String sql, Object... args) {

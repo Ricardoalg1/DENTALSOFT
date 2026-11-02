@@ -1,6 +1,6 @@
 import { timeOf } from "@/lib/agenda-time";
 import { formatDate } from "@/lib/format";
-import type { Appointment } from "@/lib/types";
+import { VISIT_TYPES, type Appointment } from "@/lib/types";
 import { StatusBadge } from "./status-badge";
 
 type Props = {
@@ -25,7 +25,7 @@ export function AppointmentList({ appointments, show, showDate = true, empty }: 
           <span className="min-w-0 flex-1">
             <span className="block truncate font-medium">{show === "patient" ? a.patient.fullName : a.dentist.name}</span>
             <span className="block truncate text-xs text-muted-foreground">
-              {[show === "patient" ? a.dentist.name : null, a.site.name, a.reason].filter(Boolean).join(" · ")}
+              {[show === "patient" ? a.dentist.name : null, a.site.name, a.visitType && VISIT_TYPES[a.visitType], a.reason].filter(Boolean).join(" · ")}
             </span>
           </span>
           <StatusBadge status={a.status} />

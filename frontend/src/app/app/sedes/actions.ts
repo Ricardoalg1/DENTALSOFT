@@ -32,3 +32,18 @@ export async function createSite(_: FormState, formData: FormData): Promise<Form
   revalidatePath("/app/sedes");
   return { ok: true };
 }
+
+export async function updateSite(id: string, _: FormState, formData: FormData): Promise<FormState> {
+  if (!z.uuid().safeParse(id).success) return { error: "Sede no válida" };
+  const parsed = siteSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return { fieldErrors: z.flattenError(parsed.error).fieldErrors, values: keepValues(formData) };
+  }
+  try {
+    await api(`/api/sites/${id}`, { method: "PUT", body: JSON.stringify(parsed.data) });
+  } catch (e) {
+    return { error: errorMessage(e), values: keepValues(formData) };
+  }
+  revalidatePath("/app/sedes");
+  return { ok: true };
+}

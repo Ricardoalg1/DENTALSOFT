@@ -269,7 +269,7 @@ export type PlatformState =
 
 // ---------- Suscripción vista por la propia clínica ----------
 
-export const PROVIDER_LABELS: Record<string, string> = { WOMPI: "Wompi", EPAYCO: "ePayco", SIMULATED: "Simulada" };
+export const PROVIDER_LABELS: Record<string, string> = { WOMPI: "Wompi", EPAYCO: "ePayco", MERCADOPAGO: "Mercado Pago", SIMULATED: "Simulada" };
 
 export type SubscriptionState = {
   planCode: string;

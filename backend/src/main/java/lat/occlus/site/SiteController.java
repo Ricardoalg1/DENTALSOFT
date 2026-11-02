@@ -2,6 +2,7 @@ package lat.occlus.site;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import lat.occlus.shared.security.AuthUser;
 import lat.occlus.site.SiteDtos.SiteRequest;
 import lat.occlus.site.SiteDtos.SiteResponse;
@@ -11,7 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -34,5 +37,11 @@ public class SiteController {
     @PreAuthorize("hasRole('ADMIN')")
     SiteResponse create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody SiteRequest req) {
         return service.create(AuthUser.from(jwt).clinicId(), req);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    SiteResponse update(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @Valid @RequestBody SiteRequest req) {
+        return service.update(AuthUser.from(jwt).clinicId(), id, req);
     }
 }

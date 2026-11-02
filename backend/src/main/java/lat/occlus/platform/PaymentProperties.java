@@ -11,12 +11,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *                  tras pagar y a ella llaman los webhooks de las pasarelas.
  */
 @ConfigurationProperties("occlus.payments")
-public record PaymentProperties(boolean simulated, String publicUrl, Wompi wompi, Epayco epayco) {
+public record PaymentProperties(boolean simulated, String publicUrl, Wompi wompi, Epayco epayco, MercadoPago mercadopago) {
 
     public PaymentProperties {
         wompi = wompi == null ? new Wompi(false, "sandbox", null, null, null, null, null) : wompi;
         epayco = epayco == null ? new Epayco(false, null, null, null, true, null) : epayco;
-        if (wompi.enabled() || epayco.enabled()) {
+        mercadopago = mercadopago == null ? new MercadoPago(false, null, null, null) : mercadopago;
+        if (wompi.enabled() || epayco.enabled() || mercadopago.enabled()) {
             if (publicUrl == null || !publicUrl.matches("https?://[^/\\s]+")) {
                 throw new IllegalArgumentException(
                         "occlus.payments.public-url debe ser la dirección base (https://occlus.lat, sin barra final)");
@@ -26,7 +27,7 @@ public record PaymentProperties(boolean simulated, String publicUrl, Wompi wompi
 
     /** Hay al menos una pasarela real activa. */
     public boolean anyLive() {
-        return wompi.enabled() || epayco.enabled();
+        return wompi.enabled() || epayco.enabled() || mercadopago.enabled();
     }
 
     private static void require(boolean ok, String message) {
@@ -87,8 +88,36 @@ public record PaymentProperties(boolean simulated, String publicUrl, Wompi wompi
         }
     }
 
+    /**
+     * Mercado Pago (Checkout Pro). Credenciales en Tus integraciones → la aplicación → Credenciales.
+     *
+     * @param accessToken   Access Token de producción (APP_USR-…) o de prueba (TEST-…). Con uno de prueba se
+     *                      usa la página de pago de pruebas (sandbox_init_point).
+     * @param webhookSecret clave secreta de Webhooks (Tus integraciones → Webhooks): firma x-signature.
+     * @param baseUrl       opcional; por defecto https://api.mercadopago.com.
+     */
+    public record MercadoPago(boolean enabled, String accessToken, String webhookSecret, String baseUrl) {
+
+        public MercadoPago {
+            if (enabled) {
+                require(has(accessToken) && has(webhookSecret),
+                        "Mercado Pago activado: faltan llaves (access-token, webhook-secret)");
+                if (!has(baseUrl)) baseUrl = "https://api.mercadopago.com";
+            }
+        }
+
+        public boolean test() {
+            return has(accessToken) && accessToken.startsWith("TEST-");
+        }
+
+        @Override
+        public String toString() {
+            return "MercadoPago[enabled=%s, test=%s]".formatted(enabled, test());
+        }
+    }
+
     @Override
     public String toString() {
-        return "PaymentProperties[simulated=%s, wompi=%s, epayco=%s]".formatted(simulated, wompi, epayco);
+        return "PaymentProperties[simulated=%s, wompi=%s, epayco=%s, mercadopago=%s]".formatted(simulated, wompi, epayco, mercadopago);
     }
 }
