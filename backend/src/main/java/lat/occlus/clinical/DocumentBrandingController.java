@@ -14,14 +14,14 @@ import org.springframework.web.multipart.MultipartFile;
 public class DocumentBrandingController {
  private final DocumentBrandingService service;
  public record BrandRequest(@NotNull @Size(max=300) String address,@NotNull @Size(max=80) String phone,@NotNull @Email @Size(max=200) String email) {}
- public record ProfileRequest(@NotNull @Size(max=120) String registration) {}
+ public record ProfileRequest(@NotNull @Size(max=120) String registration,@Size(max=120) String displayName) {}
  @GetMapping("/api/clinic/document-branding") public DocumentBrandingService.Branding get(@AuthenticationPrincipal Jwt jwt) {return service.branding(AuthUser.from(jwt).clinicId());}
  @PutMapping("/api/clinic/document-branding") @PreAuthorize("hasRole('ADMIN')") public DocumentBrandingService.Branding save(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody BrandRequest req) {return service.saveBranding(AuthUser.from(jwt),req.address(),req.phone(),req.email());}
  @PostMapping("/api/clinic/document-branding/logo") @PreAuthorize("hasRole('ADMIN')") public Map<String,UUID> logo(@AuthenticationPrincipal Jwt jwt,@RequestParam MultipartFile file) {return Map.of("id",service.upload(AuthUser.from(jwt),file,true));}
  @DeleteMapping("/api/clinic/document-branding/logo") @PreAuthorize("hasRole('ADMIN')") @ResponseStatus(HttpStatus.NO_CONTENT) public void clearLogo(@AuthenticationPrincipal Jwt jwt) {service.clear(AuthUser.from(jwt),true);}
  @GetMapping("/api/users/me/document-profile") public DocumentBrandingService.Profile profile(@AuthenticationPrincipal Jwt jwt) {return service.profile(AuthUser.from(jwt));}
  @GetMapping("/api/users/{id}/document-profile") public DocumentBrandingService.Profile profileOf(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id) {return service.profileOf(AuthUser.from(jwt).clinicId(),id);}
- @PutMapping("/api/users/me/document-profile") public DocumentBrandingService.Profile saveProfile(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody ProfileRequest req) {return service.saveProfile(AuthUser.from(jwt),req.registration());}
+ @PutMapping("/api/users/me/document-profile") public DocumentBrandingService.Profile saveProfile(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody ProfileRequest req) {return service.saveProfile(AuthUser.from(jwt),req.registration(),req.displayName());}
  @PostMapping("/api/users/me/document-profile/signature") public Map<String,UUID> signature(@AuthenticationPrincipal Jwt jwt,@RequestParam MultipartFile file,@RequestParam(defaultValue="false") boolean confirmed) {if(!confirmed)throw new lat.occlus.shared.web.BadRequestException("Confirma que esta firma te pertenece");return Map.of("id",service.upload(AuthUser.from(jwt),file,false));}
  @DeleteMapping("/api/users/me/document-profile/signature") @ResponseStatus(HttpStatus.NO_CONTENT) public void clearSignature(@AuthenticationPrincipal Jwt jwt) {service.clear(AuthUser.from(jwt),false);}
  @GetMapping("/api/document-assets/{id}") public ResponseEntity<byte[]> asset(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id) {return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).cacheControl(CacheControl.noStore()).header("X-Content-Type-Options","nosniff").body(service.image(AuthUser.from(jwt).clinicId(),id));}
