@@ -40,6 +40,9 @@ La RDS de test en AWS es una instancia adicional con coste. Hasta aprobar ese co
 
 ## Servidor de desarrollo en AWS
 
+> **Eliminado el 2 de noviembre de 2026** para reducir costos: el desarrollo se prueba en local. Lo que sigue
+> describe cómo estaba montado, por si se recrea (ver también [guia-operacion-aws.md](guia-operacion-aws.md), sección 7).
+
 Instancia `occlus-dev` (t3.small, us-east-2, IP elástica `77.113.133.109`), separada de producción:
 
 - Grupo de seguridad `occlus-dev` (solo 80/443): no está autorizado en la RDS de producción.
