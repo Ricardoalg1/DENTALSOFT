@@ -26,9 +26,12 @@ public class DocumentBrandingService {
   return rows.isEmpty()?new Branding(c.getName(),c.getNit(),"","","",null):rows.getFirst();
  }
  @Transactional(readOnly=true)
- public Profile profile(AuthUser me) {
-  var user=users.findByIdAndClinicId(me.userId(),me.clinicId()).orElseThrow(()->new NotFoundException("Colaborador no encontrado"));
-  var rows=jdbc.query("select * from user_document_profile where clinic_id=? and user_id=?",(r,n)->new Profile(user.getFullName(),r.getString("registration"),r.getObject("signature_id",UUID.class)),me.clinicId(),me.userId());
+ public Profile profile(AuthUser me) {return profileOf(me.clinicId(),me.userId());}
+ /** Perfil de firma de un colaborador de la clínica: firma los documentos que él realizó (p. ej. un presupuesto). */
+ @Transactional(readOnly=true)
+ public Profile profileOf(UUID clinic,UUID userId) {
+  var user=users.findByIdAndClinicId(userId,clinic).orElseThrow(()->new NotFoundException("Colaborador no encontrado"));
+  var rows=jdbc.query("select * from user_document_profile where clinic_id=? and user_id=?",(r,n)->new Profile(user.getFullName(),r.getString("registration"),r.getObject("signature_id",UUID.class)),clinic,userId);
   return rows.isEmpty()?new Profile(user.getFullName(),"",null):rows.getFirst();
  }
  @Transactional public Branding saveBranding(AuthUser me,String address,String phone,String email) {

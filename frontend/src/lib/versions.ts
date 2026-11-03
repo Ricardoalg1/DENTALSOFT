@@ -6,6 +6,18 @@ export type VersionEntry = { version: string; date: string; title: string; chang
 
 export const VERSIONS: VersionEntry[] = [
   {
+    version: "1.4",
+    date: "2026-11-03",
+    title: "Documentos con membrete, firma y fecha de generación",
+    changes: [
+      "Presupuesto, fórmulas, documentos, consentimientos, evoluciones y recibos: membrete arriba con íconos y línea «Paciente».",
+      "Al final, «Realizado por» con la firma adjunta sobre la línea y el nombre completo de quien hizo el documento.",
+      "Pie con la fecha y hora en que se generó el documento.",
+      "Al imprimir desde la ficha del paciente ya no se repite su encabezado de pantalla.",
+      "Pagos con Wompi en producción y corrección del bloqueo al guardar logo, membrete y firma.",
+    ],
+  },
+  {
     version: "1.3",
     date: "2026-11-01",
     title: "Invitaciones a citas por WhatsApp Web",
