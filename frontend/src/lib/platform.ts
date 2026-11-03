@@ -64,6 +64,7 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   PLAN_CHANGED: "Cambió el plan",
   PLAN_EDITED: "Editó un plan del catálogo",
   TRIAL_EXTENDED: "Extendió la prueba",
+  CUTOFF_CHANGED: "Fijó la fecha de corte",
   SUSPENDED: "Suspendió",
   REACTIVATED: "Reactivó",
   CANCELLED: "Canceló",
