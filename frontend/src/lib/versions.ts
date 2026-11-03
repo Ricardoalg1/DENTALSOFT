@@ -16,6 +16,7 @@ export const VERSIONS: VersionEntry[] = [
       "«Nombre en documentos» en Mi cuenta: por defecto «Dr(a). Nombre», editable por cada profesional.",
       "Al imprimir desde la ficha del paciente ya no se repite su encabezado de pantalla.",
       "Pagos con Wompi en producción y corrección del bloqueo al guardar logo, membrete y firma.",
+      "Plataforma: fecha de corte de la suscripción fijada a mano por cliente, con motivo en la auditoría.",
     ],
   },
   {

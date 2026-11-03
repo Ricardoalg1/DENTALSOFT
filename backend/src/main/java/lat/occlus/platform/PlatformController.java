@@ -14,6 +14,7 @@ import lat.occlus.platform.PlatformDtos.ClinicDetail;
 import lat.occlus.platform.PlatformDtos.ClinicRow;
 import lat.occlus.platform.PlatformDtos.CreateClientRequest;
 import lat.occlus.platform.PlatformDtos.CreatedClient;
+import lat.occlus.platform.PlatformDtos.CutoffRequest;
 import lat.occlus.platform.PlatformDtos.EventRow;
 import lat.occlus.platform.PlatformDtos.ExtendTrial;
 import lat.occlus.platform.PlatformDtos.ManualPaymentRequest;
@@ -131,6 +132,11 @@ public class PlatformController {
     @PostMapping("/clinics/{id}/subscription/extend-trial")
     SubscriptionView extendTrial(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @Valid @RequestBody ExtendTrial req) {
         return gate.call(me(jwt), () -> subscriptions.extendTrial(me(jwt), id, req.days(), req.reason()));
+    }
+
+    @PostMapping("/clinics/{id}/subscription/cutoff")
+    SubscriptionView setCutoff(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @Valid @RequestBody CutoffRequest req) {
+        return gate.call(me(jwt), () -> subscriptions.setCutoff(me(jwt), id, req.date(), req.reason()));
     }
 
     @PostMapping("/clinics/{id}/subscription/suspend")
