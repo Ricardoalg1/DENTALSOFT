@@ -238,6 +238,11 @@
     display: none !important;
   }
 
+  /* Un documento (presupuesto, fórmula, recibo…) ya trae su membrete y la línea del paciente. */
+  body:has([data-print-document]) [data-patient-chrome] {
+    display: none !important;
+  }
+
   main {
     padding: 0 !important;
   }

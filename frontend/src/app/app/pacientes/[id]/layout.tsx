@@ -28,7 +28,7 @@ export default async function PatientLayout({ children, params }: LayoutProps<"/
         <ArrowLeft className="size-4" /> Pacientes
       </Link>
 
-      <div className="grid gap-3">
+      <div className="grid gap-3" data-patient-chrome>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight">

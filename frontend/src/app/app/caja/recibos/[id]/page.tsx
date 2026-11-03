@@ -1,4 +1,4 @@
-import { ClinicDocumentHeader } from "@/components/app/document-identity";
+import { ClinicDocumentHeader, DocumentFooter, UserSignature } from "@/components/app/document-identity";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -53,7 +53,10 @@ export default async function ReceiptPage({ params }: PageProps<"/app/caja/recib
       <div className="flex justify-between border-t pt-4 text-lg font-semibold"><span>Total recibido</span><span>{formatCOP(payment.amount)}</span></div>
       {payment.notes && <p className="text-sm">Nota: {payment.notes}</p>}
       {payment.voidedAt && <p className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm font-medium text-destructive">ANULADO · {payment.voidReason} · {formatDateTime(payment.voidedAt)}</p>}
-      <p className="text-center text-xs text-muted-foreground">Comprobante interno de pago. No es factura electrónica.</p>
+      {payment.receivedBy && <UserSignature userId={payment.receivedBy.id} title="Recibido por:" />}
+      <DocumentFooter>
+        <p>Comprobante interno de pago. No es factura electrónica.</p>
+      </DocumentFooter>
     </article>
     <div className="no-print flex flex-wrap gap-2"><PrintButton />{me.role === "ADMIN" && !payment.voidedAt && <VoidPayment paymentId={payment.id} />}</div>
   </div>;

@@ -5,7 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { api, ApiError, getMe } from "@/lib/api";
 import { formatDate, formatDateTime } from "@/lib/format";
 import type { Procedure, TreatmentPlan, TreatmentSuggestion } from "@/lib/types";
-import { ClinicDocumentHeader } from "@/components/app/document-identity";
+import { ClinicDocumentHeader, DocumentFooter, DocumentPatient, UserSignature } from "@/components/app/document-identity";
+import { loadPatient } from "../../load-patient";
 import { PlanStatusBadge } from "../plan-status-badge";
 import { PlanView } from "./plan-view";
 
@@ -24,7 +25,8 @@ export default async function PlanPage({ params }: PageProps<"/app/pacientes/[id
   if (plan.patient.id !== id) notFound();
 
   const draft = plan.status === "DRAFT";
-  const [procedures, suggestions] = await Promise.all([
+  const [patient, procedures, suggestions] = await Promise.all([
+    loadPatient(id),
     draft ? api<Procedure[]>("/api/procedures") : [],
     draft && me.professional ? api<TreatmentSuggestion[]>(`/api/patients/${id}/treatment-suggestions`) : [],
   ]);
@@ -54,6 +56,12 @@ export default async function PlanPage({ params }: PageProps<"/app/pacientes/[id
         </p>
       </header>
 
+      <DocumentPatient
+        name={patient.fullName}
+        identification={`${patient.documentType} ${patient.documentNumber}`}
+        detail={`${patient.age} años`}
+      />
+
       <PlanView
         patientId={id}
         plan={plan}
@@ -62,6 +70,9 @@ export default async function PlanPage({ params }: PageProps<"/app/pacientes/[id
         professional={me.professional}
         isAdmin={me.role === "ADMIN"}
       />
+
+      {plan.dentist && <UserSignature userId={plan.dentist.id} />}
+      <DocumentFooter />
     </div>
   );
 }
