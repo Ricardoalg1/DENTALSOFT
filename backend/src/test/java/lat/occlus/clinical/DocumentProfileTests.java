@@ -38,7 +38,19 @@ class DocumentProfileTests {
         mvc.perform(get("/api/users/" + dentistId + "/document-profile").header("Authorization", bearer(token)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.registration").value("RM 12345"))
-                .andExpect(jsonPath("$.name").isNotEmpty());
+                .andExpect(jsonPath("$.name").value(org.hamcrest.Matchers.startsWith("Dr(a). ")))
+                .andExpect(jsonPath("$.defaultName").value(org.hamcrest.Matchers.startsWith("Dr(a). ")));
+
+        // Nombre personalizado para firmar; vacío vuelve al predeterminado.
+        mvc.perform(put("/api/users/me/document-profile").header("Authorization", bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"registration\":\"RM 12345\",\"displayName\":\"  Dra. Camila Morales \"}"))
+                .andExpect(jsonPath("$.name").value("Dra. Camila Morales"));
+        mvc.perform(get("/api/users/" + dentistId + "/document-profile").header("Authorization", bearer(token)))
+                .andExpect(jsonPath("$.name").value("Dra. Camila Morales"));
+        mvc.perform(put("/api/users/me/document-profile").header("Authorization", bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"registration\":\"RM 12345\",\"displayName\":\"\"}"))
+                .andExpect(jsonPath("$.name").value(org.hamcrest.Matchers.startsWith("Dr(a). ")));
         // Otra clínica no puede leer el perfil (ni la firma) de este profesional.
         mvc.perform(get("/api/users/" + dentistId + "/document-profile").header("Authorization", bearer(other)))
                 .andExpect(status().isNotFound());
