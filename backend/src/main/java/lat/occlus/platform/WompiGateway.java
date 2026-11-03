@@ -79,7 +79,8 @@ class WompiGateway implements PaymentGateway, HostedCheckout {
 
     @Override
     public Payment fetch(String providerRef) {
-        JsonNode data = get("/transactions/" + encode(providerRef)).path("data");
+        // Consulta pública: en producción Wompi responde 500 a este endpoint si lleva la llave privada (nov 2026).
+        JsonNode data = get("/transactions/" + encode(providerRef), false).path("data");
         return toPayment(data);
     }
 
@@ -212,7 +213,13 @@ class WompiGateway implements PaymentGateway, HostedCheckout {
     // ---------- Apoyo ----------
 
     private JsonNode get(String path) {
-        JsonNode body = http.get().uri(path).header("Authorization", "Bearer " + cfg.privateKey()).retrieve().body(JsonNode.class);
+        return get(path, true);
+    }
+
+    private JsonNode get(String path, boolean authenticated) {
+        var request = http.get().uri(path);
+        if (authenticated) request = request.header("Authorization", "Bearer " + cfg.privateKey());
+        JsonNode body = request.retrieve().body(JsonNode.class);
         return body == null ? mapper.createObjectNode() : body;
     }
 
