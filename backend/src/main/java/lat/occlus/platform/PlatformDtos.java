@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -134,6 +135,8 @@ public final class PlatformDtos {
     }
 
     public record ExtendTrial(@Min(1) @Max(90) int days, @NotBlank @Size(min = 3, max = 300) String reason) {}
+
+    public record CutoffRequest(@NotNull LocalDate date, @NotBlank @Size(min = 3, max = 300) String reason) {}
 
     public record ReasonRequest(@NotBlank @Size(min = 3, max = 300) String reason) {}
 
