@@ -12,6 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -257,6 +260,50 @@ class SubscriptionEngineTests {
         assertThat(Duration.between(before, after)).isEqualTo(Duration.ofDays(10));
         call(get("/api/platform/audit").param("clinicId", c.clinicId().toString()).param("action", "TRIAL_EXTENDED"), platform)
                 .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    void theCutoffDateCanBeSetByHandAndMovesTheOpenCharge() throws Exception {
+        Client c = createClient(mvc, platform, "ESENCIAL", 14, null, null);
+        // Cliente activo con un cobro pendiente abierto para la fecha de corte actual (p. ej. un pago adelantado en curso).
+        Instant start = Instant.now().minus(Duration.ofDays(5)), end = Instant.now().plus(Duration.ofDays(25));
+        sql("update clinic_subscription set status = 'ACTIVE', current_period_start = ?, current_period_end = ? where clinic_id = ?",
+                ts(start), ts(end), c.clinicId());
+        sql("""
+                insert into subscription_charge (id, clinic_id, period_start, period_end, amount, status, next_attempt_at)
+                values (gen_random_uuid(), ?, ?, ?, 100000, 'PENDING', now())""", c.clinicId(), ts(end), ts(end.plus(Duration.ofDays(30))));
+
+        var date = LocalDate.now(ZoneId.of("America/Bogota")).plusDays(40);
+        Instant cutoff = date.atStartOfDay(ZoneId.of("America/Bogota")).toInstant();
+        call(post("/api/platform/clinics/" + c.clinicId() + "/subscription/cutoff").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"date\":\"" + date + "\",\"reason\":\"Pidió pagar los días 5\"}"), platform).andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentPeriodEnd").value(cutoff.toString()));
+        assertThat(instant("select current_period_end from clinic_subscription where clinic_id = ?", c.clinicId())).isEqualTo(cutoff);
+        assertThat(instant("select current_period_start from clinic_subscription where clinic_id = ?", c.clinicId()))
+                .isEqualTo(start.truncatedTo(ChronoUnit.MICROS));
+        assertThat(instant("select period_start from subscription_charge where clinic_id = ? and status = 'PENDING'", c.clinicId())).isEqualTo(cutoff);
+        call(get("/api/platform/audit").param("clinicId", c.clinicId().toString()).param("action", "CUTOFF_CHANGED"), platform)
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        // Hoy o antes no: dejaría a la clínica en mora en el acto.
+        var today = LocalDate.now(ZoneId.of("America/Bogota"));
+        call(post("/api/platform/clinics/" + c.clinicId() + "/subscription/cutoff").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"date\":\"" + today + "\",\"reason\":\"Prueba\"}"), platform).andExpect(status().isBadRequest());
+        // En mora no se mueve el corte: se registra el pago o se reactiva.
+        sql("update clinic_subscription set status = 'PAST_DUE', past_due_since = now() where clinic_id = ?", c.clinicId());
+        call(post("/api/platform/clinics/" + c.clinicId() + "/subscription/cutoff").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"date\":\"" + date.plusDays(1) + "\",\"reason\":\"Prueba\"}"), platform).andExpect(status().isConflict());
+    }
+
+    @Test
+    void theCutoffOfATrialMovesItsEnd() throws Exception {
+        Client c = createClient(mvc, platform, "ESENCIAL", 14, null, null);
+        var date = LocalDate.now(ZoneId.of("America/Bogota")).plusDays(20);
+        call(post("/api/platform/clinics/" + c.clinicId() + "/subscription/cutoff").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"date\":\"" + date + "\",\"reason\":\"Corte el mismo día de su nómina\"}"), platform)
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("TRIAL"));
+        assertThat(instant("select trial_ends_at from clinic_subscription where clinic_id = ?", c.clinicId()))
+                .isEqualTo(date.atStartOfDay(ZoneId.of("America/Bogota")).toInstant());
     }
 
     @Test

@@ -162,6 +162,19 @@ export async function extendTrial(_: PlatformState, formData: FormData): Promise
   return run(() => post(`/api/platform/clinics/${id}/subscription/extend-trial`, body), clinicPaths(id), "Prueba extendida.");
 }
 
+const cutoffSchema = z.object({
+  id: uuid,
+  date: z.iso.date("Indica la fecha de corte"),
+  reason,
+});
+
+export async function setCutoff(_: PlatformState, formData: FormData): Promise<PlatformState> {
+  const p = parse(cutoffSchema, fields(formData));
+  if ("state" in p) return p.state;
+  const { id, ...body } = p.data;
+  return run(() => post(`/api/platform/clinics/${id}/subscription/cutoff`, body), clinicPaths(id), "Fecha de corte actualizada.");
+}
+
 const reasonSchema = z.object({ id: uuid, reason });
 
 export async function suspendClinic(_: PlatformState, formData: FormData): Promise<PlatformState> {

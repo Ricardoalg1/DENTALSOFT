@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import lat.occlus.platform.PlatformDtos.ChargeView;
@@ -36,6 +38,8 @@ public class SubscriptionAdmin {
     private final PlatformAudit audit;
     private final PlatformGate gate;
     private final PaymentGateways gateways;
+
+    private static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
 
     @Transactional
     public SubscriptionView changePlan(AuthUser me, UUID id, PlanChange req) {
@@ -90,6 +94,44 @@ public class SubscriptionAdmin {
         audit.record(me, "TRIAL_EXTENDED", id, "Extendió la prueba %d días".formatted(days),
                 Views.details("days", days, "from", sub.trialEndsAt().toString(), "to", newEnd.toString(),
                         "voidedCharges", voided, "reason", reason));
+        return view(id);
+    }
+
+    /**
+     * Fija a mano la fecha de corte: el fin del periodo vigente (o de la prueba). Las renovaciones
+     * siguientes caen ese mismo día. Si ya había un cobro abierto para la fecha anterior, se corre a la
+     * nueva (no se anula: el cliente podría estar pagándolo en la pasarela).
+     */
+    @Transactional
+    public SubscriptionView setCutoff(AuthUser me, UUID id, LocalDate date, String reason) {
+        Subscription sub = billing.lock(id);
+        if ("INTERNAL".equals(sub.planCode())) throw new ConflictException("Esta cuenta no se cobra.");
+        boolean trial = sub.status() == SubscriptionStatus.TRIAL;
+        if (!trial && !(sub.status() == SubscriptionStatus.ACTIVE && sub.currentPeriodEnd() != null)) {
+            throw new ConflictException("La fecha de corte solo se fija en suscripciones activas o en prueba. "
+                    + "Si está en mora o suspendida, registra el pago o reactívala primero.");
+        }
+        LocalDate today = LocalDate.now(BOGOTA);
+        if (!date.isAfter(today)) throw new BadRequestException("La fecha de corte debe ser posterior a hoy.");
+        if (date.isAfter(today.plusDays(400))) throw new BadRequestException("La fecha de corte no puede pasar de 400 días desde hoy.");
+        Instant previous = trial ? sub.trialEndsAt() : sub.currentPeriodEnd();
+        Instant cutoff = date.atStartOfDay(BOGOTA).toInstant();
+        if (cutoff.equals(previous)) throw new ConflictException("Esa ya es la fecha de corte.");
+        // Un cobro por periodo: si ya hubo uno (p. ej. anulado) que empezaba ese día, no se puede reutilizar la fecha.
+        if (db.queryForObject("select exists(select 1 from subscription_charge where clinic_id = ? and period_start = ?)",
+                Boolean.class, id, ts(cutoff))) {
+            throw new ConflictException("Ya hubo un cobro con esa fecha de inicio: elige otro día.");
+        }
+        db.update(trial
+                ? "update clinic_subscription set trial_ends_at = ?, updated_at = now() where clinic_id = ?"
+                : "update clinic_subscription set current_period_end = ?, updated_at = now() where clinic_id = ?", ts(cutoff), id);
+        int moved = db.update("""
+                update subscription_charge set period_start = ?, period_end = ?
+                where clinic_id = ? and status in ('PENDING', 'FAILED') and period_start = ?""",
+                ts(cutoff), ts(sub.billingCycle().endOfPeriodStarting(cutoff)), id, ts(previous));
+        audit.record(me, "CUTOFF_CHANGED", id, "Fijó la fecha de corte en " + date,
+                Views.details("from", previous.toString(), "to", cutoff.toString(), "trial", trial,
+                        "movedCharges", moved, "reason", reason));
         return view(id);
     }
 

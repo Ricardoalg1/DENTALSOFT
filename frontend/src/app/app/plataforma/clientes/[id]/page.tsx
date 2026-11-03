@@ -37,6 +37,7 @@ import {
   registerPayment,
   removePaymentMethod,
   resumeClinic,
+  setCutoff,
   setModules,
   setPaymentMethod,
   suspendClinic,
@@ -71,6 +72,13 @@ function Reason({ scope }: { scope: string }) {
   return <FormField name="reason" id={`reason-${scope}`} label="Motivo" required placeholder="Queda en la auditoría" />;
 }
 
+/** Fecha yyyy-MM-dd en Colombia, desplazada {@code days} días desde {@code from} (por defecto, hoy). */
+function bogotaDate(days: number, from?: string) {
+  const d = from ? new Date(from) : new Date();
+  d.setUTCDate(d.getUTCDate() + days);
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(d);
+}
+
 export default async function ClientDetailPage({ params }: PageProps<"/app/plataforma/clientes/[id]">) {
   const { id } = await params;
   const [c, charges, audit, plans, modules, overview] = await Promise.all([
@@ -86,6 +94,7 @@ export default async function ClientDetailPage({ params }: PageProps<"/app/plata
   const open = charges.filter((x) => x.status === "PENDING" || x.status === "FAILED");
   const canExtend = s.status === "TRIAL" || (s.currentPeriodEnd === null && s.trialEndsAt !== null && (s.status === "PAST_DUE" || s.status === "SUSPENDED"));
   const canReactivate = s.status === "SUSPENDED" || s.status === "CANCELLED" || s.status === "PAST_DUE";
+  const cutoff = internal ? null : s.status === "TRIAL" ? s.trialEndsAt : s.status === "ACTIVE" ? s.currentPeriodEnd : null;
   const canSuspend = s.status !== "SUSPENDED" && s.status !== "CANCELLED";
 
   return (
@@ -149,6 +158,20 @@ export default async function ClientDetailPage({ params }: PageProps<"/app/plata
                     <p className="text-xs text-muted-foreground">El nuevo precio rige desde la próxima renovación. No se puede bajar por debajo de los usuarios activos.</p>
                   </ActionForm>
                 </Action>
+
+                {cutoff && (
+                  <Action title="Fijar la fecha de corte">
+                    <ActionForm action={setCutoff} submit="Fijar fecha" successMessage="Fecha de corte actualizada.">
+                      <input type="hidden" name="id" value={id} />
+                      <p className="text-xs text-muted-foreground">
+                        {s.status === "TRIAL" ? "La prueba termina ese día y ahí empieza el cobro." : "El periodo actual termina ese día y ahí se cobra la renovación."} Las
+                        renovaciones siguientes caen el mismo día de cada {s.billingCycle === "ANNUAL" ? "año" : "mes"}; para cortes mensuales usa del 1 al 28.
+                      </p>
+                      <FormField name="date" id="cutoff-date" label="Nueva fecha de corte" type="date" required min={bogotaDate(1)} max={bogotaDate(400)} defaultValue={bogotaDate(0, cutoff)} />
+                      <Reason scope="cutoff" />
+                    </ActionForm>
+                  </Action>
+                )}
 
                 {canExtend && (
                   <Action title="Extender la prueba">
