@@ -83,6 +83,8 @@ services:
       API_URL: http://backend:8080
       SELF_REGISTRATION: ${SELF_REGISTRATION:-false}
       PUBLIC_SITE_URL: https://${PUBLIC_APP_DOMAIN:-occlusapp.com}
+      # Origen público de la app: el chequeo anti-CSRF de /bff lo compara con la cabecera Origin.
+      APP_ORIGIN: https://${PUBLIC_APP_DOMAIN:-occlusapp.com}
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/bff/health',{signal:AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
