@@ -57,11 +57,21 @@ export async function bffForward(path: string, init: RequestInit) {
 
 /**
  * Las peticiones que modifican datos deben venir de nuestra propia página (defensa contra CSRF,
- * además de la cookie SameSite=Lax).
+ * además de la cookie SameSite=Lax). Detrás de Cloudflare, Caddy y Nginx, request.url no trae el dominio
+ * público, así que se compara también con APP_ORIGIN, fijado en el servidor (nunca con cabeceras del cliente).
  */
 export function isSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  return origin !== null && origin === new URL(request.url).origin;
+  if (origin === null) return false;
+  return origin === new URL(request.url).origin || origin === appOrigin();
+}
+
+function appOrigin(): string | null {
+  try {
+    return process.env.APP_ORIGIN ? new URL(process.env.APP_ORIGIN).origin : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Copia solo los parámetros permitidos (no se reenvía nada que el cliente invente). */
