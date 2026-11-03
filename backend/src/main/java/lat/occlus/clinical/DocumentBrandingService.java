@@ -17,7 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class DocumentBrandingService {
  private final JdbcTemplate jdbc; private final ClinicRepository clinics; private final AppUserRepository users;
  public record Branding(String name, String nit, String address, String phone, String email, UUID logoId) {}
- public record Profile(String name, String registration, UUID signatureId) {}
+ /** name: como se firma (personalizado o el predeterminado); defaultName: el predeterminado, para mostrarlo en Mi cuenta. */
+ public record Profile(String name, String registration, UUID signatureId, String defaultName) {}
  public record Evidence(String name, String registration, UUID signatureId) {}
  @Transactional(readOnly=true)
  public Branding branding(UUID clinic) {
@@ -31,14 +32,19 @@ public class DocumentBrandingService {
  @Transactional(readOnly=true)
  public Profile profileOf(UUID clinic,UUID userId) {
   var user=users.findByIdAndClinicId(userId,clinic).orElseThrow(()->new NotFoundException("Colaborador no encontrado"));
-  var rows=jdbc.query("select * from user_document_profile where clinic_id=? and user_id=?",(r,n)->new Profile(user.getFullName(),r.getString("registration"),r.getObject("signature_id",UUID.class)),clinic,userId);
-  return rows.isEmpty()?new Profile(user.getFullName(),"",null):rows.getFirst();
+  String fallback=user.isProfessional()?"Dr(a). "+user.getFullName():user.getFullName();
+  var rows=jdbc.query("select * from user_document_profile where clinic_id=? and user_id=?",(r,n)->{
+   String custom=r.getString("display_name");
+   return new Profile(custom==null||custom.isBlank()?fallback:custom,r.getString("registration"),r.getObject("signature_id",UUID.class),fallback);
+  },clinic,userId);
+  return rows.isEmpty()?new Profile(fallback,"",null,fallback):rows.getFirst();
  }
  @Transactional public Branding saveBranding(AuthUser me,String address,String phone,String email) {
   jdbc.update("insert into clinic_document_branding(clinic_id,address,phone,email,updated_by) values(?,?,?,?,?) on conflict(clinic_id) do update set address=excluded.address,phone=excluded.phone,email=excluded.email,updated_by=excluded.updated_by,updated_at=now()",me.clinicId(),address.trim(),phone.trim(),email.trim(),me.userId()); return branding(me.clinicId());
  }
- @Transactional public Profile saveProfile(AuthUser me,String registration) {
-  jdbc.update("insert into user_document_profile(user_id,clinic_id,registration) values(?,?,?) on conflict(user_id) do update set registration=excluded.registration,updated_at=now()",me.userId(),me.clinicId(),registration.trim()); return profile(me);
+ @Transactional public Profile saveProfile(AuthUser me,String registration,String displayName) {
+  String name=displayName==null||displayName.isBlank()?null:displayName.strip();
+  jdbc.update("insert into user_document_profile(user_id,clinic_id,registration,display_name) values(?,?,?,?) on conflict(user_id) do update set registration=excluded.registration,display_name=excluded.display_name,updated_at=now()",me.userId(),me.clinicId(),registration.trim(),name); return profile(me);
  }
  @Transactional public UUID upload(AuthUser me,MultipartFile file,boolean logo) {
   var id=UUID.randomUUID(); var png=normalize(file);

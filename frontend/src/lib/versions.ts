@@ -13,6 +13,7 @@ export const VERSIONS: VersionEntry[] = [
       "Presupuesto, fórmulas, documentos, consentimientos, evoluciones y recibos: membrete arriba con íconos y línea «Paciente».",
       "Al final, «Realizado por» con la firma adjunta sobre la línea y el nombre completo de quien hizo el documento.",
       "Pie con la fecha y hora en que se generó el documento.",
+      "«Nombre en documentos» en Mi cuenta: por defecto «Dr(a). Nombre», editable por cada profesional.",
       "Al imprimir desde la ficha del paciente ya no se repite su encabezado de pantalla.",
       "Pagos con Wompi en producción y corrección del bloqueo al guardar logo, membrete y firma.",
     ],
