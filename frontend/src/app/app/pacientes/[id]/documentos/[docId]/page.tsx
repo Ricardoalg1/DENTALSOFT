@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
-import { BrandHeader, ProfessionalSignature } from "@/components/app/document-identity";
+import { BrandHeader, DocumentFooter, DocumentPatient, ProfessionalSignature } from "@/components/app/document-identity";
 import { PrintButton } from "@/components/app/print-button";
 import { RichText } from "@/components/rich-text";
 import { api, ApiError } from "@/lib/api";
@@ -39,14 +39,14 @@ export default async function IssuedDocumentPage({ params }: PageProps<"/app/pac
         <header className="grid gap-1 border-b pb-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">{ISSUED_KINDS[doc.kind].label}</p>
           <h1 className="text-xl font-semibold">{doc.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            {doc.patient} · {doc.identification} · nacimiento {formatDate(doc.birthDate)}
-          </p>
+          <DocumentPatient name={doc.patient} identification={doc.identification} detail={`nacimiento ${formatDate(doc.birthDate)}`} />
           <p className="text-sm text-muted-foreground">Emitido el {formatDateTime(doc.issuedAt)}</p>
         </header>
         <RichText className="text-sm leading-7">{doc.body}</RichText>
         <ProfessionalSignature name={doc.professional} registration={doc.registration} signatureId={doc.signatureId} />
-        <p className="border-t pt-3 font-mono text-[0.65rem] text-muted-foreground break-all">Huella de integridad: {doc.hash}</p>
+        <DocumentFooter>
+          <p className="font-mono text-[0.65rem] break-all">Huella de integridad: {doc.hash}</p>
+        </DocumentFooter>
       </article>
     </div>
   );

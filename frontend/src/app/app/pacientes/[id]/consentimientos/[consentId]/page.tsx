@@ -1,5 +1,5 @@
 import { RichText } from "@/components/rich-text";
-import { ClinicDocumentHeader } from "@/components/app/document-identity";
+import { ClinicDocumentHeader, DocumentFooter, DocumentPatient } from "@/components/app/document-identity";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -46,7 +46,7 @@ export default async function ConsentPage({ params }: PageProps<"/app/pacientes/
         <CardContent className="grid gap-6 print:p-0">
           <header className="grid gap-1">
             <h2 className="text-xl font-semibold">{c.title}</h2>
-            <p className="text-sm text-muted-foreground">Paciente: {c.patient.name}</p>
+            <DocumentPatient name={c.patient.name} />
           </header>
 
           <RichText className="text-sm leading-relaxed">{c.body}</RichText>
@@ -69,7 +69,7 @@ export default async function ConsentPage({ params }: PageProps<"/app/pacientes/
             </div>
           </div>
 
-          <footer className="grid gap-1 border-t pt-3 text-xs text-muted-foreground">
+          <DocumentFooter>
             <p className="flex items-center gap-1.5">
               {c.integrityOk ? (
                 <>
@@ -83,7 +83,7 @@ export default async function ConsentPage({ params }: PageProps<"/app/pacientes/
               )}
             </p>
             <p className="break-all">Huella SHA-256: {c.contentHash}</p>
-          </footer>
+          </DocumentFooter>
         </CardContent>
       </Card>
 
