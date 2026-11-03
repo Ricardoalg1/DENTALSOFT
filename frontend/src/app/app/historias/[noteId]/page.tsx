@@ -1,5 +1,5 @@
 import { RichText } from "@/components/rich-text";
-import { ClinicDocumentHeader, ProfessionalSignature } from "@/components/app/document-identity";
+import { ClinicDocumentHeader, DocumentFooter, DocumentPatient, ProfessionalSignature } from "@/components/app/document-identity";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { FileText, ShieldCheck, ShieldAlert, ArrowLeft } from "lucide-react";
@@ -80,7 +80,7 @@ export default async function NoteDocument({
             <FileText className="size-6" />
             Evolución clínica
           </h1>
-          <p className="mt-5 text-lg font-medium">{note.patient.name}</p>
+          <div className="mt-5"><DocumentPatient name={note.patient.name} /></div>
           <div className="mt-2 flex flex-wrap justify-between gap-3 text-sm text-muted-foreground">
             <span>{formatDateTime(note.attendedAt)}</span>
             <span>Profesional: {note.dentist.name}</span>
@@ -111,7 +111,7 @@ export default async function NoteDocument({
           </section>
         ))}
         <ProfessionalSignature {...signature} />
-        <footer className="mt-10 grid gap-2 border-t pt-5 text-xs text-muted-foreground">
+        <div className="mt-10"><DocumentFooter>
           <p>Firmada el {note.signedAt && formatDateTime(note.signedAt)}</p>
           <p className="flex items-center gap-2">
             {note.integrityOk ? (
@@ -136,7 +136,7 @@ export default async function NoteDocument({
           >
             Ver antecedentes y otras evoluciones del paciente
           </Link>
-        </footer>
+        </DocumentFooter></div>
       </article>
     </div>
   );
