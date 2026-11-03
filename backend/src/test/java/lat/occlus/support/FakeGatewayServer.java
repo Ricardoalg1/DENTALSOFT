@@ -88,6 +88,11 @@ public final class FakeGatewayServer {
             tx.message = postStatus.equals("DECLINED") ? "Fondos insuficientes" : "";
             reply(ex, 201, Map.of("data", txJson(tx)));
         } else if (method.equals("GET") && path.startsWith("/transactions/")) {
+            // Como la API real de producción: la consulta por id es pública y con la llave privada falla.
+            if (ex.getRequestHeaders().containsKey("Authorization")) {
+                reply(ex, 500, Map.of("error", Map.of("type", "INTERNAL_SERVER_ERROR", "reason", "Error desconocido")));
+                return;
+            }
             Tx tx = wompiTx.get(path.substring("/transactions/".length()));
             if (tx == null) {
                 reply(ex, 404, Map.of("error", "not found"));
