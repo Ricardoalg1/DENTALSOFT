@@ -20,9 +20,11 @@ class AccountMail {
 
     private final MailTransport transport;
     private final String appUrl;
+    private final String logoUrl;
     private final ThreadPoolExecutor worker = new ThreadPoolExecutor(1, 2, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<>(200));
 
     AccountMail(MailTransport transport, @Value("${occlus.account-security.app-url:}") String appUrl) {
+        this.logoUrl = (appUrl.endsWith("/") ? appUrl.substring(0, appUrl.length() - 1) : appUrl) + "/logo-correo.png";
         this.transport = transport;
         this.appUrl = appUrl.endsWith("/") ? appUrl.substring(0, appUrl.length() - 1) : appUrl;
     }
@@ -54,16 +56,17 @@ class AccountMail {
 
     /** Aviso informativo: si no se puede enviar, no debe impedir la operación que lo originó. */
     void notice(String to, String subject, String text) {
-        submit(() -> deliver(to, subject, text));
+        submit(() -> deliver(to, subject, Email.titled(subject).line(text)));
     }
 
-    void deliver(String to, String subject, String text) {
+    void deliver(String to, String subject, Email email) {
         if (!transport.configured()) {
             log.warn("Correo de seguridad sin enviar: falta configurar el proveedor");
             return;
         }
         try {
-            transport.send(to, subject, text + "\n\n— Occlus\nEste es un mensaje automático. Nunca te pediremos tu contraseña ni tus códigos.");
+            email.footer("Este es un mensaje automático de Occlus. Nunca te pediremos tu contraseña ni tus códigos.");
+            transport.send(to, subject, email.text(), email.html(logoUrl));
         } catch (Exception e) {
             log.error("No se pudo enviar un correo de seguridad: {}", e.getClass().getSimpleName());
         }

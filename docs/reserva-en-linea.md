@@ -21,12 +21,17 @@ El widget de Turnstile debe permitir el dominio `occlus.lat`.
 
 ### WhatsApp
 
-Requiere la API de Meta activa (`WHATSAPP_*`) y dos plantillas aprobadas:
+Está programado, pero apagado y sin probar con Meta. Para activarlo:
 
-- **Código:** categoría *autenticación*, con botón de copiar código.
-- **Aviso:** categoría *utilidad*, con un solo parámetro `{{1}}` en el cuerpo. Lleva el texto del aviso y el enlace.
+1. **Número exclusivo** para la API de Meta, de un chip o línea que pueda recibir un SMS o una llamada.
+2. **Portafolio de Meta Business** verificado, con la cuenta de WhatsApp Business y un método de pago.
+3. **Credenciales:** token permanente de usuario del sistema, `Phone number ID`, secreto de la app y token de verificación del webhook.
+4. **Dos plantillas aprobadas por Meta**, en español:
+   - **Código:** categoría *autenticación*, con botón de copiar código. Meta fija el texto y no admite enlaces. Su nombre va en `BOOKING_WHATSAPP_CODE_TEMPLATE`.
+   - **Aviso:** categoría *utilidad*, con un solo parámetro en el cuerpo. Su nombre va en `BOOKING_WHATSAPP_NOTICE_TEMPLATE`. Texto sugerido: `Occlus, sobre tu cita: {{1}}`.
+5. **Servidor:** `docker-compose.production.yml` fija hoy `WHATSAPP_LIVE_ENABLED: "false"` y no pasa las credenciales. Hay que cambiarlo, definir `WHATSAPP_CLINIC_ID` y hacer una prueba real con un celular.
 
-Los mensajes salen del número de la plataforma, no del de cada clínica. Solo acepta celulares colombianos.
+Los mensajes salen del número de la plataforma, no del de cada clínica. Solo acepta celulares colombianos. Meta cobra por mensaje de plantilla entregado.
 
 ## Protección
 
