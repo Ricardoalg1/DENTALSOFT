@@ -16,6 +16,7 @@ export const VERSIONS: VersionEntry[] = [
       "Recuperar contraseña por enlace de un solo uso, con correos enviados por Amazon SES.",
       "Verificación en dos pasos para el administrador de la plataforma, con 3 códigos de respaldo.",
       "El asistente del sitio se abre solo a los 2 segundos.",
+      "Correos con el logo y los colores de Occlus, y casillas individuales para escribir el código de la reserva.",
     ],
   },
   {

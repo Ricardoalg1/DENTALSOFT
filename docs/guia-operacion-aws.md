@@ -22,7 +22,7 @@ Cuenta `540586745772`, región **us-east-2 (Ohio)**. Todo se crea en esa región
 | Base de datos | RDS `occlus-db` · PostgreSQL 17 · db.t4g.micro · 20 GB | Datos de producción (privada, solo la ve el servidor de producción) |
 | Archivos | S3 `occlus-archivos-540586745772` | Archivos clínicos de producción (privado) |
 | Secretos | Secrets Manager `occlus/production/*` | Contraseñas de la base y de WhatsApp |
-| Dominios | Namecheap (no Route 53) | `occlusapp.com` (app) y `occlus.lat` (sitio) apuntan a `52.14.213.99` |
+| Dominios | Registrados en Namecheap (no Route 53) | `occlus.lat` (sitio y reservas): DNS en Namecheap, directo a `52.14.213.99`. `occlusapp.com` (app): DNS en Cloudflare, con proxy hacia `52.14.213.99`; sus registros se editan en Cloudflare |
 
 El servidor de desarrollo en AWS (`occlus-dev`) **se eliminó el 2 de noviembre de 2026** para ahorrar costos. Se
 desarrolla y prueba en tu equipo local; si algún día se necesita otra vez, la sección 7 dice cómo recrearlo.
