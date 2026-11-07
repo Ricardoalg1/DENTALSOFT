@@ -23,11 +23,13 @@ import {
 type Props = {
   action: (state: FormState, formData: FormData) => Promise<FormState>;
   patient?: Patient;
+  /** Valores sugeridos para un paciente nuevo (por ejemplo, desde una reserva en línea). */
+  initial?: Partial<Patient>;
   cancelHref: string;
 };
 
 /** Formulario compartido para crear y editar. Tras un error, los valores enviados tienen prioridad. */
-export function PatientForm({ action, patient, cancelHref }: Props) {
+export function PatientForm({ action, patient, initial, cancelHref }: Props) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const e = state?.fieldErrors;
   useEffect(() => {
@@ -37,6 +39,7 @@ export function PatientForm({ action, patient, cancelHref }: Props) {
   const v = (name: keyof Patient) =>
     state?.values?.[name] ??
     (patient?.[name] as string | null | undefined) ??
+    (initial?.[name] as string | null | undefined) ??
     "";
 
   return (

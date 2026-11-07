@@ -25,7 +25,7 @@ export function ChangePasswordForm({ forced = false }: { forced?: boolean }) {
         label="Contraseña nueva"
         type="password"
         autoComplete="new-password"
-        minLength={8}
+        minLength={10}
         required
         errors={e?.newPassword}
       />
@@ -34,7 +34,7 @@ export function ChangePasswordForm({ forced = false }: { forced?: boolean }) {
         label="Repite la contraseña nueva"
         type="password"
         autoComplete="new-password"
-        minLength={8}
+        minLength={10}
         required
         errors={e?.confirm}
       />

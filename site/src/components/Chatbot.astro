@@ -147,7 +147,8 @@ const planData = plans.map((p) => ({ id: p.id, name: p.name, users: p.users, mon
   syncMute();
   // Campanita suave de dos notas, generada con Web Audio (sin archivos).
   function chime() {
-    if (muted || reduce || panel.hidden) return;
+    // Sin un gesto previo el navegador retiene el audio y lo soltaría de golpe más tarde.
+    if (muted || reduce || panel.hidden || !navigator.userActivation?.hasBeenActive) return;
     try {
       ctx ??= new AudioContext();
       if (ctx.state === "suspended") void ctx.resume();
@@ -296,11 +297,11 @@ const planData = plans.map((p) => ({ id: p.id, name: p.name, users: p.users, mon
     return say("No estoy seguro de haberte entendido. Puedo contarte sobre precios, la agenda, historias clínicas, inventario o ponerte en contacto con un asesor.", { chips: MENU });
   }
 
-  function open(v: boolean) {
+  function open(v: boolean, focus = true) {
     panel.hidden = !v;
     fab.setAttribute("aria-expanded", String(v));
     fab.setAttribute("aria-label", v ? "Cerrar chat con Occlu" : "Abrir chat con Occlu");
-    if (v) { if (!msgs.length) void start(); else render(); setTimeout(() => input.focus(), 50); }
+    if (v) { if (!msgs.length) void start(); else render(); if (focus) setTimeout(() => input.focus(), 50); }
     try { sessionStorage.setItem(KEY + "-open", v ? "1" : "0"); } catch {}
   }
 
@@ -316,4 +317,12 @@ const planData = plans.map((p) => ({ id: p.id, name: p.name, users: p.users, mon
   form.addEventListener("submit", (e) => { e.preventDefault(); const v = input.value; input.value = ""; void handle(v); });
 
   if (load()) { try { if (sessionStorage.getItem(KEY + "-open") === "1") open(true); } catch {} }
+
+  // Se abre solo a los 2 s, sin tomar el foco (en el celular no despliega el teclado). Si la persona ya lo
+  // cerró en esta visita, no vuelve a abrirse al cambiar de página.
+  setTimeout(() => {
+    let closed = false;
+    try { closed = sessionStorage.getItem(KEY + "-open") === "0"; } catch {}
+    if (panel.hidden && !closed) open(true, false);
+  }, 2000);
 </script>

@@ -8,6 +8,7 @@ import AgendaWindow from "../components/ui/AgendaWindow.astro";
 import InventoryWindow from "../components/ui/InventoryWindow.astro";
 import TeamWindow from "../components/ui/TeamWindow.astro";
 import CtaBand from "../components/ui/CtaBand.astro";
+import Faq from "../components/ui/Faq.astro";
 export const prerender = true;
 
 const strip: [string, string][] = [
@@ -21,6 +22,31 @@ const pillars: [string, string, string][] = [
   ["calendar", "Agenda simple", "Coordina citas sin esfuerzo."],
   ["clinical", "Historias en su lugar", "Toda la información, siempre accesible."],
   ["chart", "Decisiones con datos", "Conoce el estado de tu clínica en tiempo real."],
+];
+// Solo lo que la aplicación ya hace; lo que requiere activación o plan superior lo aclara la nota de la página.
+const journey: [string, string, string][] = [
+  ["calendar", "Agenda", "Citas por profesional y sede, reserva en línea y recordatorio con confirmación por WhatsApp."],
+  ["clinical", "Valoración", "Antecedentes, odontograma, periodontograma y diagnósticos CIE-10."],
+  ["wallet", "Tratamiento", "Presupuestos, consentimientos firmados y evoluciones que no se alteran."],
+  ["receipt", "Cobro", "Caja, recibos, cuotas de financiamiento y cartera al día."],
+  ["bell", "Regreso", "Pacientes inactivos y cumpleaños listos para contactar."],
+];
+const compliance: [string, string, string][] = [
+  ["receipt", "RIPS en JSON", "Estructura según la Resolución 948 de 2026, con revisión de datos antes de pasar al validador oficial."],
+  ["tag", "Factura electrónica", "Emisión ante la DIAN a través de un proveedor tecnológico, con tu propia habilitación."],
+  ["lock", "Historia clínica íntegra", "Evoluciones firmadas que solo se corrigen con notas aclaratorias, como pide la Resolución 1995 de 1999."],
+  ["shield", "Bioseguridad", "Esterilización, limpieza, residuos, temperatura y mantenimiento de equipos."],
+  ["box", "Insumos con trazabilidad", "Existencias, lotes, vencimientos y movimientos por sede."],
+  ["user", "Datos personales", "Autorización del paciente firmada en la plataforma y tratamiento conforme a la Ley 1581 de 2012."],
+];
+const faq: [string, string][] = [
+  ["¿Sirve si trabajo solo en mi consultorio?", "Sí. El plan Esencial cubre de 1 a 5 usuarios, así que puedes empezar solo o con tu auxiliar y crecer cuando lo necesites."],
+  ["¿Tengo que instalar algo?", "No. Occlus funciona en la nube y entras desde el navegador, en computador o tableta."],
+  ["¿Puedo traer la información de mi software actual?", "Sí. Importas pacientes, historias anteriores y documentos desde archivos. La historia importada queda identificada como anterior, con su profesional original, y no se presenta como una evolución firmada en Occlus."],
+  ["¿Mis pacientes pueden pedir cita por internet?", "Sí, en todos los planes. Activas tu página de reservas, el paciente elige una hora libre y recepción la confirma antes de que entre a la agenda."],
+  ["¿Occlus genera los RIPS?", "Prepara el JSON con la estructura vigente y señala los datos que faltan. El código de validación lo entrega el validador oficial del Ministerio. Está en el plan Global y como complemento del plan Integral."],
+  ["¿Puedo emitir factura electrónica?", "Sí, a través de un proveedor tecnológico. Requiere tu habilitación ante la DIAN y una configuración inicial en la que te acompañamos."],
+  ["¿Dónde queda guardada mi información?", "En Amazon Web Services, cifrada y aislada de la de otras clínicas. Consulta el detalle en nuestra página de seguridad."],
 ];
 ---
 
@@ -75,6 +101,25 @@ const pillars: [string, string, string][] = [
     </div>
   </section>
 
+  <!-- ===================== RECORRIDO DEL PACIENTE ===================== -->
+  <section class="sec">
+    <div class="wrap-wide">
+      <div class="max-w-xl" data-reveal>
+        <p class="eyebrow">El recorrido del paciente</p>
+        <h2 class="h-section mt-4">De la primera cita<br />a la siguiente visita.</h2>
+      </div>
+      <ol class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {journey.map(([icon, title, text], i) => (
+          <li class="soft hover p-6" data-reveal style={`--i:${i}`}>
+            <span class="ico-disc size-14"><Icon name={icon} class="" /></span>
+            <h3 class="h-card mt-6">{i + 1}. {title}</h3>
+            <p class="mt-2 text-[0.82rem] leading-6 text-muted-foreground">{text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
   <!-- ===================== AGENDA ===================== -->
   <section class="sec">
     <span class="deco ring" style="right:-17rem;top:6rem;width:26rem;height:26rem"></span>
@@ -118,8 +163,39 @@ const pillars: [string, string, string][] = [
     </div>
   </section>
 
+  <!-- ===================== NORMATIVA ===================== -->
+  <section class="sec">
+    <div class="wrap-wide">
+      <div class="max-w-xl" data-reveal>
+        <p class="eyebrow">Hecho para Colombia</p>
+        <h2 class="h-section mt-4">Tus obligaciones,<br />en tu rutina diaria.</h2>
+      </div>
+      <ul class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {compliance.map(([icon, title, text], i) => (
+          <li class="soft hover p-6" data-reveal style={`--i:${i}`}>
+            <span class="ico-disc size-14"><Icon name={icon} class="" /></span>
+            <h3 class="h-card mt-6">{title}</h3>
+            <p class="mt-2 text-[0.82rem] leading-6 text-muted-foreground">{text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== PREGUNTAS FRECUENTES ===================== -->
+  <section class="sec">
+    <div class="wrap-wide grid gap-10 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)]">
+      <div data-reveal="right">
+        <p class="eyebrow">Preguntas frecuentes</p>
+        <h2 class="h-section mt-3">Antes de<br />empezar.</h2>
+        <a href="/seguridad" class="link-arrow mt-7">Ver seguridad <Icon name="arrow" class="size-4" /></a>
+      </div>
+      <Faq items={faq} />
+    </div>
+  </section>
+
   <p class="wrap pb-6 text-center text-[0.72rem] leading-6 text-muted-foreground">
-    Vistas ilustrativas con datos de ejemplo. La emisión electrónica con un proveedor, los envíos por WhatsApp y el asistente IA requieren configuración y activación.
+    Vistas ilustrativas con datos de ejemplo. Algunos módulos dependen del plan. La emisión electrónica con un proveedor, los envíos por WhatsApp y el asistente IA requieren configuración y activación.
   </p>
 
   <CtaBand

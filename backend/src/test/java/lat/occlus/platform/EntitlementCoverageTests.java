@@ -33,7 +33,7 @@ class EntitlementCoverageTests {
             ScheduleController.class, SiteController.class, UserController.class, ProfessionalController.class,
             AnnouncementController.class, OutreachController.class, DocumentBrandingController.class,
             lat.occlus.biosafety.BiosafetyController.class, lat.occlus.migration.MigrationController.class,
-            lat.occlus.messaging.AppointmentInviteController.class);
+            lat.occlus.messaging.AppointmentInviteController.class, lat.occlus.booking.BookingAdminController.class);
 
     @Autowired
     @Qualifier("requestMappingHandlerMapping")

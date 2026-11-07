@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Clock, Users } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { api, ApiError, getMe } from "@/lib/api";
+import { OnlineBookingBar } from "./online-booking-bar";
 import { canWriteClinical, type Patient, type Professional, type ScheduleBlock, type Site, type TimeOff } from "@/lib/types";
 import { Agenda } from "./agenda";
 
@@ -40,6 +41,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/app/agend
           <p className="text-muted-foreground">Selecciona un espacio para agendar; arrastra una cita para reprogramarla.</p>
         </div>
       </div>
+      <OnlineBookingBar role={me.role} />
       {me.role === "ADMIN" && (
         <section
           aria-label="Horarios de atención"
