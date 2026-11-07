@@ -7,17 +7,20 @@ import { LoginForm } from "./login-form";
 export const metadata: Metadata = { title: "Ingresar" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/ingresar">) {
-  const { next, expirada } = await searchParams;
+  const { next, expirada, restablecida } = await searchParams;
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">Ingresar</CardTitle>
         <CardDescription>
-          {expirada ? "Tu sesión expiró. Vuelve a ingresar." : "Accede al panel de tu clínica."}
+          {restablecida ? "Tu contraseña cambió. Ingresa con la nueva." : expirada ? "Tu sesión expiró. Vuelve a ingresar." : "Accede al panel de tu clínica."}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         <LoginForm next={typeof next === "string" ? next : undefined} />
+        <p className="text-center text-sm">
+          <Link href="/recuperar" className="font-medium text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
+        </p>
         {selfRegistrationEnabled ? (
           <p className="text-center text-sm text-muted-foreground">
             ¿Aún no tienes cuenta?{" "}

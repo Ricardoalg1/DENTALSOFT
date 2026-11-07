@@ -9,6 +9,8 @@ export const ROLE_LABELS: Record<Role, string> = {
 
 export type TokenResponse = { accessToken: string; expiresAt: string };
 
+export type LoginResponse = { accessToken: string | null; expiresAt: string | null; twoFactorRequired: boolean; challengeToken: string | null };
+
 export type Me = {
   id: string;
   email: string;
@@ -25,6 +27,8 @@ export type Me = {
   mustChangePassword: boolean;
   /** Pertenece al equipo de Occlus: ve el panel de plataforma. */
   platformAdmin: boolean;
+  /** Administrador de plataforma que aún no activa la verificación en dos pasos: el panel no le abre. */
+  platformTwoFactorMissing: boolean;
 };
 
 export type ModuleKey = "CLINICAL_RECORD" | "TREATMENTS_CASH" | "BILLING_RIPS" | "INVENTORY" | "REPORTS" | "MESSAGING";

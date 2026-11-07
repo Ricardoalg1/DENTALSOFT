@@ -17,5 +17,6 @@ export async function requireModule(module: ModuleKey) {
 export async function requirePlatform() {
   const me = await getMe();
   if (!me.platformAdmin) redirect("/app");
+  if (me.platformTwoFactorMissing) redirect("/app/cuenta?dos-pasos=requerida");
   return me;
 }

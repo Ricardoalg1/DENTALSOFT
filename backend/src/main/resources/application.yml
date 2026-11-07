@@ -49,7 +49,30 @@ occlus:
     password: ${CLINICAL_MAIL_PASSWORD:}
     from: ${CLINICAL_MAIL_FROM:}
     ssl: ${CLINICAL_MAIL_SSL:false}
+  account-security:
+    # Llave AES-256 de los secretos de verificación en dos pasos (openssl rand -base64 32).
+    # Si se pierde, nadie con la verificación activa podrá ingresar: guárdala con los demás secretos.
+    totp-key: ${TOTP_ENCRYPTION_KEY:}
+    # Dirección de los enlaces de recuperación. Nunca se toma de la petición.
+    app-url: ${PUBLIC_URL:http://localhost:3000}
+    # Remitente de los correos de cuenta. Vacío: usa CLINICAL_MAIL_FROM.
+    mail-from: ${ACCOUNT_MAIL_FROM:}
+    # smtp (CLINICAL_MAIL_*) o ses (Amazon SES con el rol de la instancia, sin llaves guardadas).
+    mail-provider: ${ACCOUNT_MAIL_PROVIDER:smtp}
+    ses-region: ${SES_REGION:us-east-2}
+  booking:
+    # Dirección pública de las páginas de reserva y de los enlaces para gestionar la cita.
+    public-url: ${BOOKING_PUBLIC_URL:http://localhost:3000}
+    # En producción: true. Sin la llave de Turnstile, las reservas quedan apagadas en vez de desprotegidas.
+    captcha-required: ${BOOKING_CAPTCHA_REQUIRED:false}
+    turnstile-site-key: ${TURNSTILE_SITE_KEY:}
+    turnstile-secret: ${TURNSTILE_SECRET:}
+    # Plantillas de WhatsApp aprobadas por Meta. Vacías: los códigos solo salen por correo.
+    whatsapp-code-template: ${BOOKING_WHATSAPP_CODE_TEMPLATE:}
+    whatsapp-notice-template: ${BOOKING_WHATSAPP_NOTICE_TEMPLATE:}
   platform:
+    # Exige verificación en dos pasos para usar el panel de plataforma. En producción: true.
+    require-two-factor: ${PLATFORM_REQUIRE_2FA:false}
     # En producción: false. Los clientes los crea el administrador desde /app/plataforma.
     self-registration: ${SELF_REGISTRATION:true}
     # Días que una clínica sigue funcionando después de vencer su suscripción o fallar un cobro.

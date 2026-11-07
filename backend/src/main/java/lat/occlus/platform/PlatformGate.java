@@ -8,6 +8,7 @@ import lat.occlus.shared.tenant.TenantContext;
 import lat.occlus.shared.web.ForbiddenException;
 import lat.occlus.user.Role;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,10 @@ public class PlatformGate {
     private final MarketingProperties config;
     private final JdbcTemplate db;
 
+    /** Quien administra todas las clínicas no debe depender solo de una contraseña. */
+    @Value("${occlus.platform.require-two-factor:false}")
+    private boolean requireTwoFactor;
+
     /** Usuarios de plataforma configurados (para proteger sus cuentas de una suspensión accidental). */
     public java.util.Set<UUID> platformAdminIds() {
         return config.adminUserIds() == null ? java.util.Set.of() : config.adminUserIds();
@@ -34,6 +39,17 @@ public class PlatformGate {
     /** Solo la lista y el rol del token: para decidir qué mostrar (no autoriza acciones). */
     public boolean isListed(UUID userId, Role role) {
         return role == Role.ADMIN && config.adminUserIds() != null && config.adminUserIds().contains(userId);
+    }
+
+    /** Administrador de plataforma al que le falta activar la verificación en dos pasos. */
+    public boolean isMissingTwoFactor(UUID userId, Role role) {
+        return requireTwoFactor && isListed(userId, role) && !hasTwoFactor(userId);
+    }
+
+    private boolean hasTwoFactor(UUID userId) {
+        return TenantContext.callAsSystem(() -> Boolean.TRUE.equals(db.queryForObject(
+                "select exists(select 1 from user_two_factor where user_id = ? and enabled_at is not null)",
+                Boolean.class, userId)));
     }
 
     /**
@@ -60,5 +76,8 @@ public class PlatformGate {
                 "select exists(select 1 from app_user where id = ? and active and role = 'ADMIN')",
                 Boolean.class, me.userId())));
         if (!stillAdmin) throw new ForbiddenException("Esta sección es exclusiva del equipo de Occlus.");
+        if (requireTwoFactor && !hasTwoFactor(me.userId())) {
+            throw new ForbiddenException("Activa la verificación en dos pasos en Mi cuenta para usar este panel.");
+        }
     }
 }
