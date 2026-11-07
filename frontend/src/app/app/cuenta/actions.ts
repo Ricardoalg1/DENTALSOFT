@@ -10,7 +10,7 @@ import type { TokenResponse } from "@/lib/types";
 const schema = z
   .object({
     currentPassword: z.string().min(1, "Ingresa tu contraseña actual"),
-    newPassword: z.string().min(8, "Mínimo 8 caracteres").max(72, "Máximo 72 caracteres"),
+    newPassword: z.string().min(10, "Mínimo 10 caracteres").max(72, "Máximo 72 caracteres"),
     confirm: z.string(),
   })
   .refine((v) => v.newPassword === v.confirm, { path: ["confirm"], message: "Las contraseñas no coinciden" })

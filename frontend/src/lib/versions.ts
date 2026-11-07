@@ -6,6 +6,19 @@ export type VersionEntry = { version: string; date: string; title: string; chang
 
 export const VERSIONS: VersionEntry[] = [
   {
+    version: "1.5",
+    date: "2026-11-06",
+    title: "Reserva de citas en línea y recuperación de contraseña",
+    changes: [
+      "Página pública de reservas por clínica, en todos los planes: el paciente elige una hora libre y confirma con un código.",
+      "Bandeja de solicitudes en la agenda: recepción asocia al paciente y confirma antes de que la cita entre a la agenda.",
+      "Enlace para que el paciente cancele o cambie su cita.",
+      "Recuperar contraseña por enlace de un solo uso, con correos enviados por Amazon SES.",
+      "Verificación en dos pasos para el administrador de la plataforma, con 3 códigos de respaldo.",
+      "El asistente del sitio se abre solo a los 2 segundos.",
+    ],
+  },
+  {
     version: "1.4",
     date: "2026-11-03",
     title: "Documentos con membrete, firma y fecha de generación",

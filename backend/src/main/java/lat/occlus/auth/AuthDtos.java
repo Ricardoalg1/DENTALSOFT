@@ -23,6 +23,11 @@ public final class AuthDtos {
 
     public record TokenResponse(String accessToken, Instant expiresAt) {}
 
+    /** Con verificación en dos pasos activa no hay sesión todavía: solo un reto que se resuelve con el código. */
+    public record LoginResponse(String accessToken, Instant expiresAt, boolean twoFactorRequired, String challengeToken) {}
+
+    public record VerifyLoginRequest(@NotBlank @Size(max = 100) String challengeToken, @NotBlank @Size(max = 32) String code) {}
+
     public record ChangePasswordRequest(
             @NotBlank String currentPassword,
             @NotBlank @Size(min = 8, max = 72) String newPassword) {}
@@ -34,5 +39,6 @@ public final class AuthDtos {
 
     public record MeResponse(UUID id, String email, String fullName, Role role, boolean professional,
                              UUID clinicId, String clinicName, java.util.List<String> modules,
-                             SubscriptionInfo subscription, boolean mustChangePassword, boolean platformAdmin) {}
+                             SubscriptionInfo subscription, boolean mustChangePassword, boolean platformAdmin,
+                             boolean platformTwoFactorMissing) {}
 }
