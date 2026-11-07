@@ -2,13 +2,14 @@
 
 import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function subscribe(update: () => void) {
   window.addEventListener("occlus-theme-change", update);
   return () => window.removeEventListener("occlus-theme-change", update);
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const dark = useSyncExternalStore(
     subscribe,
     () => document.documentElement.classList.contains("dark"),
@@ -35,7 +36,7 @@ export function ThemeToggle() {
       aria-checked={dark}
       aria-label="Tema oscuro"
       onClick={toggle}
-      className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-xs font-medium text-foreground shadow-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className={cn("inline-flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-xs font-medium text-foreground shadow-sm hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring", className)}
     >
       <Sun className="size-4 dark:hidden" aria-hidden />
       <Moon className="hidden size-4 dark:block" aria-hidden />

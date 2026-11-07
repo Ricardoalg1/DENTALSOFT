@@ -2,8 +2,28 @@
 
 import { RichText } from "@/components/rich-text";
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
-import { CalendarClock, Copy, FilePlus2, MapPin, MessageCircle, Stethoscope } from "lucide-react";
+import { useEffect, useState, useTransition, type CSSProperties } from "react";
+import {
+  ArrowLeft,
+  Ban,
+  CalendarClock,
+  CheckCheck,
+  CircleCheck,
+  ClipboardList,
+  Copy,
+  FilePlus2,
+  IdCard,
+  MapPin,
+  MessageCircle,
+  MessageSquareText,
+  MessageSquareX,
+  Pencil,
+  Phone,
+  Stethoscope,
+  StickyNote,
+  UserRound,
+  UserX,
+} from "lucide-react";
 import { toast } from "sonner";
 import { FormError } from "@/components/form-error";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -19,13 +39,16 @@ import { StatusBadge } from "./status-badge";
 
 type Props = {
   appointment: Appointment;
+  /** Posición de la tarjeta en la agenda: el detalle nace ahí. */
+  origin?: CSSProperties;
   canWriteClinical: boolean;
   onClose: () => void;
   onEdit: () => void;
   onChanged: (appointment: Appointment) => void;
 };
 
-export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onClose, onEdit, onChanged }: Props) {
+export function AppointmentDetailsDialog({ appointment: a, origin, canWriteClinical, onClose, onEdit, onChanged }: Props) {
+  const [dialogOpen, setDialogOpen] = useState(true);
   const [error, setError] = useState<string>();
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState("");
@@ -64,13 +87,22 @@ export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onC
   }
 
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen} onOpenChangeComplete={(o) => !o && onClose()}>
+      <DialogContent
+        className={cn("agenda-modal sm:max-w-md", `agenda-type-${a.visitType ?? "NONE"}`, origin && "agenda-modal-from-card")}
+        style={origin}
+      >
         <DialogHeader>
           <DialogTitle>{a.patient.fullName}</DialogTitle>
-          <DialogDescription>
-            {a.patient.documentType} {a.patient.documentNumber}
-            {a.patient.phone && ` · ${a.patient.phone}`}
+          <DialogDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="inline-flex items-center gap-1.5">
+              <IdCard className="size-4" aria-hidden="true" /> {a.patient.documentType} {a.patient.documentNumber}
+            </span>
+            {a.patient.phone && (
+              <span className="inline-flex items-center gap-1.5">
+                <Phone className="size-4" aria-hidden="true" /> {a.patient.phone}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -87,20 +119,31 @@ export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onC
             <MapPin className="size-4 text-muted-foreground" /> {a.site.name}
           </p>
           {(a.visitType || a.reason) && (
-            <p>
-              <span className="text-muted-foreground">Motivo:</span>{" "}
-              {[a.visitType && VISIT_TYPES[a.visitType], a.reason].filter(Boolean).join(" · ")}
+            <p className="flex items-start gap-2">
+              <ClipboardList className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <span>
+                <span className="text-muted-foreground">Motivo:</span>{" "}
+                {[a.visitType && VISIT_TYPES[a.visitType], a.reason].filter(Boolean).join(" · ")}
+              </span>
             </p>
           )}
-          {a.notes && <RichText className="text-muted-foreground">{a.notes}</RichText>}
+          {a.notes && (
+            <div className="flex items-start gap-2">
+              <StickyNote className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <RichText className="text-muted-foreground">{a.notes}</RichText>
+            </div>
+          )}
           {a.cancellationReason && (
-            <p>
-              <span className="text-muted-foreground">Motivo de cancelación:</span> {a.cancellationReason}
+            <p className="flex items-start gap-2">
+              <MessageSquareX className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <span>
+                <span className="text-muted-foreground">Motivo de cancelación:</span> {a.cancellationReason}
+              </span>
             </p>
           )}
           <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <Link href={`/app/pacientes/${a.patient.id}`} className="w-fit text-primary hover:underline">
-              Ver ficha del paciente
+            <Link href={`/app/pacientes/${a.patient.id}`} className="inline-flex w-fit items-center gap-1 text-primary hover:underline">
+              <UserRound className="size-4" /> Ver ficha del paciente
             </Link>
             {canWriteClinical && started && (a.status === "ATTENDED" || open) && (
               <Link
@@ -138,7 +181,10 @@ export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onC
               </Button>
             </div>
             <details className="text-xs text-muted-foreground">
-              <summary className="cursor-pointer">Ver mensaje</summary>
+              <summary className="cursor-pointer">
+                <MessageSquareText className="ml-0.5 mr-1 inline size-3.5 align-text-bottom" aria-hidden="true" />
+                Ver mensaje
+              </summary>
               <p className="mt-2 whitespace-pre-line">{invite.message}</p>
             </details>
           </div>
@@ -148,7 +194,7 @@ export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onC
           <div className="flex flex-wrap gap-2">
             {a.status === "SCHEDULED" && (
               <Button disabled={pending} onClick={() => setStatus("CONFIRMED")}>
-                Confirmar
+                <CircleCheck /> Confirmar
               </Button>
             )}
             <Button
@@ -157,7 +203,7 @@ export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onC
               title={started ? undefined : "Disponible cuando llegue la hora de la cita"}
               onClick={() => setStatus("ATTENDED")}
             >
-              Atendida
+              <CheckCheck /> Atendida
             </Button>
             <Button
               variant="secondary"
@@ -165,13 +211,13 @@ export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onC
               title={started ? undefined : "Disponible cuando llegue la hora de la cita"}
               onClick={() => setStatus("NO_SHOW")}
             >
-              No asistió
+              <UserX /> No asistió
             </Button>
             <Button variant="outline" disabled={pending} onClick={onEdit}>
-              Editar
+              <Pencil /> Editar
             </Button>
             <Button variant="destructive" disabled={pending} onClick={() => setCancelling(true)}>
-              Cancelar cita
+              <Ban /> Cancelar cita
             </Button>
           </div>
         )}
@@ -182,10 +228,10 @@ export function AppointmentDetailsDialog({ appointment: a, canWriteClinical, onC
             <Textarea id="cancel-reason" value={reason} maxLength={200} rows={2} onChange={(e) => setReason(e.target.value)} />
             <div className="flex gap-2">
               <Button variant="destructive" disabled={pending} onClick={() => setStatus("CANCELLED", reason || undefined)}>
-                {pending ? "Cancelando…" : "Confirmar cancelación"}
+                <Ban /> {pending ? "Cancelando…" : "Confirmar cancelación"}
               </Button>
               <Button variant="outline" disabled={pending} onClick={() => setCancelling(false)}>
-                Volver
+                <ArrowLeft /> Volver
               </Button>
             </div>
           </div>

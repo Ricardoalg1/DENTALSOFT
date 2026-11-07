@@ -14,7 +14,7 @@ export default async function VerifyPage({ searchParams }: PageProps<"/ingresar/
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">Verificación en dos pasos</CardTitle>
-        <CardDescription>Escribe el código de tu app autenticadora.</CardDescription>
+        <CardDescription>Busca el código en tu app autenticadora y escríbelo aquí.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         <VerifyForm next={typeof next === "string" ? next : undefined} />

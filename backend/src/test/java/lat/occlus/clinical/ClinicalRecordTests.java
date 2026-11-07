@@ -254,6 +254,29 @@ class ClinicalRecordTests {
         call(token, post(base).content(mark(11, "V", "CROWN"))).andExpect(status().isBadRequest()); // sobra superficie
     }
 
+    @Test
+    void searchSortsByWhitelistedColumnsOnly() throws Exception {
+        String older = createNote(null);
+        String newer = createNote(null);
+        call(token, put("/api/clinical-notes/" + older).content("""
+                {"attendedAt":"%s","reason":"Zeta"}""".formatted(OffsetDateTime.now(CO).minusDays(10))))
+                .andExpect(status().isOk());
+        call(token, put("/api/clinical-notes/" + newer).content("""
+                {"attendedAt":"%s","reason":"Alfa"}""".formatted(OffsetDateTime.now(CO).minusDays(1))))
+                .andExpect(status().isOk());
+        String search = "/api/clinical-notes/search?scope=my-drafts";
+
+        // Por defecto, la más reciente primero.
+        call(token, get(search)).andExpect(jsonPath("$.content[0].id").value(newer));
+        call(token, get(search + "&sort=date&dir=asc")).andExpect(jsonPath("$.content[0].id").value(older));
+        call(token, get(search + "&sort=reason&dir=asc")).andExpect(jsonPath("$.content[0].id").value(newer));
+        call(token, get(search + "&sort=reason&dir=desc")).andExpect(jsonPath("$.content[0].id").value(older));
+
+        // La columna y la dirección nunca llegan al SQL tal cual.
+        call(token, get(search + "&sort=n.id")).andExpect(status().isBadRequest());
+        call(token, get(search + "&sort=date&dir=desc;drop table patient")).andExpect(status().isBadRequest());
+    }
+
     // ---------- helpers ----------
 
     @Test
