@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import FullCalendar from "@fullcalendar/react";
 import esLocale from "@fullcalendar/core/locales/es";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -8,6 +8,9 @@ import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import type {
   DateSelectArg,
+  DatesSetArg,
+  DayHeaderContentArg,
+  EventApi,
   EventClickArg,
   EventContentArg,
   EventDropArg,
@@ -16,18 +19,43 @@ import type {
 } from "@fullcalendar/core";
 import type { EventResizeDoneArg } from "@fullcalendar/interaction";
 import { EmptyState } from "@/components/app/reference-art";
-import { Plus } from "lucide-react";
+import { Ban, CalendarClock, CheckCheck, CircleCheck, Plus, UserX, type LucideIcon } from "lucide-react";
 import { FormError } from "@/components/form-error";
 import { NativeSelect } from "@/components/native-select";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { minutesBetween, nowWall, todayCO, toWall, wallToApi } from "@/lib/agenda-time";
-import { VISIT_TYPES, type Appointment, type Professional, type ScheduleBlock, type Site, type TimeOff } from "@/lib/types";
+import {
+  APPOINTMENT_STATUS,
+  VISIT_TYPES,
+  type Appointment,
+  type AppointmentStatus,
+  type Professional,
+  type ScheduleBlock,
+  type Site,
+  type TimeOff,
+  type VisitType,
+} from "@/lib/types";
 import { saveAppointment } from "./actions";
+import { AgendaBackdrop } from "./agenda-backdrop";
 import { AppointmentDetailsDialog } from "./appointment-details-dialog";
 import { AppointmentFormDialog, type AppointmentDraft } from "./appointment-form-dialog";
 import type { PickedPatient } from "./patient-picker";
-import { STATUS_COLORS } from "./status-badge";
+
+/** El color de la cita indica su tipo; el estado se reconoce por este ícono. */
+const STATUS_ICONS: Record<AppointmentStatus, LucideIcon> = {
+  SCHEDULED: CalendarClock,
+  CONFIRMED: CircleCheck,
+  ATTENDED: CheckCheck,
+  NO_SHOW: UserX,
+  CANCELLED: Ban,
+};
+
+/** Rango del calendario cuando no hay horarios configurados ni citas en la vista. */
+const DEFAULT_HOURS = { start: 6, end: 21 };
+
+const hourOf = (time: string) => Number(time.slice(0, 2));
+const toSlotTime = (hour: number) => `${String(hour).padStart(2, "0")}:00:00`;
 
 type Props = {
   professionals: Professional[];
@@ -40,49 +68,70 @@ type Props = {
   canWriteClinical: boolean;
 };
 
+const startOfDay = (d: Date) => new Date(`${d.toISOString().slice(0, 10)}T00:00:00Z`);
+const endOfDay = (d: Date) => {
+  const start = startOfDay(d);
+  return start.getTime() === d.getTime() ? d : new Date(start.getTime() + 86_400_000);
+};
+
 export function Agenda({ professionals, sites, schedules, timeOff, presetPatient, defaultDentistId, canWriteClinical }: Props) {
   const calendarRef = useRef<FullCalendar>(null);
+  const pendingFetches = useRef(0);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Cita recién soltada: marca un instante dónde quedó.
+  const [settledId, setSettledId] = useState<string>();
+  const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  // Horas con citas en la vista: se muestran altas; las vacías quedan compactas.
+  const [busyHours, setBusyHours] = useState<number[]>([]);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [dentistId, setDentistId] = useState(defaultDentistId ?? "");
   const [siteId, setSiteId] = useState("");
   const [error, setError] = useState<string>();
   const [draft, setDraft] = useState<AppointmentDraft | null>(null);
   const [selected, setSelected] = useState<Appointment | null>(null);
+  // Desde dónde crece el detalle: la tarjeta de la cita que se abrió.
+  const [modalOrigin, setModalOrigin] = useState<CSSProperties>();
   const [patientForNext, setPatientForNext] = useState(presetPatient);
 
   // Cambiar la función recarga los eventos (FullCalendar compara la referencia).
   const fetchEvents = useCallback(
     async (info: EventSourceFuncArg): Promise<EventInput[]> => {
-      const params = new URLSearchParams({ from: wallToApi(info.start), to: wallToApi(info.end) });
+      // Días completos: FullCalendar recorta el rango a las horas visibles, y esas horas dependen de las citas.
+      const params = new URLSearchParams({
+        from: wallToApi(startOfDay(info.start)),
+        to: wallToApi(endOfDay(info.end)),
+      });
       if (dentistId) params.set("dentistId", dentistId);
       if (siteId) params.set("siteId", siteId);
-      const res = await fetch(`/bff/appointments?${params}`);
-      if (res.status === 401) {
-        // /salir es un route handler (borra la cookie): requiere navegación completa, no router.push.
-        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-        window.location.href = "/salir";
-        return [];
+      pendingFetches.current++;
+      try {
+        const res = await fetch(`/bff/appointments?${params}`);
+        if (res.status === 401) {
+          // /salir es un route handler (borra la cookie): requiere navegación completa, no router.push.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+          window.location.href = "/salir";
+          return [];
+        }
+        if (!res.ok) {
+          setError("No se pudieron cargar las citas");
+          return [];
+        }
+        const list: Appointment[] = await res.json();
+        return list.map((a) => {
+          const open = a.status === "SCHEDULED" || a.status === "CONFIRMED";
+          return {
+            id: a.id,
+            title: a.patient.fullName,
+            start: toWall(a.startsAt),
+            end: toWall(a.endsAt),
+            classNames: ["agenda-event", `agenda-type-${a.visitType ?? "NONE"}`, `agenda-status-${a.status}`],
+            editable: open,
+            extendedProps: { appointment: a },
+          };
+        });
+      } finally {
+        pendingFetches.current--;
       }
-      if (!res.ok) {
-        setError("No se pudieron cargar las citas");
-        return [];
-      }
-      const list: Appointment[] = await res.json();
-      return list.map((a) => {
-        const color = STATUS_COLORS[a.status];
-        const open = a.status === "SCHEDULED" || a.status === "CONFIRMED";
-        return {
-          id: a.id,
-          title: a.patient.fullName,
-          start: toWall(a.startsAt),
-          end: toWall(a.endsAt),
-          backgroundColor: color.bg,
-          borderColor: color.border,
-          textColor: color.text,
-          editable: open,
-          extendedProps: { appointment: a },
-        };
-      });
     },
     [dentistId, siteId],
   );
@@ -121,6 +170,45 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
     return out;
   }, [timeOff, dentistId]);
 
+  const eventSources = useMemo(() => [fetchEvents, timeOffEvents], [fetchEvents, timeOffEvents]);
+
+  /** Recalcula las horas ocupadas con las citas del periodo visible (también al mover una). */
+  const syncBusyHours = useCallback((events: EventApi[]) => {
+    const view = calendarRef.current?.getApi().view;
+    if (!view || pendingFetches.current > 0) return;
+    const hours = new Set<number>();
+    for (const e of events) {
+      if (!e.extendedProps.appointment || !e.start) continue;
+      const end = e.end ?? e.start;
+      if (end <= view.currentStart || e.start >= view.currentEnd) continue;
+      const lastHour = new Date(Math.max(e.start.getTime(), end.getTime() - 1)).getUTCHours();
+      for (let h = e.start.getUTCHours(); h <= lastHour; h++) hours.add(h);
+    }
+    const next = [...hours].sort((a, b) => a - b);
+    setBusyHours((prev) => (prev.join() === next.join() ? prev : next));
+  }, []);
+
+  function onDatesSet(arg: DatesSetArg) {
+    syncBusyHours(arg.view.calendar.getEvents());
+  }
+
+  // La grilla va del primer al último horario o cita; las horas por fuera no se muestran.
+  const visibleHours = useMemo(() => {
+    const starts = (businessHours ?? []).map((b) => hourOf(b.startTime));
+    const ends = (businessHours ?? []).map((b) => hourOf(b.endTime) + (b.endTime.endsWith(":00") ? 0 : 1));
+    if (starts.length === 0 && busyHours.length === 0) return DEFAULT_HOURS;
+    return {
+      start: Math.min(...starts, ...busyHours),
+      end: Math.max(...ends, ...busyHours.map((h) => h + 1)),
+    };
+  }, [businessHours, busyHours]);
+
+  const slotClass = useCallback(
+    (arg: { date?: Date }) =>
+      arg.date && busyHours.includes(arg.date.getUTCHours()) ? "agenda-slot-busy" : "agenda-slot-idle",
+    [busyHours],
+  );
+
   const refetch = () => calendarRef.current?.getApi().refetchEvents();
 
   function openNew(start?: Date, end?: Date) {
@@ -148,7 +236,15 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
   }
 
   function onEventClick(arg: EventClickArg) {
-    setSelected(arg.event.extendedProps.appointment as Appointment);
+    const a = arg.event.extendedProps.appointment as Appointment | undefined;
+    if (!a) return;
+    const card = arg.el.getBoundingClientRect();
+    setModalOrigin({
+      "--modal-from-x": `${card.left + card.width / 2 - window.innerWidth / 2}px`,
+      "--modal-from-y": `${card.top + card.height / 2 - window.innerHeight / 2}px`,
+      "--modal-from-scale": Math.min(0.6, Math.max(0.2, card.width / 448)),
+    } as CSSProperties);
+    setSelected(a);
   }
 
   /** Arrastrar o estirar una cita la reprograma; si el backend la rechaza, vuelve a su lugar. */
@@ -157,6 +253,9 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
     const start = arg.event.start!;
     const end = arg.event.end ?? new Date(start.getTime() + minutesBetween(a.startsAt, a.endsAt) * 60000);
     setError(undefined);
+    clearTimeout(settleTimer.current);
+    setSettledId(a.id);
+    settleTimer.current = setTimeout(() => setSettledId(undefined), 900);
     const result = await saveAppointment(a.id, {
       patientId: a.patient.id,
       dentistId: a.dentist.id,
@@ -170,24 +269,63 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
     if (result.ok) {
       arg.event.setExtendedProp("appointment", result.data);
     } else {
+      setSettledId(undefined);
       arg.revert();
       setError(result.error);
     }
   }
 
+  const eventClass = useCallback(
+    (arg: { event: EventApi }) => (arg.event.id === settledId ? "agenda-event-settled" : ""),
+    [settledId],
+  );
+
   function renderEvent(arg: EventContentArg) {
-    const a = arg.event.extendedProps.appointment as Appointment;
+    const a = arg.event.extendedProps.appointment as Appointment | undefined;
+    if (!a) return undefined;
+    const StatusIcon = STATUS_ICONS[a.status];
+    const detail = [a.visitType && VISIT_TYPES[a.visitType], a.reason].filter(Boolean).join(" · ");
+    const summary = [
+      arg.timeText,
+      a.patient.fullName,
+      a.dentist.name,
+      detail,
+      APPOINTMENT_STATUS[a.status],
+    ].filter(Boolean).join("\n");
+    if (arg.view.type === "dayGridMonth") {
+      return (
+        <div className="agenda-card-inline" title={summary}>
+          <StatusIcon aria-hidden="true" />
+          <span className="agenda-card-time">{arg.timeText}</span>
+          <span className="agenda-card-name">{a.patient.fullName}</span>
+        </div>
+      );
+    }
     return (
-      <div className="overflow-hidden px-0.5 leading-tight">
-        <p className="text-[11px] opacity-80">{arg.timeText}</p>
-        <p className="truncate font-medium">{a.patient.fullName}</p>
-        {!dentistId && <p className="truncate text-[11px] opacity-80">{a.dentist.name}</p>}
-        {(a.visitType || a.reason) && (
-          <p className="truncate text-[11px] opacity-80">
-            {[a.visitType && VISIT_TYPES[a.visitType], a.reason].filter(Boolean).join(" · ")}
+      <div className="agenda-card" title={summary}>
+        <div className="agenda-card-body">
+          <p className="agenda-card-time">
+            <StatusIcon aria-hidden="true" />
+            <span>{arg.timeText}</span>
           </p>
-        )}
+          <p className="agenda-card-name">{a.patient.fullName}</p>
+          {!dentistId && <p className="agenda-card-extra">{a.dentist.name}</p>}
+          {detail && <p className="agenda-card-detail">{detail}</p>}
+        </div>
       </div>
+    );
+  }
+
+  function renderDayHeader(arg: DayHeaderContentArg) {
+    const weekday = arg.date.toLocaleDateString("es-CO", { weekday: "short", timeZone: "UTC" }).replace(".", "");
+    if (arg.view.type === "dayGridMonth") return weekday;
+    return (
+      <span className="agenda-day">
+        <span className="agenda-day-name">{weekday}</span>
+        <span className={arg.isToday ? "agenda-day-number agenda-day-today" : "agenda-day-number"}>
+          {arg.date.getUTCDate()}
+        </span>
+      </span>
     );
   }
 
@@ -234,7 +372,8 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
       )}
       <FormError message={error} />
 
-      <div className="rounded-xl border bg-card p-2 sm:p-4">
+      <div ref={panelRef} className="agenda-panel relative rounded-2xl border bg-card p-2 sm:p-4">
+        <AgendaBackdrop />
         <FullCalendar
           key={isMobile ? "mobile" : "desktop"}
           ref={calendarRef}
@@ -249,11 +388,21 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
               : { left: "prev,next today", center: "title", right: "timeGridDay,timeGridWeek,dayGridMonth" }
           }
           height="auto"
-          slotMinTime="06:00:00"
-          slotMaxTime="21:00:00"
+          slotMinTime={toSlotTime(visibleHours.start)}
+          slotMaxTime={toSlotTime(visibleHours.end)}
           slotDuration="00:15:00"
-          slotLabelInterval="01:00"
-          scrollTime="07:00:00"
+          slotLabelInterval="00:15"
+          slotLabelFormat={{ hour: "numeric", minute: "2-digit", hour12: false }}
+          slotLaneClassNames={slotClass}
+          slotLabelClassNames={slotClass}
+          eventDisplay="block"
+          eventClassNames={eventClass}
+          dragRevertDuration={220}
+          eventDragStart={() => panelRef.current?.setAttribute("data-dragging", "")}
+          eventDragStop={() => panelRef.current?.removeAttribute("data-dragging")}
+          eventTimeFormat={{ hour: "numeric", minute: "2-digit", hour12: false }}
+          slotEventOverlap={false}
+          dayHeaderContent={renderDayHeader}
           allDaySlot={false}
           nowIndicator
           selectable
@@ -262,13 +411,36 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
           eventDurationEditable
           eventStartEditable
           businessHours={businessHours}
-          eventSources={[fetchEvents, timeOffEvents]}
+          eventSources={eventSources}
+          eventsSet={syncBusyHours}
+          datesSet={onDatesSet}
           select={onSelect}
           eventClick={onEventClick}
           eventDrop={onMoveOrResize}
           eventResize={onMoveOrResize}
           eventContent={renderEvent}
         />
+        <div className="agenda-legend">
+          <ul aria-label="Colores por tipo de cita">
+            {(Object.keys(VISIT_TYPES) as VisitType[]).map((type) => (
+              <li key={type} className={`agenda-type-${type}`}>
+                <span className="agenda-legend-dot" aria-hidden="true" />
+                {VISIT_TYPES[type]}
+              </li>
+            ))}
+          </ul>
+          <ul aria-label="Íconos por estado de la cita">
+            {(Object.keys(STATUS_ICONS) as AppointmentStatus[]).map((status) => {
+              const Icon = STATUS_ICONS[status];
+              return (
+                <li key={status}>
+                  <Icon aria-hidden="true" />
+                  {APPOINTMENT_STATUS[status]}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
 
       {draft && (
@@ -283,6 +455,7 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
             setDraft(null);
             setPatientForNext(null);
             // Se abre el detalle para enviar de una vez la invitación por WhatsApp.
+            setModalOrigin(undefined);
             setSelected(saved);
             refetch();
           }}
@@ -293,6 +466,7 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
         <AppointmentDetailsDialog
           key={selected.id + selected.status}
           appointment={selected}
+          origin={modalOrigin}
           canWriteClinical={canWriteClinical}
           onClose={() => setSelected(null)}
           onEdit={() => {
@@ -300,6 +474,7 @@ export function Agenda({ professionals, sites, schedules, timeOff, presetPatient
             setSelected(null);
           }}
           onChanged={(updated) => {
+            setModalOrigin(undefined);
             setSelected(updated);
             refetch();
           }}

@@ -17,6 +17,10 @@ export const VERSIONS: VersionEntry[] = [
       "Verificación en dos pasos para el administrador de la plataforma, con 3 códigos de respaldo.",
       "El asistente del sitio se abre solo a los 2 segundos.",
       "Correos con el logo y los colores de Occlus, y casillas individuales para escribir el código de la reserva.",
+      "Agenda renovada: colores por tipo de cita, horas con minutos, filas que se ajustan a las citas y fondo animado.",
+      "Menú de cuenta desplegable, interruptor de tema arriba a la izquierda y detalle de cita que se abre desde su tarjeta.",
+      "Historias clínicas con encabezado para ordenar y resultados por página.",
+      "Verificación en dos pasos con casillas individuales, ingreso automático y una guía animada de dónde buscar el código.",
     ],
   },
   {
