@@ -1,0 +1,56 @@
+# Entorno efímero para las pruebas de carga con k6 (ver docs/pruebas-de-carga.md).
+# Nunca usa la RDS ni el bucket de producción: todo se crea aquí y se borra al terminar.
+# Los límites imitan producción: EC2 t3.small para el backend y RDS db.t4g.micro para PostgreSQL.
+name: occlus-carga
+services:
+  postgres:
+    image: postgres:17-alpine
+    cpus: 2
+    mem_limit: 1g
+    environment:
+      POSTGRES_DB: occlus
+      POSTGRES_USER: occlus
+      POSTGRES_PASSWORD: occlus
+      TZ: America/Bogota
+    volumes:
+      - ./docker/postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U occlus -d occlus"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  storage:
+    image: chrislusf/seaweedfs:latest
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -master.volumeSizeLimitMB=256
+    volumes:
+      - ./docker/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+  backend:
+    build: {context: ., dockerfile: backend/Dockerfile}
+    cpus: 2
+    mem_limit: 2g
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/occlus
+      STORAGE_ENDPOINT: http://storage:8333
+      # El registro público crea las clínicas de la prueba; en producción está apagado.
+      SELF_REGISTRATION: "true"
+    depends_on:
+      postgres: {condition: service_healthy}
+      storage: {condition: service_started}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/actuator/health/readiness"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 60s
+  k6:
+    image: grafana/k6:1.8.2
+    profiles: [carga]
+    # Escribe los resultados en la carpeta montada, que en CI no pertenece al usuario de la imagen.
+    user: root
+    working_dir: /carga
+    environment:
+      BASE_URL: http://backend:8080
+    volumes:
+      - ./load-tests:/carga
+    depends_on:
+      backend: {condition: service_healthy}
