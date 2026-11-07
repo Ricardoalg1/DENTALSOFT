@@ -230,6 +230,426 @@
   border-radius: 6px;
 }
 
+/* ---------- Agenda: panel, grilla adaptable y citas por color ---------- */
+.agenda-panel .fc {
+  --fc-page-bg-color: var(--card);
+  position: relative;
+}
+
+.agenda-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.agenda-panel .fc .fc-toolbar.fc-header-toolbar {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.agenda-panel .fc .fc-button {
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.agenda-panel .fc .fc-button:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.agenda-panel .fc .fc-col-header-cell {
+  padding: 0.35rem 0;
+}
+
+.agenda-day {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.agenda-day-name {
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.agenda-day-number {
+  display: grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.agenda-day-today {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--primary) 18%, transparent);
+}
+
+/* Las celdas del calendario no llevan el relleno general de las tablas de la aplicación. */
+.reference-main .agenda-panel .fc td {
+  padding-block: 0;
+}
+
+/* Filas: las horas con citas son altas para que el contenido quepa; las vacías, compactas. */
+.agenda-panel .fc .fc-timegrid-slot.agenda-slot-busy {
+  height: 36px;
+}
+
+.agenda-panel .fc .fc-timegrid-slot.agenda-slot-idle {
+  height: 9px;
+}
+
+.agenda-panel .fc .fc-timegrid-slot:empty::before {
+  content: none;
+}
+
+.agenda-panel .fc .fc-timegrid-slot-lane:not([data-time$=":00:00"]) {
+  border-top-style: dotted;
+}
+
+.agenda-panel .fc .fc-timegrid-slot.agenda-slot-idle:not([data-time$=":00:00"]) {
+  border-top-color: transparent;
+}
+
+.agenda-panel .fc .fc-timegrid-slot-label {
+  position: relative;
+  vertical-align: top;
+}
+
+.agenda-panel .fc .fc-timegrid-slot-label-cushion {
+  padding: 2px 8px 0 4px;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.agenda-panel .fc .fc-timegrid-slot-label:not([data-time$=":00:00"]) .fc-timegrid-slot-label-cushion {
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 400;
+}
+
+/* En una hora vacía solo se ve la hora en punto; flota para no estirar la fila. */
+.agenda-panel .fc .fc-timegrid-slot-label.agenda-slot-idle .fc-timegrid-slot-label-cushion {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.agenda-panel .fc .fc-timegrid-slot-label.agenda-slot-idle:not([data-time$=":00:00"]) .fc-timegrid-slot-label-cushion {
+  visibility: hidden;
+}
+
+/* Colores por tipo de cita */
+.agenda-type-NONE { --event-color: #3f7fbf; }
+.agenda-type-FIRST_VISIT { --event-color: #7a55d6; }
+.agenda-type-CONTROL { --event-color: #0b8a86; }
+.agenda-type-TREATMENT { --event-color: #d0701c; }
+.agenda-type-PREVENTION { --event-color: #3d8f3f; }
+.dark .agenda-type-NONE { --event-color: #7fb6ee; }
+.dark .agenda-type-FIRST_VISIT { --event-color: #b79cf5; }
+.dark .agenda-type-CONTROL { --event-color: #52d0c8; }
+.dark .agenda-type-TREATMENT { --event-color: #f0a860; }
+.dark .agenda-type-PREVENTION { --event-color: #84d083; }
+
+.fc .agenda-event {
+  --fc-event-bg-color: color-mix(in oklch, var(--event-color) 15%, var(--card));
+  --fc-event-border-color: color-mix(in oklch, var(--event-color) 45%, transparent);
+  --fc-event-text-color: color-mix(in oklch, var(--event-color) 45%, var(--foreground));
+  --fc-event-selected-overlay-color: transparent;
+  border-left: 4px solid var(--event-color);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--event-color) 25%, transparent);
+}
+
+.dark .fc .agenda-event {
+  --fc-event-bg-color: color-mix(in oklch, var(--event-color) 24%, var(--card));
+  --fc-event-text-color: color-mix(in oklch, var(--event-color) 25%, var(--foreground));
+}
+
+.fc .agenda-event.agenda-status-ATTENDED { opacity: 0.72; }
+.fc .agenda-event.agenda-status-NO_SHOW { border-style: dashed; opacity: 0.72; }
+.fc .agenda-event.agenda-status-CANCELLED { border-style: dashed; opacity: 0.55; }
+.fc .agenda-status-CANCELLED .agenda-card-name { text-decoration: line-through; }
+.fc .agenda-event .fc-event-main { position: relative; height: 100%; padding: 0; }
+
+/* La tarjeta mide lo que mide la cita: según su alto muestra más o menos líneas y nunca se desborda. */
+.agenda-card {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+  border-radius: 0 7px 7px 0;
+}
+
+.agenda-card-body {
+  display: grid;
+  gap: 1px;
+  padding: 3px 6px;
+  line-height: 1.2;
+}
+
+.agenda-card-body p {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agenda-card-time {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65625rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
+.agenda-card-time span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agenda-card-time svg,
+.agenda-card-inline svg {
+  flex: none;
+  width: 11px;
+  height: 11px;
+}
+
+.agenda-card-name {
+  font-size: 0.71875rem;
+  font-weight: 650;
+}
+
+.agenda-card-extra,
+.agenda-card-detail {
+  display: none;
+  font-size: 0.65625rem;
+  opacity: 0.85;
+}
+
+@container (min-height: 52px) {
+  .agenda-card-extra { display: block; }
+}
+
+@container (min-height: 66px) {
+  .agenda-card-detail { display: block; }
+}
+
+@container (max-height: 27px) {
+  .agenda-card-body { display: flex; align-items: center; gap: 4px; padding-block: 1px; }
+  .agenda-card-time span { display: none; }
+}
+
+.agenda-card-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 1px 4px;
+  overflow: hidden;
+  font-size: 0.6875rem;
+}
+
+.agenda-card-inline .agenda-card-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hover: la cita apenas reacciona; no se desplaza ni cambia de tamaño. */
+.fc .fc-timegrid-event-harness:hover {
+  z-index: 5 !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fc .agenda-event:not(.fc-event-mirror):not(.fc-event-dragging) {
+    animation: agenda-event-enter 240ms ease backwards;
+  }
+}
+
+@keyframes agenda-event-enter {
+  from { opacity: 0; }
+}
+
+@media (hover: hover) {
+  .fc .agenda-event {
+    transition: box-shadow 220ms ease, border-color 220ms ease, opacity 220ms ease;
+  }
+
+  .fc .agenda-event:hover {
+    --fc-event-border-color: color-mix(in oklch, var(--event-color) 75%, transparent);
+    opacity: 1;
+    box-shadow: 0 3px 10px -4px color-mix(in oklch, var(--event-color) 45%, transparent);
+  }
+}
+
+/* Detalle de la cita: lleva el color de su tipo y nace de la tarjeta que se abrió. */
+.agenda-modal {
+  border-top: 4px solid var(--event-color);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .agenda-modal.agenda-modal-from-card[data-open] {
+    animation: agenda-modal-open 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .agenda-modal.agenda-modal-from-card[data-open] > * {
+    animation: agenda-modal-content 220ms ease-out 110ms backwards;
+  }
+}
+
+@keyframes agenda-modal-open {
+  from {
+    opacity: 0.35;
+    background-color: color-mix(in oklch, var(--event-color) 30%, var(--popover));
+    transform: translate(var(--modal-from-x, 0px), var(--modal-from-y, 0px)) scale(var(--modal-from-scale, 0.9));
+  }
+}
+
+@keyframes agenda-modal-content {
+  from { opacity: 0; }
+}
+
+/* Arrastre: la cita flotante se separa del calendario y su lugar de origen queda marcado. */
+.agenda-panel[data-dragging] {
+  cursor: grabbing;
+}
+
+.agenda-panel[data-dragging] .fc-timegrid-event-harness[style*="hidden"],
+.agenda-panel[data-dragging] .fc-daygrid-event-harness[style*="hidden"] {
+  visibility: visible !important;
+}
+
+.agenda-panel[data-dragging] [style*="hidden"] > .agenda-event {
+  border-style: dashed;
+  opacity: 0.35;
+  box-shadow: none;
+}
+
+.fc .agenda-event.fc-event-dragging:not([style*="hidden"] > *) {
+  z-index: 10;
+  opacity: 0.96;
+  cursor: grabbing;
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--event-color) 55%, transparent),
+    0 12px 24px -10px color-mix(in oklch, var(--event-color) 60%, transparent);
+}
+
+.agenda-panel[data-dragging] .fc-timegrid-col:hover {
+  background-color: color-mix(in oklch, var(--primary) 5%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Salta de una franja a otra con suavidad en vez de teletransportarse. */
+  .fc .fc-timegrid-event-harness:has(> .fc-event-mirror) {
+    transition: top 110ms ease-out, bottom 110ms ease-out;
+  }
+
+  .fc .agenda-event.fc-event-mirror {
+    animation: agenda-event-hop 140ms ease-out;
+  }
+
+  .agenda-panel .fc-timegrid-col {
+    transition: background-color 160ms ease;
+  }
+
+  .fc .agenda-event.agenda-event-settled:not(.fc-event-mirror):not(.fc-event-dragging) {
+    animation: agenda-event-settle 800ms ease-out;
+  }
+}
+
+@keyframes agenda-event-hop {
+  from { opacity: 0.55; }
+}
+
+@keyframes agenda-event-settle {
+  from { box-shadow: 0 0 0 3px color-mix(in oklch, var(--event-color) 40%, transparent); }
+  to { box-shadow: 0 0 0 0 transparent; }
+}
+
+.agenda-legend {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  margin-top: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+.agenda-legend ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.85rem;
+}
+
+.agenda-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.agenda-legend svg {
+  width: 13px;
+  height: 13px;
+}
+
+.agenda-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--event-color);
+}
+
+@media (max-width: 767px) {
+  .agenda-panel .fc .fc-toolbar-title { font-size: 0.95rem; }
+  .agenda-panel .fc .fc-button { padding: 0.25rem 0.5rem; }
+}
+
+@media print {
+  .agenda-backdrop { display: none; }
+}
+
+/* ---------- Verificación en dos pasos ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .auth-hint-digit {
+    animation: auth-hint-digit 6s ease-in-out infinite both;
+  }
+
+  .auth-hint-timer {
+    stroke-dasharray: 100;
+    animation: auth-hint-timer 6s linear infinite;
+  }
+
+  .code-input-rejected {
+    animation: code-input-rejected 280ms ease-in-out;
+  }
+}
+
+@keyframes auth-hint-digit {
+  0%, 92%, 100% { opacity: 0.2; }
+  8%, 76% { opacity: 1; }
+}
+
+@keyframes auth-hint-timer {
+  to { stroke-dashoffset: 100; }
+}
+
+@keyframes code-input-rejected {
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
 /* ---------- Impresión (consentimientos y documentos) ---------- */
 @media print {
   aside,

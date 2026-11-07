@@ -95,9 +95,10 @@ public class ClinicalRecordController {
     @GetMapping("/api/clinical-notes/search")
     lat.occlus.shared.web.PageResponse<NoteSummary> searchNotes(@AuthenticationPrincipal Jwt jwt,
             @RequestParam(defaultValue="") String q, @RequestParam(defaultValue="signed") String scope,
-            @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size) {
+            @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size,
+            @RequestParam(defaultValue="date") String sort, @RequestParam(defaultValue="desc") String dir) {
         if (!java.util.Set.of("signed", "my-drafts").contains(scope)) throw new lat.occlus.shared.web.BadRequestException("Estado inválido");
-        return notes.search(AuthUser.from(jwt), q, "my-drafts".equals(scope), page, size);
+        return notes.search(AuthUser.from(jwt), q, "my-drafts".equals(scope), page, size, sort, dir);
     }
 
     @GetMapping("/api/patients/{patientId}/clinical-notes/page")

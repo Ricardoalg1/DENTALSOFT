@@ -85,9 +85,18 @@ public class ClinicalNoteService {
         }).toList();
     }
 
+    /** Columnas por las que se puede ordenar la búsqueda: el SQL solo sale de esta lista, nunca de la petición. */
+    private static final java.util.Map<String, String> SEARCH_SORTS = java.util.Map.of(
+            "date", "n.attended_at",
+            "patient", "lower(concat_ws(' ',p.first_name,p.middle_name,p.first_last_name,p.second_last_name))",
+            "dentist", "lower(u.full_name)",
+            "reason", "lower(n.reason)");
+
     @Transactional(readOnly = true)
-    public lat.occlus.shared.web.PageResponse<NoteSummary> search(AuthUser me, String query, boolean drafts, int page, int size) {
-        if (page < 0 || page > 1000000 || size < 1 || size > 100 || query.length() > 160)
+    public lat.occlus.shared.web.PageResponse<NoteSummary> search(AuthUser me, String query, boolean drafts, int page, int size, String sort, String dir) {
+        String orderColumn = SEARCH_SORTS.get(sort);
+        if (page < 0 || page > 1000000 || size < 1 || size > 100 || query.length() > 160 || orderColumn == null
+                || !(dir.equals("asc") || dir.equals("desc")))
             throw new BadRequestException("Filtros de búsqueda inválidos");
         String term = "%" + query.trim().replace("!", "!!").replace("%", "!%").replace("_", "!_") + "%";
         String filter = " from clinical_note n join patient p on p.id=n.patient_id and p.clinic_id=n.clinic_id join app_user u on u.id=n.dentist_id and u.clinic_id=n.clinic_id where n.clinic_id=? and "
@@ -98,7 +107,7 @@ public class ClinicalNoteService {
         int pages = (int) Math.ceil((double) count / size);
         int actual = pages == 0 ? 0 : Math.min(page, pages - 1);
         args.add(size); args.add(actual * size);
-        var ids = jdbc.queryForList("select n.id" + filter + " order by n.attended_at desc,n.id limit ? offset ?", UUID.class, args.toArray());
+        var ids = jdbc.queryForList("select n.id" + filter + " order by " + orderColumn + " " + dir + " nulls last,n.attended_at desc,n.id limit ? offset ?", UUID.class, args.toArray());
         var found = notes.findAllById(ids).stream().collect(Collectors.toMap(ClinicalNote::getId, Function.identity()));
         return new lat.occlus.shared.web.PageResponse<>(summaries(ids.stream().map(found::get).filter(Objects::nonNull).toList()), actual, size, count, pages);
     }
