@@ -71,13 +71,11 @@ public class PasswordResetService {
                     user.getId(), user.getClinicId(), OpaqueTokens.hash(token), Timestamp.from(Instant.now().plus(TOKEN_TTL)));
             events.record(user.getId(), user.getClinicId(), SecurityEvents.RESET_REQUESTED);
         });
-        mail.deliver(user.getEmail(), "Restablece tu contraseña de Occlus", """
-                Recibimos una solicitud para restablecer la contraseña de tu cuenta.
-
-                Abre este enlace para elegir una nueva. Vence en %d minutos y solo funciona una vez:
-                %s
-
-                Si no la pediste, ignora este mensaje: tu contraseña sigue igual.""".formatted(TOKEN_TTL.toMinutes(), mail.resetLink(token)));
+        mail.deliver(user.getEmail(), "Restablece tu contraseña de Occlus", Email.titled("Restablece tu contraseña")
+                .line("Recibimos una solicitud para restablecer la contraseña de tu cuenta.")
+                .button("Elegir contraseña nueva", mail.resetLink(token))
+                .note("El enlace vence en %d minutos y solo funciona una vez.".formatted(TOKEN_TTL.toMinutes()))
+                .note("Si no la pediste, ignora este mensaje: tu contraseña sigue igual."));
     }
 
     /** Para que la pantalla sepa si debe pedir también el código. Solo quien tiene el enlace lo averigua. */

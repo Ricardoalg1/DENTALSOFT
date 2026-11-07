@@ -40,6 +40,16 @@ class SesMailTransport implements MailTransport {
                         .body(b -> b.text(t -> t.data(text).charset("UTF-8"))))));
     }
 
+    @Override
+    public void send(String to, String subject, String text, String html) {
+        client.sendEmail(r -> r
+                .fromEmailAddress(from)
+                .destination(d -> d.toAddresses(to))
+                .content(c -> c.simple(m -> m
+                        .subject(s -> s.data(subject).charset("UTF-8"))
+                        .body(b -> b.text(t -> t.data(text).charset("UTF-8")).html(h -> h.data(html).charset("UTF-8"))))));
+    }
+
     @PreDestroy
     void close() {
         client.close();
