@@ -29,15 +29,15 @@ segunda, para cuando AWS no sirve.
 
 Un plan de contingencia solo funciona si esto ya está hecho el día del problema.
 
-| # | Tarea | Estado al 2 nov 2026 |
+| # | Tarea | Estado al 3 nov 2026 |
 |---|---|---|
 | 1 | Guardar `.env.production` en tu gestor de contraseñas (sección 2.1) | Pendiente |
-| 2 | Instalar las herramientas en tu Mac (sección 2.2) | Pendiente |
-| 3 | Crear tu llave de cifrado `age` y guardarla en dos lugares (sección 2.3) | Pendiente |
+| 2 | Instalar las herramientas en tu Mac (sección 2.2) | Hecho |
+| 3 | Crear tu llave de cifrado `age` y guardarla en dos lugares (sección 2.3) | Hecha; falta guardar la privada en dos lugares |
 | 4 | Subir las copias automáticas de RDS de 1 a 7 días (sección 2.4) | Pendiente |
 | 5 | Crear una imagen AMI del servidor (sección 2.5) | Pendiente |
-| 6 | Hacer la primera copia local y probar restaurarla (secciones 3 y 5.3) | Pendiente |
-| 7 | Activar FileVault en tu Mac | Revisar |
+| 6 | Hacer la primera copia local y probar restaurarla (secciones 3 y 5.3) | Copia hecha y verificada; falta probar la restauración |
+| 7 | Activar FileVault en tu Mac | Activado |
 
 ### 2.1 Guardar la configuración del servidor
 
