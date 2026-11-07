@@ -1,9 +1,9 @@
 name: Prueba de carga
 # Requisito para desplegar: la API debe aguantar la carga en un entorno efímero, nunca contra producción.
-# Ver docs/pruebas-de-carga.md.
+# Ver docs/pruebas-de-carga.md. No corre hacia main: ese PR lleva el mismo código que ya pasó en production.
 on:
   pull_request:
-    branches: [production, main]
+    branches: [production]
   workflow_dispatch:
     inputs:
       usuarios:

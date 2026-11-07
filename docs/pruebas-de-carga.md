@@ -1,6 +1,6 @@
 # Pruebas de carga con k6
 
-La API debe aguantar carga antes de desplegarse. El workflow [`load-test.yml`](../.github/workflows/load-test.yml) corre en cada pull request hacia `production` y `main`, y falla si no se cumple:
+La API debe aguantar carga antes de desplegarse. El workflow [`load-test.yml`](../.github/workflows/load-test.yml) corre en cada pull request hacia `production`, y falla si no se cumple:
 
 | Requisito | Umbral en k6 |
 | --- | --- |
@@ -63,4 +63,6 @@ Para saber lo que aguanta la máquina de CI hay que ejecutar el workflow con la 
 
 ## Hacerla obligatoria
 
-El workflow marca el pull request en rojo, pero GitHub solo impide el merge si `Prueba de carga` es un check requerido en `production` y `main`. El despliegue sigue siendo manual en el servidor: la regla se cumple mientras se despliegue únicamente desde `main`.
+El workflow marca el pull request en rojo, pero GitHub solo impide el merge si `Prueba de carga` es un check requerido en `production`. No debe exigirse en `main`: allí no corre y el PR quedaría esperándolo para siempre.
+
+La prueba no corre hacia `main` porque ese PR lleva el mismo código que ya pasó en `production`. Eso solo es cierto si `main` recibe cambios únicamente desde `production`: un PR directo hacia `main` llegaría sin probar. El despliegue sigue siendo manual en el servidor: la regla se cumple mientras se despliegue únicamente desde `main`.
