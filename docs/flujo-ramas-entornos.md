@@ -31,7 +31,7 @@ Para producción se mantienen backups, cifrado, eliminación protegida y acceso 
 1. Se desarrolla en `development`.
 2. Al pasar las pruebas, se abre PR a `test`.
 3. En `test` se validan migraciones, login, archivos y pagos con datos ficticios.
-4. Se crea una etiqueta (`vX.Y.Z`) y PR a `production`.
+4. Se crea una etiqueta (`vX.Y.Z`) y PR a `production`. El PR debe pasar la [prueba de carga](pruebas-de-carga.md).
 5. Antes de migrar producción: backup verificable, revisión del diff de migración y plan de reversión.
 6. Tras desplegar: health checks, login y carga de un archivo de prueba.
 
