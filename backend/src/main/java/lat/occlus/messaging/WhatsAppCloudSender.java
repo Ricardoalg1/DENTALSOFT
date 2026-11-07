@@ -41,6 +41,21 @@ class WhatsAppCloudSender implements MessageSender {
                         "components", List.of(Map.of("type", "body", "parameters", parameters)))));
     }
 
+    /** Las plantillas de autenticación de Meta llevan el código también en el botón de copiar. */
+    SendResult sendAuthCode(String to, String template, String language, String code) {
+        var text = List.of(Map.of("type", "text", "text", code));
+        return post(Map.of(
+                "messaging_product", "whatsapp",
+                "to", to,
+                "type", "template",
+                "template", Map.of(
+                        "name", template,
+                        "language", Map.of("code", language),
+                        "components", List.of(
+                                Map.of("type", "body", "parameters", text),
+                                Map.of("type", "button", "sub_type", "url", "index", "0", "parameters", text)))));
+    }
+
     @Override
     public SendResult sendText(String to, String text) {
         return post(Map.of(

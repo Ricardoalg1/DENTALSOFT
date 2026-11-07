@@ -37,8 +37,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    TokenResponse login(@Valid @RequestBody LoginRequest req) {
+    AuthDtos.LoginResponse login(@Valid @RequestBody LoginRequest req) {
         return service.login(req);
+    }
+
+    /** Segundo paso del ingreso: público porque aún no hay sesión; lo protege el reto de un solo uso. */
+    @PostMapping("/login/verify")
+    TokenResponse verifyLogin(@Valid @RequestBody AuthDtos.VerifyLoginRequest req) {
+        return service.verifyLogin(req);
     }
 
     /** Cambia la contraseña y devuelve un token nuevo (sin la marca de contraseña temporal). */

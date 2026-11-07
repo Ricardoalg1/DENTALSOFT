@@ -34,9 +34,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/login/verify", "/api/auth/register").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/password-reset/**").permitAll()
                         .requestMatchers("/api/webhooks/whatsapp", "/api/webhooks/wompi", "/api/webhooks/epayco",
                                 "/api/webhooks/mercadopago").permitAll()
+                        .requestMatchers("/api/public/booking/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST,"/api/public/demo-requests","/api/public/site-events").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())

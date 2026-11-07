@@ -40,6 +40,12 @@ public class AuthService {
     private final PlatformGate platformGate;
     private final PlatformProperties platform;
     private final LoginThrottle throttle;
+    private final TwoFactorService twoFactor;
+    private final SecurityEvents events;
+    private final AccountMail mail;
+
+    /** Hash de una contraseña que nadie conoce: un correo inexistente cuesta lo mismo que uno real. */
+    private volatile String decoyHash;
 
     /**
      * Registro de una clínica de prueba. Solo si {@code occlus.platform.self-registration} está
@@ -59,18 +65,32 @@ public class AuthService {
     }
 
     /** El login busca por correo entre todas las clínicas: única consulta en modo sistema. */
-    public TokenResponse login(LoginRequest req) {
+    public AuthDtos.LoginResponse login(LoginRequest req) {
         var key = AppUser.normalizeEmail(req.email());
         throttle.check(key);
-        var user = TenantContext.callAsSystem(() -> users.findByEmail(key))
-                .filter(AppUser::isActive)
-                .filter(u -> passwordEncoder.matches(req.password(), u.getPasswordHash()));
+        var found = TenantContext.callAsSystem(() -> users.findByEmail(key));
+        // Siempre se compara con bcrypt: el tiempo de respuesta no revela si el correo está registrado.
+        boolean matches = passwordEncoder.matches(req.password(), found.map(AppUser::getPasswordHash).orElseGet(this::decoyHash));
+        var user = found.filter(AppUser::isActive).filter(u -> matches);
         if (user.isEmpty()) {
             throttle.failed(key);
             throw new BadCredentialsException("invalid credentials");
         }
         throttle.succeeded(key);
-        return toResponse(user.get());
+        if (TenantContext.callAsSystem(() -> twoFactor.isEnabled(user.get().getId()))) {
+            return new AuthDtos.LoginResponse(null, null, true, twoFactor.openChallenge(user.get()));
+        }
+        var token = toResponse(user.get());
+        return new AuthDtos.LoginResponse(token.accessToken(), token.expiresAt(), false, null);
+    }
+
+    public TokenResponse verifyLogin(AuthDtos.VerifyLoginRequest req) {
+        return toResponse(twoFactor.completeChallenge(req.challengeToken(), req.code()));
+    }
+
+    private String decoyHash() {
+        if (decoyHash == null) decoyHash = passwordEncoder.encode(OpaqueTokens.newToken());
+        return decoyHash;
     }
 
     @Transactional
@@ -83,8 +103,12 @@ public class AuthService {
         if (req.currentPassword().equals(req.newPassword())) {
             throw new BadRequestException("La nueva contraseña debe ser diferente de la actual.");
         }
+        PasswordPolicy.check(req.newPassword(), user.getEmail());
         user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
         user.setPasswordChangeRequired(false);
+        events.record(userId, user.getClinicId(), SecurityEvents.PASSWORD_CHANGED);
+        mail.notice(user.getEmail(), "Tu contraseña de Occlus cambió",
+                "La contraseña de tu cuenta se cambió desde tu perfil. Si no fuiste tú, recupérala de inmediato desde la pantalla de ingreso.");
         // Quien tuviera la contraseña anterior (o un token robado) queda fuera; solo vale la sesión nueva.
         sessions.revokeAll(userId, null, "PASSWORD_CHANGED");
         return toResponse(user);
@@ -100,7 +124,8 @@ public class AuthService {
                 clinic.getId(), clinic.getName(),
                 sub == null || !info.accessAllowed() ? java.util.List.of()
                         : sub.modules().stream().map(Enum::name).sorted().toList(),
-                info, user.isPasswordChangeRequired(), platformGate.isListed(user.getId(), user.getRole()));
+                info, user.isPasswordChangeRequired(), platformGate.isListed(user.getId(), user.getRole()),
+                platformGate.isMissingTwoFactor(user.getId(), user.getRole()));
     }
 
     private SubscriptionInfo subscriptionInfo(Subscription sub) {

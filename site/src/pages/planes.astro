@@ -12,6 +12,7 @@ const planIcon: Record<string, string> = { ESTANDAR: "user", CRECIMIENTO: "team"
 // Qué módulos trae cada plan (coincide con lo que la plataforma habilita). true = incluido, "extra" = complemento, false = no.
 const rows: [string, string, (boolean | "extra")[]][] = [
   ["calendar", "Agenda y pacientes", [true, true, true, true]],
+  ["calendar", "Reserva de citas en línea", [true, true, true, true]],
   ["clinical", "Historia clínica y odontograma", [true, true, true, true]],
   ["wallet", "Tratamientos, presupuestos y caja", [true, true, true, true]],
   ["chart", "Reportes", [false, true, true, true]],
