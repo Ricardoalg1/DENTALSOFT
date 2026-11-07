@@ -1,0 +1,56 @@
+name: Prueba de carga
+# Requisito para desplegar: la API debe aguantar la carga en un entorno efímero, nunca contra producción.
+# Ver docs/pruebas-de-carga.md.
+on:
+  pull_request:
+    branches: [production, main]
+  workflow_dispatch:
+    inputs:
+      usuarios:
+        description: Usuarios simultáneos exigidos
+        default: '500'
+      capacidad:
+        description: Buscar además el máximo de usuarios que aguanta esta máquina
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: carga-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  COMPOSE: docker compose -f docker-compose.loadtest.yml --profile carga
+jobs:
+  carga:
+    name: Prueba de carga
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      USUARIOS: ${{ inputs.usuarios || '500' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Levantar backend y bases de datos efímeras
+        run: $COMPOSE up -d --build --wait backend
+      - name: Exigir p95 < 200 ms y menos de 1 % de fallos
+        run: |
+          mkdir -p load-tests/resultados
+          $COMPOSE run --rm k6 run -e USERS="$USUARIOS" -e RAMP=1m -e DURATION=3m \
+            --summary-export=resultados/gate.json api.js
+      - name: Publicar resumen
+        if: always()
+        run: python3 load-tests/resumen.py load-tests/resultados/gate.json "$USUARIOS" >> "$GITHUB_STEP_SUMMARY"
+      - name: Medir la capacidad máxima
+        if: inputs.capacidad
+        run: load-tests/capacidad.sh 1000 1500 2000 3000 4000 | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Errores del backend
+        if: failure()
+        run: $COMPOSE logs backend | grep -E ' ERROR |status=5' | tail -50
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resultados-k6
+          path: load-tests/resultados/
+          if-no-files-found: ignore
+      - name: Borrar el entorno
+        if: always()
+        run: $COMPOSE down -v

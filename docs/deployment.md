@@ -50,6 +50,8 @@ Nginx configura 5 solicitudes/minuto con ráfaga de 5 para `/demo`, y 30/minuto 
 
 `.github/workflows/build.yml` compila y revisa Astro/Next y empaqueta Java en push/PR. Sigue el flujo de [GitHub Actions con Maven](https://docs.github.com/en/actions/tutorials/build-and-test-code/java-with-maven), con pruebas deshabilitadas en el empaquetado de esta tarea. No hace push de imágenes, despliegues, cobros o envíos automáticos.
 
+`.github/workflows/load-test.yml` exige en cada pull request hacia `production` y `main` que la API aguante 500 usuarios simultáneos con p95 menor a 200 ms y menos de 1 % de fallos. Ver [pruebas-de-carga.md](pruebas-de-carga.md).
+
 ## Operación pendiente
 
 - Completar revisión de privacidad, condiciones, impuestos, soporte y plazo; autorizar usuarios comerciales.
