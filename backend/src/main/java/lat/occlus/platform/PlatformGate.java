@@ -24,6 +24,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PlatformGate {
 
+    private static final String TWO_FACTOR_ACTIVE = "select exists(select 1 from user_two_factor where user_id = ? and enabled_at is not null)";
+
     private final MarketingProperties config;
     private final JdbcTemplate db;
 
@@ -41,15 +43,16 @@ public class PlatformGate {
         return role == Role.ADMIN && config.adminUserIds() != null && config.adminUserIds().contains(userId);
     }
 
-    /** Administrador de plataforma al que le falta activar la verificación en dos pasos. */
+    /**
+     * Administrador de plataforma al que le falta activar la verificación en dos pasos. Puede llamarse dentro de
+     * una transacción: consulta con el contexto de su propia clínica, sin pasar a modo sistema.
+     */
     public boolean isMissingTwoFactor(UUID userId, Role role) {
-        return requireTwoFactor && isListed(userId, role) && !hasTwoFactor(userId);
+        return requireTwoFactor && isListed(userId, role) && !Boolean.TRUE.equals(db.queryForObject(TWO_FACTOR_ACTIVE, Boolean.class, userId));
     }
 
     private boolean hasTwoFactor(UUID userId) {
-        return TenantContext.callAsSystem(() -> Boolean.TRUE.equals(db.queryForObject(
-                "select exists(select 1 from user_two_factor where user_id = ? and enabled_at is not null)",
-                Boolean.class, userId)));
+        return TenantContext.callAsSystem(() -> Boolean.TRUE.equals(db.queryForObject(TWO_FACTOR_ACTIVE, Boolean.class, userId)));
     }
 
     /**
