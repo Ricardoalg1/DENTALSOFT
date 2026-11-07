@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useState, type FormEvent } from "react";
 import { FormError } from "@/components/form-error";
 import { FormField } from "@/components/form-field";
+import { CodeInput } from "@/components/booking/code-input";
 import { SlotPicker } from "@/components/booking/slot-picker";
 import { Turnstile } from "@/components/booking/turnstile";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,9 @@ export function BookingWizard({ slug, info }: { slug: string; info: BookingInfo 
   const [pending, setPending] = useState(false);
   const [channel, setChannel] = useState(info.channels[0]);
   const [refresh, setRefresh] = useState(0);
+  const [code, setCode] = useState("");
+  // Cambia para vaciar las casillas: tras un código incorrecto o al pedir otro.
+  const [codeRound, setCodeRound] = useState(0);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh vuelve a pedir las horas tras perder una.
   const load = useCallback((from: string) => loadSlots(slug, dentistId, from), [slug, dentistId, refresh]);
@@ -65,19 +69,29 @@ export function BookingWizard({ slug, info }: { slug: string; info: BookingInfo 
     setError(undefined);
     const r = await sendDetails(slug, { holdToken, ...contact, channel, consentVersion: info.consentVersion, consentAccepted: form.get("consent") === "on" });
     setPending(false);
-    if (r.ok) setStep({ name: "code", slot, holdToken, channel, contact });
-    else setError(r.error);
+    if (r.ok) {
+      clearCode();
+      setStep({ name: "code", slot, holdToken, channel, contact });
+    } else setError(r.error);
+  }
+
+  function clearCode() {
+    setCode("");
+    setCodeRound((n) => n + 1);
   }
 
   async function submitCode(e: FormEvent<HTMLFormElement>, holdToken: string) {
     e.preventDefault();
     setPending(true);
     setError(undefined);
-    const r = await verifyCode(slug, holdToken, String(new FormData(e.currentTarget).get("code") ?? ""));
+    const r = await verifyCode(slug, holdToken, code);
     setPending(false);
     if (r.ok) setStep({ name: "done", manageToken: r.data.manageToken });
     else if (/Elige una hora de nuevo/.test(r.error)) startOver(r.error);
-    else setError(r.error);
+    else {
+      setError(r.error);
+      clearCode();
+    }
   }
 
   async function resend(holdToken: string, slot: BookingSlot, via: "EMAIL" | "WHATSAPP", contact: Contact) {
@@ -86,7 +100,10 @@ export function BookingWizard({ slug, info }: { slug: string; info: BookingInfo 
     const r = await sendDetails(slug, { holdToken, ...contact, channel: via, consentVersion: info.consentVersion, consentAccepted: true });
     setPending(false);
     setError(r.ok ? undefined : r.error);
-    if (r.ok) setStep({ name: "code", slot, holdToken, channel: via, contact });
+    if (r.ok) {
+      clearCode();
+      setStep({ name: "code", slot, holdToken, channel: via, contact });
+    }
   }
 
   if (step.name === "done") {
@@ -101,13 +118,15 @@ export function BookingWizard({ slug, info }: { slug: string; info: BookingInfo 
 
   if (step.name === "code") {
     return (
-      <form className="grid gap-4" onSubmit={(e) => void submitCode(e, step.holdToken)}>
+      <form key="code" className="grid gap-5" onSubmit={(e) => void submitCode(e, step.holdToken)}>
         <FormError message={error} />
-        <p className="text-sm">Te enviamos un código de 6 dígitos por {step.channel === "EMAIL" ? "correo" : "WhatsApp"}. Vence en unos minutos y, si no llega, revisa la carpeta de spam.</p>
-        <FormField name="code" label="Código" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required autoFocus />
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" disabled={pending}>{pending ? "Verificando…" : "Confirmar solicitud"}</Button>
-          <Button type="button" variant="outline" disabled={pending} onClick={() => void resend(step.holdToken, step.slot, step.channel, step.contact)}>Enviar otro código</Button>
+        <p className="text-center text-sm">
+          Te enviamos un código de 6 dígitos a tu {step.channel === "EMAIL" ? "correo" : "WhatsApp"}. Vence en unos minutos y, si no llega, revisa la carpeta de spam.
+        </p>
+        <CodeInput key={codeRound} onChange={setCode} disabled={pending} />
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button type="submit" size="lg" disabled={pending || code.length !== 6}>{pending ? "Verificando…" : "Confirmar solicitud"}</Button>
+          <Button type="button" size="lg" variant="outline" disabled={pending} onClick={() => void resend(step.holdToken, step.slot, step.channel, step.contact)}>Enviar otro código</Button>
         </div>
       </form>
     );
@@ -115,7 +134,7 @@ export function BookingWizard({ slug, info }: { slug: string; info: BookingInfo 
 
   if (step.name === "details") {
     return (
-      <form className="grid gap-4" onSubmit={(e) => void submitDetails(e, step.holdToken, step.slot)}>
+      <form key="details" className="grid gap-4" onSubmit={(e) => void submitDetails(e, step.holdToken, step.slot)}>
         <FormError message={error} />
         <p role="status" className="rounded-lg border bg-muted p-3 text-sm first-letter:uppercase">
           {whenLabel(step.slot.startsAt)} en {step.slot.siteName}. Te la apartamos hasta las {timeLabel(step.expiresAt)}
