@@ -10,6 +10,7 @@ import java.util.UUID;
 import lat.occlus.appointment.AgendaDtos.AppointmentRequest;
 import lat.occlus.appointment.AppointmentService;
 import lat.occlus.appointment.VisitType;
+import lat.occlus.auth.Email;
 import lat.occlus.auth.MailTransport;
 import lat.occlus.booking.BookingDtos.PatientMatch;
 import lat.occlus.booking.BookingDtos.Ref;
@@ -134,8 +135,9 @@ public class BookingAdminService {
             return new Decision((String) r[5], (String) r[6], clinicName(me.clinicId()), appointment.startsAt(), appointment.dentist().name(), appointment.site().name());
         });
         notifier.notice(d.channel(), d.target(), "Tu cita en " + d.clinic() + " está confirmada",
-                "Tu cita quedó confirmada para el " + PublicDates.format(d.startsAt()) + " con " + d.dentist() + " en " + d.site()
-                        + ". Si no puedes asistir, usa el enlace que te enviamos al reservar.");
+                Email.titled("¡Tu cita está confirmada!").eyebrow(d.clinic())
+                        .line("Te esperamos. Si no puedes asistir, usa el enlace que te enviamos al reservar.")
+                        .detail("Cuándo", PublicDates.format(d.startsAt())).detail("Profesional", d.dentist()).detail("Sede", d.site()), d.clinic());
     }
 
     public void reject(AuthUser me, UUID id, String reason) {
@@ -150,7 +152,9 @@ public class BookingAdminService {
             return new Decision(rows.getFirst()[0], rows.getFirst()[1], clinicName(me.clinicId()), null, null, null);
         });
         notifier.notice(d.channel(), d.target(), "Sobre tu solicitud de cita en " + d.clinic(),
-                "La clínica " + d.clinic() + " no pudo confirmar la hora que pediste" + (clean == null ? "." : ": " + clean + ".") + " Puedes reservar otra hora o llamar a la clínica.");
+                Email.titled("No pudimos confirmar tu hora").eyebrow(d.clinic())
+                        .line("La clínica no pudo confirmar la hora que pediste. Puedes reservar otra o llamar a la clínica.")
+                        .detail("Motivo", clean), d.clinic());
     }
 
     private List<RequestView> query(UUID clinicId, String where) {

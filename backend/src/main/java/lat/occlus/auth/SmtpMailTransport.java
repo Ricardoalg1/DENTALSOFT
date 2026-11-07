@@ -56,4 +56,15 @@ class SmtpMailTransport implements MailTransport {
         helper.setText(text);
         sender.send(message);
     }
+
+    @Override
+    public void send(String to, String subject, String text, String html) throws Exception {
+        var message = sender.createMimeMessage();
+        var helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setFrom(from);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(text, html);
+        sender.send(message);
+    }
 }

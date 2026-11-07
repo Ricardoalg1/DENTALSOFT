@@ -59,6 +59,14 @@ class OnlineBookingTests {
         public void send(String to, String subject, String text) {
             sent.add(new Sent(to, subject, text));
         }
+
+        final List<String> html = new CopyOnWriteArrayList<>();
+
+        @Override
+        public void send(String to, String subject, String text, String htmlBody) {
+            html.add(htmlBody);
+            send(to, subject, text);
+        }
     }
 
     static class RecordingWhatsApp implements PatientWhatsApp {
@@ -117,6 +125,7 @@ class OnlineBookingTests {
     @BeforeEach
     void reset() {
         mail.sent.clear();
+        mail.html.clear();
         whatsapp.codes.clear();
         whatsapp.notices.clear();
         whatsapp.on = false;
@@ -373,6 +382,20 @@ class OnlineBookingTests {
         assertThat(verifyRaw(c, h, whatsapp.codes.getFirst().split(":")[1]).getStatus()).isEqualTo(200);
         assertThat(whatsapp.notices).hasSize(1);
         assertThat(mail.sent).isEmpty();
+    }
+
+    @Test
+    void emailsAreBrandedAndEscapeWhatComesFromTheClinic() throws Exception {
+        var c = clinic();
+        TenantContext.callAs(c.clinicId(), () -> db.update("update clinic set name = ? where id = ?", "<script>alert(1)</script> & Cía", c.clinicId()));
+        String email = email();
+        String manage = book(c, slotStarts(c).getFirst(), email);
+        assertThat(mail.html).hasSize(2);
+        assertThat(mail.html.get(0)).contains("https://reservas.ejemplo.test/logo-correo.png").contains("#246c78").contains(codeSentTo(email));
+        assertThat(mail.html.get(1)).contains("href=\"https://reservas.ejemplo.test/mi-cita#t=" + manage + "\"");
+        assertThat(mail.html).allSatisfy(h -> assertThat(h).doesNotContain("<script>").contains("&lt;script&gt;alert(1)&lt;/script&gt; &amp; Cía"));
+        // Los correos también llevan versión en texto plano, sin marcado.
+        assertThat(mail.sent).allSatisfy(m -> assertThat(m.text()).doesNotContain("<table").contains("Enviado por Occlus"));
     }
 
     // ---------- Recepción ----------

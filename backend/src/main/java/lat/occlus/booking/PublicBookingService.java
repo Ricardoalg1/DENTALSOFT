@@ -16,6 +16,7 @@ import lat.occlus.appointment.AgendaDtos.StatusRequest;
 import lat.occlus.appointment.AppointmentService;
 import lat.occlus.appointment.AppointmentStatus;
 import lat.occlus.appointment.VisitType;
+import lat.occlus.auth.Email;
 import lat.occlus.auth.OpaqueTokens;
 import lat.occlus.booking.BookingDtos.BookingInfo;
 import lat.occlus.booking.BookingDtos.DetailsRequest;
@@ -185,7 +186,23 @@ public class PublicBookingService {
         }
     }
 
-    private record VerifyOutcome(boolean ok, boolean exhausted, String manageToken, String channel, String target, String clinic) {}
+    private record VerifyOutcome(boolean ok, boolean exhausted, String manageToken, String channel, String target, Summary summary) {}
+
+    /** Lo que se le recuerda al paciente en cada aviso. */
+    private record Summary(String clinic, String when, String dentist, String site, String visitType) {
+        Email fill(Email email) {
+            return email.eyebrow(clinic).detail("Cuándo", when).detail("Profesional", dentist).detail("Sede", site).detail("Tipo de cita", visitType);
+        }
+    }
+
+    private Summary summary(UUID clinicId, UUID requestId) {
+        return db.queryForObject("""
+                select c.name, r.starts_at, u.full_name, st.name, r.visit_type from online_booking_request r
+                join clinic c on c.id = r.clinic_id join app_user u on u.id = r.dentist_id join site st on st.id = r.site_id
+                where r.id = ? and r.clinic_id = ?""",
+                (rs, i) -> new Summary(rs.getString(1), PublicDates.format(rs.getTimestamp(2).toInstant().atZone(BookingSlots.BOGOTA).toOffsetDateTime()),
+                        rs.getString(3), rs.getString(4), VisitType.valueOf(rs.getString(5)).label()), requestId, clinicId);
+    }
 
     public VerifyResponse verify(String slug, String holdToken, String code) {
         var s = settings(slug);
@@ -212,13 +229,16 @@ public class PublicBookingService {
             db.update("""
                     update online_booking_request set status = 'PENDING', verified_at = now(), hold_token_hash = null, code_hash = null,
                         manage_token_hash = ? where id = ?""", OpaqueTokens.hash(manage), id);
-            return new VerifyOutcome(true, false, manage, (String) rows.getFirst()[3], (String) rows.getFirst()[4], clinicName(s.clinicId()));
+            return new VerifyOutcome(true, false, manage, (String) rows.getFirst()[3], (String) rows.getFirst()[4], summary(s.clinicId(), id));
         }));
         if (outcome == null) throw new ConflictException(HOLD_GONE);
         if (outcome.exhausted()) throw new ConflictException("Demasiados códigos incorrectos. Elige una hora de nuevo.");
         if (!outcome.ok()) throw new BadRequestException("El código no es correcto.");
-        notifier.notice(outcome.channel(), outcome.target(), "Recibimos tu solicitud de cita en " + outcome.clinic(),
-                "La clínica " + outcome.clinic() + " revisará tu solicitud y te avisará. Para cancelarla o cambiarla usa este enlace: " + manageLink(outcome.manageToken()));
+        var sum = outcome.summary();
+        notifier.notice(outcome.channel(), outcome.target(), "Recibimos tu solicitud de cita en " + sum.clinic(),
+                sum.fill(Email.titled("Recibimos tu solicitud").line("La clínica la revisará y te avisará cuando quede confirmada."))
+                        .button("Ver, cambiar o cancelar", manageLink(outcome.manageToken()))
+                        .note("Guarda este correo: el enlace es la forma de cambiar o cancelar tu cita, y solo tú debes tenerlo."), sum.clinic());
         return new VerifyResponse(outcome.manageToken());
     }
 
@@ -245,20 +265,23 @@ public class PublicBookingService {
 
     public void cancel(String token) {
         var m = managed(token);
-        TenantContext.callAs(m.clinicId(), () -> tx.execute(t -> {
+        var sum = TenantContext.callAs(m.clinicId(), () -> tx.execute(t -> {
+            var before = summary(m.clinicId(), m.id());
             releaseAppointment(m, "Cancelada por el paciente desde su enlace");
             db.update("update online_booking_request set status = 'CANCELLED', manage_token_hash = null, appointment_id = null where id = ?", m.id());
-            return null;
+            return before;
         }));
-        notifier.notice(m.channel(), m.target(), "Tu cita fue cancelada", "Cancelamos tu solicitud de cita. Si necesitas otra hora, reserva de nuevo o llama a la clínica.");
+        notifier.notice(m.channel(), m.target(), "Tu cita fue cancelada",
+                sum.fill(Email.titled("Tu cita fue cancelada").line("Si necesitas otra hora, reserva de nuevo o llama a la clínica.")), sum.clinic());
     }
 
     /** Cambiar la hora vuelve a pasar por recepción, también si la cita ya estaba confirmada. */
     public void reschedule(String token, UUID siteId, OffsetDateTime startsAt) {
         var m = managed(token);
         var s = activeSettings(m.clinicId());
+        Summary sum;
         try {
-            TenantContext.callAs(m.clinicId(), () -> tx.execute(t -> {
+            sum = TenantContext.callAs(m.clinicId(), () -> tx.execute(t -> {
                 expireStaleHolds(m.clinicId());
                 requireFree(s, m.dentistId(), siteId, startsAt);
                 releaseAppointment(m, "Reprogramada por el paciente desde su enlace");
@@ -267,12 +290,13 @@ public class PublicBookingService {
                         update online_booking_request set site_id = ?, starts_at = ?, ends_at = ?, status = 'PENDING',
                             appointment_id = null, decided_by = null, decided_at = null where id = ?""",
                         siteId, Timestamp.from(start), Timestamp.from(start.plusSeconds(s.durationMinutes() * 60L)), m.id());
-                return null;
+                return summary(m.clinicId(), m.id());
             }));
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException(TAKEN);
         }
-        notifier.notice(m.channel(), m.target(), "Recibimos tu cambio de cita", "La clínica revisará la nueva hora y te avisará.");
+        notifier.notice(m.channel(), m.target(), "Recibimos tu cambio de cita",
+                sum.fill(Email.titled("Recibimos tu cambio de cita").line("La clínica revisará la nueva hora y te avisará cuando quede confirmada.")), sum.clinic());
     }
 
     private void releaseAppointment(Managed m, String reason) {
