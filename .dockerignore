@@ -3,12 +3,16 @@
 **/.next
 **/.astro
 **/dist
+# Motor y modelo del dictado (cientos de MB): la imagen los prepara en su propia capa.
+frontend/public/dictado/ort
+frontend/public/dictado/modelos
 **/target
 **/.env
 **/.env.*
 **/site.properties
 **/messaging.properties
 **/dataico.properties
+**/dictation.properties
 **/*.pem
 **/*.key
 .env.production

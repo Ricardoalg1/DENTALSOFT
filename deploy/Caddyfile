@@ -58,7 +58,8 @@
     Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
     -Server
     Referrer-Policy strict-origin-when-cross-origin
-    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    # El dictado de la historia clínica usa el micrófono; el audio se procesa en el navegador.
+    Permissions-Policy "camera=(), microphone=(self), geolocation=()"
   }
   @www host www.{$PUBLIC_APP_DOMAIN}
   redir @www https://{$PUBLIC_APP_DOMAIN}{uri} 308
