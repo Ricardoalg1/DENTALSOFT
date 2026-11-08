@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AgreementController {
 
     /** Debe coincidir con AGREEMENT_VERSION del frontend. */
-    static final String CURRENT_VERSION = "2026-10-v1";
+    static final String CURRENT_VERSION = "2026-11-v1";
 
     public record Status(String version, boolean accepted, Instant acceptedAt, String acceptedBy) {}
 

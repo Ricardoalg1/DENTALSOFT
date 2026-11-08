@@ -20,6 +20,10 @@
 # production
 /build
 
+# motor y modelo del dictado: los prepara scripts/preparar-dictado.mjs
+/public/dictado/ort/
+/public/dictado/modelos/
+
 # misc
 .DS_Store
 *.pem

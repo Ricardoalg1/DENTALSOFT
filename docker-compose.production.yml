@@ -71,6 +71,9 @@ services:
       WHATSAPP_LIVE_ENABLED: "false"
       WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-}
       MESSAGING_AI_ENABLED: "false"
+      # Dictado en línea para equipos lentos. Sin clave, solo se dicta en el navegador.
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      DICTATION_MONTHLY_MINUTES: ${DICTATION_MONTHLY_MINUTES:-1200}
       SPRINGDOC_API_DOCS_ENABLED: "false"
       SPRINGDOC_SWAGGER_UI_ENABLED: "false"
     healthcheck:
