@@ -11,6 +11,7 @@
 backend/dataico.properties
 backend/messaging.properties
 backend/site.properties
+backend/dictation.properties
 
 # Backend
 backend/target/
