@@ -13,6 +13,7 @@ export const VERSIONS: VersionEntry[] = [
       "Dictado por voz con IA (Whisper) en los campos de texto: se transcribe dentro del navegador, sin costo y sin que el audio salga del equipo.",
       "En equipos sin tarjeta gráfica o lentos, cada frase se transcribe en línea con Groq, con un cupo mensual por clínica.",
       "Acuerdo de datos actualizado con el dictado por voz: cada clínica debe aceptarlo de nuevo.",
+      "Si el modelo local no termina de prepararse en 30 s, el dictado pasa solo al modo en línea y lo recuerda en ese navegador.",
     ],
   },
   {

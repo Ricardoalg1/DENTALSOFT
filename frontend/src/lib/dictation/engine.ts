@@ -22,6 +22,11 @@ function shutdown() {
   pending.clear();
 }
 
+/** Descarta el modelo local que no terminó de prepararse: libera la memoria y la tarjeta gráfica. */
+export function abandon() {
+  shutdown();
+}
+
 /** Mientras haya una sesión de dictado no se libera nada. */
 export function keepAlive(active: boolean) {
   clearTimeout(idleTimer);
