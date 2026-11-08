@@ -6,6 +6,16 @@ export type VersionEntry = { version: string; date: string; title: string; chang
 
 export const VERSIONS: VersionEntry[] = [
   {
+    version: "1.6",
+    date: "2026-11-08",
+    title: "Dictado por voz con inteligencia artificial",
+    changes: [
+      "Dictado por voz con IA (Whisper) en los campos de texto: se transcribe dentro del navegador, sin costo y sin que el audio salga del equipo.",
+      "En equipos sin tarjeta gráfica o lentos, cada frase se transcribe en línea con Groq, con un cupo mensual por clínica.",
+      "Acuerdo de datos actualizado con el dictado por voz: cada clínica debe aceptarlo de nuevo.",
+    ],
+  },
+  {
     version: "1.5",
     date: "2026-11-06",
     title: "Reserva de citas en línea y recuperación de contraseña",

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Motor del dictado copiado de onnxruntime-web (scripts/preparar-dictado.mjs).
+    "public/dictado/ort/**",
   ]),
 ]);
 

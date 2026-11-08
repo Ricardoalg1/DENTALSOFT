@@ -3,7 +3,7 @@
  * Al cambiar el texto, sube AGREEMENT_VERSION aquí y CURRENT_VERSION en AgreementController (backend):
  * cada clínica deberá aceptar de nuevo. Debe ser revisado por asesoría jurídica antes de usarse con clientes.
  */
-export const AGREEMENT_VERSION = "2026-10-v1";
+export const AGREEMENT_VERSION = "2026-11-v1";
 export const AGREEMENT_TITLE = "Acuerdo de encargo de tratamiento de datos y términos del servicio";
 
 export type AgreementStatus = { version: string; accepted: boolean; acceptedAt: string | null; acceptedBy: string | null };
@@ -51,7 +51,7 @@ export const AGREEMENT_SECTIONS: { title: string; paragraphs: string[] }[] = [
   {
     title: "6. Proveedores y transferencias",
     paragraphs: [
-      "Para prestar el servicio, Occlus usa proveedores como encargados o subencargados, entre ellos Amazon Web Services (alojamiento) y, solo si la Clínica los activa, Meta (WhatsApp), Dataico (facturación electrónica) y Wompi o ePayco (pagos). Algunos pueden procesar datos fuera de Colombia. Occlus exigirá a sus proveedores garantías equivalentes y la Clínica autoriza este uso.",
+      "Para prestar el servicio, Occlus usa proveedores como encargados o subencargados, entre ellos Amazon Web Services (alojamiento), Groq (transcripción del dictado por voz en equipos que no pueden hacerla por sí mismos) y, solo si la Clínica los activa, Meta (WhatsApp), Dataico (facturación electrónica) y Wompi o ePayco (pagos). Algunos pueden procesar datos fuera de Colombia. Occlus exigirá a sus proveedores garantías equivalentes y la Clínica autoriza este uso.",
     ],
   },
   {
@@ -69,19 +69,27 @@ export const AGREEMENT_SECTIONS: { title: string; paragraphs: string[] }[] = [
     ],
   },
   {
-    title: "9. Responsabilidad",
+    title: "9. Dictado por voz",
+    paragraphs: [
+      "Occlus permite dictar el texto de la historia clínica y de otros campos. Cuando el equipo del usuario puede hacerlo, la voz se transcribe dentro del navegador y el audio no sale de ese equipo. Cuando no puede hacerlo con rapidez suficiente, cada frase dictada se envía cifrada a Groq, que la transcribe en Estados Unidos sin conservar el audio ni usarlo para entrenar modelos, y Occlus no guarda el audio.",
+      "La transcripción es automática y puede contener errores, en especial en términos clínicos, nombres y cifras. Es una herramienta de apoyo: el profesional debe revisar y corregir el texto antes de guardarlo o firmarlo, y es el único responsable de su contenido. Occlus no responde por errores de transcripción que no hayan sido corregidos por el usuario.",
+      "Cada clínica dispone de un cupo mensual de dictado en línea. Al agotarse, el dictado sigue funcionando en el equipo del usuario.",
+    ],
+  },
+  {
+    title: "10. Responsabilidad",
     paragraphs: [
       "Cada parte responde por el incumplimiento de las obligaciones que asume en este acuerdo y por la ley. La responsabilidad de Occlus se limita a los daños directos y comprobados, hasta el monto que la Clínica haya pagado por el servicio en los 12 meses anteriores al hecho, salvo en los casos en que la ley no permita limitarla.",
     ],
   },
   {
-    title: "10. Duración y terminación",
+    title: "11. Duración y terminación",
     paragraphs: [
       "El acuerdo rige mientras la Clínica use Occlus. Cualquiera de las partes puede terminarlo con aviso de 15 días, y de inmediato en caso de incumplimiento grave. Las obligaciones de confidencialidad y de seguridad subsisten mientras Occlus conserve datos de la Clínica.",
     ],
   },
   {
-    title: "11. Ley aplicable y aceptación electrónica",
+    title: "12. Ley aplicable y aceptación electrónica",
     paragraphs: [
       "Este acuerdo se rige por las leyes de Colombia. La aceptación se hace por medios electrónicos, conforme a la Ley 527 de 1999: Occlus registra quién aceptó, cuándo, desde qué dirección y qué versión del texto, y ese registro sirve como prueba.",
     ],
