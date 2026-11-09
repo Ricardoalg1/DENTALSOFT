@@ -4,7 +4,7 @@ async function forward(request: Request, context: { params: Promise<{ kind: stri
   if (!isSameOrigin(request)) return Response.json({ detail: "Origen no autorizado" }, { status: 403 });
   const { kind } = await context.params;
   const upload = kind === "logo" || kind === "signature";
-  if (!paths[kind] || (upload ? !["POST","DELETE"].includes(request.method) : request.method !== "PUT")) return Response.json({ detail: "Acción inválida" }, { status: 400 });
+  if (!Object.hasOwn(paths, kind) || (upload ? !["POST","DELETE"].includes(request.method) : request.method !== "PUT")) return Response.json({ detail: "Acción inválida" }, { status: 400 });
   const max = upload ? 1100000 : 4000;
   const reader = request.body?.getReader(); const chunks: Uint8Array[] = []; let size = 0;
   if (reader) { for (;;) { const { value, done } = await reader.read(); if (done) break; size += value.byteLength; if(size > max) { await reader.cancel(); return Response.json({ detail: "Archivo o solicitud demasiado grande" }, { status: 413 }); } chunks.push(value); } }

@@ -51,11 +51,17 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(new ImmutableSecret<>(props.secretKey()));
     }
 
+    /**
+     * Una sola llave y un solo algoritmo, fijados aquí: el token no elige con qué se verifica. Por eso
+     * "alg": "none", HS512, RS256 (confusión de algoritmos) o una llave apuntada por "kid", "jku", "jwk" o
+     * "x5u" no sirven. Además se exige que lo haya emitido Occlus y que la sesión siga viva en la base.
+     */
     @Bean
     JwtDecoder jwtDecoder(JwtProperties props, SessionValidator sessions) {
         var decoder = NimbusJwtDecoder.withSecretKey(props.secretKey()).macAlgorithm(MacAlgorithm.HS256).build();
         decoder.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(
-                org.springframework.security.oauth2.jwt.JwtValidators.createDefault(), sessions));
+                org.springframework.security.oauth2.jwt.JwtValidators.createDefaultWithIssuer(TokenService.ISSUER),
+                new KeyReferenceHeaderValidator(), sessions));
         return decoder;
     }
 

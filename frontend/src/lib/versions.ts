@@ -15,6 +15,7 @@ export const VERSIONS: VersionEntry[] = [
       "Acuerdo de datos actualizado con el dictado por voz: cada clínica debe aceptarlo de nuevo.",
       "Si el modelo local no termina de prepararse en 30 s, el dictado pasa solo al modo en línea y lo recuerda en ese navegador.",
       "Actualizaciones de seguridad: Spring Boot 4.1.2 (Tomcat y Jackson), Next.js 16.4.1 y dependencias con vulnerabilidades corregidas.",
+      "Seguridad: sin registro público (solo el equipo de Occlus crea clientes), sesiones más estrictas, acceso únicamente a través de Cloudflare y zod 4.6.7.",
     ],
   },
   {
