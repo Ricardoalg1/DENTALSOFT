@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { keepAlive, prepare, transcribe } from "./engine";
+import { abandon, keepAlive, prepare, transcribe } from "./engine";
 import { hasWebGpu, isSlowDevice, markSlowDevice, remoteAvailable, transcribeRemote } from "./remote";
 import { Segmenter } from "./segmenter";
 
@@ -15,6 +15,30 @@ const HALLUCINATION = /amara\.org|subt[ií]tulos|suscr[ií]bete|gracias por ver|
  * en las pruebas tardaron 1 s; sin ella, unos 19 s.
  */
 const SLOW_MS = 4000;
+
+/**
+ * Tras descargar el modelo, prepararlo para la tarjeta gráfica tarda unos segundos. En algunos equipos ese paso no
+ * termina nunca, sin dar error: pasado este tiempo, si la clínica tiene dictado en línea, se usa ese.
+ */
+const LOCAL_READY_MS = 30000;
+
+/** Prepara el modelo local; con dictado en línea disponible, no espera indefinidamente a que termine. */
+function prepareLocal(remote: boolean, onProgress: (value: number) => void) {
+  return new Promise<number>((resolve, reject) => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    prepare((value) => {
+      onProgress(value);
+      if (remote && value >= 1 && timer === undefined) {
+        timer = setTimeout(() => {
+          abandon();
+          reject(new Error(`El modelo local no quedó listo en ${LOCAL_READY_MS / 1000} s`));
+        }, LOCAL_READY_MS);
+      }
+    })
+      .then(resolve, reject)
+      .finally(() => clearTimeout(timer));
+  });
+}
 
 /** Solo se dicta en un campo a la vez: empezar en otro detiene el anterior. */
 let stopCurrent: (() => void) | null = null;
@@ -108,12 +132,12 @@ export function useDictation(onText: (text: string) => void, onError: (message: 
         useRemote = remote && (isSlowDevice() || !(await hasWebGpu()));
         if (!useRemote) {
           try {
-            const warmupMs = await prepare(setProgress);
+            const warmupMs = await prepareLocal(remote, setProgress);
             if (remote && warmupMs > SLOW_MS) switchToRemote();
           } catch (error) {
             if (!remote) throw error;
             console.warn("El dictado local no está disponible; se usa el dictado en línea", error);
-            useRemote = true;
+            switchToRemote();
           }
         }
         setOnline(useRemote);

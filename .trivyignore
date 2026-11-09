@@ -1,0 +1,2 @@
+# Vulnerabilidades aceptadas temporalmente por Trivy (.github/workflows/seguridad.yml).
+# Una por línea, con el motivo y la fecha de revisión en un comentario encima. Hoy no hay ninguna.
