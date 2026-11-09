@@ -45,7 +45,7 @@ jobs:
       - name: Errores del backend
         if: failure()
         run: $COMPOSE logs backend | grep -E ' ERROR |status=5' | tail -50
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: resultados-k6
