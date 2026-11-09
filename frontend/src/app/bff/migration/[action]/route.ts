@@ -19,7 +19,8 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/bff/
   if (!isSameOrigin(request)) return NextResponse.json({ detail: "Origen no permitido" }, { status: 403 });
   const { action } = await params;
 
-  const json = JSON_ACTIONS[action];
+  // Object.hasOwn: "constructor" o "__proto__" en la URL no deben resolver a propiedades heredadas.
+  const json = Object.hasOwn(JSON_ACTIONS, action) ? JSON_ACTIONS[action] : undefined;
   if (json) {
     return bffForward(json, {
       method: "POST",
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/bff/
     });
   }
 
-  const upload = FILE_ACTIONS[action];
+  const upload = Object.hasOwn(FILE_ACTIONS, action) ? FILE_ACTIONS[action] : undefined;
   if (!upload) return NextResponse.json({ detail: "No encontrado" }, { status: 404 });
   const form = await request.formData();
   const file = form.get("file");

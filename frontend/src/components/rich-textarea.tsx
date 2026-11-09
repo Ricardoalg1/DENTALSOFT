@@ -169,7 +169,10 @@ export function RichTextarea({ className, onKeyDown, ...props }: React.Component
               {dictating ? <MicOff /> : <Mic />}
             </Button>
             <span role="status" className="ml-1 text-xs text-muted-foreground">
-              {dictation.status === "preparing" && `Preparando el dictado${dictation.progress > 0 ? `: ${Math.round(dictation.progress * 100)} %` : "…"}`}
+              {dictation.status === "preparing" &&
+                (dictation.progress >= 1
+                  ? "Preparando el motor de voz…"
+                  : `Preparando el dictado${dictation.progress > 0 ? `: ${Math.round(dictation.progress * 100)} %` : "…"}`)}
               {dictation.status === "listening" && (
                 <span className="animate-pulse text-destructive">{dictation.online ? "Escuchando (en línea)…" : "Escuchando…"}</span>
               )}

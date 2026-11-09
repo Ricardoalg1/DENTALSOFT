@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TokenService {
 
+    /** Emisor de todos los tokens; el decodificador rechaza cualquier otro. */
+    public static final String ISSUER = "occlus";
     public static final String CLAIM_CLINIC = "clinic_id";
     public static final String CLAIM_ROLE = "role";
     /** Presente (true) solo si el usuario debe cambiar su contraseña temporal. */
@@ -28,7 +30,7 @@ public class TokenService {
         Instant now = Instant.now();
         Instant expiresAt = now.plus(props.ttl());
         var builder = JwtClaimsSet.builder()
-                .issuer("occlus")
+                .issuer(ISSUER)
                 .issuedAt(now)
                 .expiresAt(expiresAt)
                 .subject(user.getId().toString())
