@@ -28,7 +28,7 @@ jobs:
     env:
       USUARIOS: ${{ inputs.usuarios || '500' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Levantar backend y bases de datos efímeras
         run: $COMPOSE up -d --build --wait backend
       - name: Exigir p95 < 200 ms y menos de 1 % de fallos
