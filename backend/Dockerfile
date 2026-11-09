@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-alpine AS build
+FROM eclipse-temurin:25-jdk-alpine AS build
 WORKDIR /build
 COPY backend/.mvn backend/.mvn
 COPY backend/mvnw backend/pom.xml backend/
@@ -6,7 +6,7 @@ RUN chmod +x backend/mvnw
 COPY backend/src backend/src
 RUN cd backend && ./mvnw -B -DskipTests package
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN apk add --no-cache wget
 RUN addgroup -S occlus && adduser -S occlus -G occlus
 WORKDIR /app
