@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /build/site
 COPY site/package.json site/package-lock.json ./
 RUN npm ci
@@ -11,7 +11,7 @@ ENV PUBLIC_APP_URL=${PUBLIC_APP_URL}
 RUN npm run build
 RUN npm prune --omit=dev
 
-FROM node:22-alpine
+FROM node:26-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
