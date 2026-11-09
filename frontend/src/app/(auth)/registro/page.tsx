@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { selfRegistrationEnabled } from "@/lib/registration";
+import { isSelfRegistrationEnabled } from "@/lib/registration";
 import { RegisterForm } from "./register-form";
 
 export const metadata: Metadata = { title: "Registrar clínica" };
 
-export default function RegisterPage() {
-  if (!selfRegistrationEnabled) {
+export default async function RegisterPage() {
+  if (!(await isSelfRegistrationEnabled())) {
     return (
       <Card>
         <CardHeader>

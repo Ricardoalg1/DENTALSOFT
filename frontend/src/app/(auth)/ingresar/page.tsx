@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { selfRegistrationEnabled } from "@/lib/registration";
+import { isSelfRegistrationEnabled } from "@/lib/registration";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Ingresar" };
 
 export default async function LoginPage({ searchParams }: PageProps<"/ingresar">) {
   const { next, expirada, restablecida } = await searchParams;
+  const selfRegistrationEnabled = await isSelfRegistrationEnabled();
   return (
     <Card>
       <CardHeader>
