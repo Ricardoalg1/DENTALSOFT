@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /build/frontend
 RUN npm install --global pnpm@12.6.0
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
@@ -13,7 +13,7 @@ ARG OCCLUS_ENV=production
 ENV NEXT_PUBLIC_OCCLUS_ENV=$OCCLUS_ENV
 RUN pnpm build
 
-FROM node:22-alpine
+FROM node:26-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
