@@ -38,6 +38,7 @@
     X-Frame-Options DENY
     Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
     -Server
+    -X-Powered-By
     Referrer-Policy strict-origin-when-cross-origin
     Permissions-Policy "camera=(), microphone=(), geolocation=()"
   }
@@ -57,10 +58,15 @@
     X-Frame-Options DENY
     Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
     -Server
+    -X-Powered-By
     Referrer-Policy strict-origin-when-cross-origin
     # El dictado de la historia clínica usa el micrófono; el audio se procesa en el navegador.
     Permissions-Policy "camera=(), microphone=(self), geolocation=()"
   }
+  # occlusapp.com solo se sirve a través de Cloudflare: quien llega directo a la IP del servidor se salta su
+  # protección (WAF, anti-DDoS). Misma lista que trusted_proxies arriba; si cambias una, cambia la otra.
+  @direct not remote_ip 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+  abort @direct
   @www host www.{$PUBLIC_APP_DOMAIN}
   redir @www https://{$PUBLIC_APP_DOMAIN}{uri} 308
   @root path /

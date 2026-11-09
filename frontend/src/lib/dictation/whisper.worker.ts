@@ -1,4 +1,5 @@
 import { env, pipeline } from "@huggingface/transformers";
+import { hasHardwareGpu } from "./gpu";
 
 /** El modelo lo sirve Occlus (scripts/preparar-dictado.mjs fija la versión): el navegador no llama a sitios externos. */
 const MODEL = "whisper-small";
@@ -49,8 +50,8 @@ async function create(device: "webgpu" | "wasm") {
 }
 
 async function load() {
-  const nav = self.navigator as Navigator & { gpu?: { requestAdapter: () => Promise<unknown> } };
-  const hasGpu = Boolean(await nav.gpu?.requestAdapter().catch(() => null));
+  const hasGpu = await hasHardwareGpu(self.navigator as Parameters<typeof hasHardwareGpu>[0]);
+  console.info(`Dictado: preparando el modelo con ${hasGpu ? "WebGPU" : "WebAssembly"}`);
   let created: Transcriber;
   try {
     created = await create(hasGpu ? "webgpu" : "wasm");
@@ -59,6 +60,7 @@ async function load() {
     const started = performance.now();
     await created(new Float32Array(16000), OPTIONS);
     warmupMs = performance.now() - started;
+    console.info(`Dictado: listo; la prueba inicial tardó ${Math.round(warmupMs)} ms`);
   } catch (error) {
     if (!hasGpu) throw error;
     console.warn("WebGPU falló; se usa WebAssembly", error);

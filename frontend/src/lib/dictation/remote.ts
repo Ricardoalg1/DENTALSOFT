@@ -1,3 +1,5 @@
+import { hasHardwareGpu } from "./gpu";
+
 /** Dictado en línea: el backend de Occlus envía la frase a Groq. Solo se usa si el equipo no transcribe bien solo. */
 
 const SLOW_KEY = "occlus.dictado.equipo-lento";
@@ -27,10 +29,7 @@ export function isSlowDevice() {
   }
 }
 
-export async function hasWebGpu() {
-  const nav = navigator as Navigator & { gpu?: { requestAdapter: () => Promise<unknown> } };
-  return Boolean(await nav.gpu?.requestAdapter().catch(() => null));
-}
+export const hasWebGpu = () => hasHardwareGpu(navigator as Parameters<typeof hasHardwareGpu>[0]);
 
 /** PCM de 16 bits, mono, 16 kHz: el único formato que acepta el backend. */
 function toWav(audio: Float32Array) {
