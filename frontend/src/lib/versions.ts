@@ -14,6 +14,7 @@ export const VERSIONS: VersionEntry[] = [
       "En equipos sin tarjeta gráfica o lentos, cada frase se transcribe en línea con Groq, con un cupo mensual por clínica.",
       "Acuerdo de datos actualizado con el dictado por voz: cada clínica debe aceptarlo de nuevo.",
       "Si el modelo local no termina de prepararse en 30 s, el dictado pasa solo al modo en línea y lo recuerda en ese navegador.",
+      "Actualizaciones de seguridad: Spring Boot 4.1.2 (Tomcat y Jackson), Next.js 16.4.1 y dependencias con vulnerabilidades corregidas.",
     ],
   },
   {

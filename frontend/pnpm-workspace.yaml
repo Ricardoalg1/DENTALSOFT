@@ -3,3 +3,9 @@ allowBuilds:
   protobufjs: false
   sharp: false
   unrs-resolver: true
+
+# Versiones corregidas de dependencias de la herramienta shadcn (vulnerabilidades altas encontradas por Trivy).
+overrides:
+  body-parser@2: 2.4.0
+  systeminformation@5: 5.33.16
+  undici@7: 7.30.1
