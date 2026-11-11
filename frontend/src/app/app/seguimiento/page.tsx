@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Cake, MessageCircle, UserRoundX } from "lucide-react";
+import { Cake, Mail, MessageCircle, UserRoundX } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { setBirthdayEmails } from "./actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api, getMe } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -9,6 +11,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = { title: "Seguimiento de pacientes" };
 
 type Birthday = { id: string; fullName: string; phone: string | null; birthDate: string; nextBirthday: string; turning: number };
+type BirthdayEmailSettings = { enabled: boolean; mailConfigured: boolean; consentedPatients: number; sentThisYear: number };
 type Inactive = { id: string; fullName: string; phone: string | null; lastVisit: string; monthsAway: number };
 
 /** Número colombiano de 10 dígitos → formato internacional para wa.me; otro formato válido se respeta; si no, sin enlace. */
@@ -36,9 +39,10 @@ export default async function FollowUpPage({ searchParams }: PageProps<"/app/seg
   }
   const days = [7, 14, 30, 60].includes(Number(sp.dias)) ? Number(sp.dias) : 14;
   const months = [3, 6, 12, 24].includes(Number(sp.meses)) ? Number(sp.meses) : 6;
-  const [birthdays, inactive] = await Promise.all([
+  const [birthdays, inactive, emails] = await Promise.all([
     api<Birthday[]>(`/api/outreach/birthdays?days=${days}`),
     api<Inactive[]>(`/api/outreach/inactive?months=${months}`),
+    api<BirthdayEmailSettings>("/api/outreach/birthday-emails"),
   ]);
 
   const chip = (href: string, label: string, on: boolean) => (
@@ -92,6 +96,39 @@ export default async function FollowUpPage({ searchParams }: PageProps<"/app/seg
                 </li>
               ))}
             </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <span className="flex items-center gap-2">
+              <Mail className="size-5 text-primary" aria-hidden /> Saludo de cumpleaños por correo
+            </span>
+          </CardTitle>
+          <CardDescription>
+            Cada día a las 9 a. m. Occlus envía un correo de felicitación, a nombre de la clínica, a los pacientes que cumplen años, están activos, tienen correo y autorizaron recibirlo (casilla en su ficha). Cada correo trae un enlace para darse de baja.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 text-sm">
+          {sp.correo === "sin-configurar" && !emails.mailConfigured && (
+            <p role="alert" className="text-destructive">No se pudo activar: el envío de correos no está configurado en este servidor.</p>
+          )}
+          <p>
+            Estado: <strong>{emails.enabled ? "Activo" : "Apagado"}</strong> · {emails.consentedPatients}{" "}
+            {emails.consentedPatients === 1 ? "paciente autorizó" : "pacientes autorizaron"} · {emails.sentThisYear}{" "}
+            {emails.sentThisYear === 1 ? "saludo enviado" : "saludos enviados"} este año
+          </p>
+          {!emails.mailConfigured && <p className="text-muted-foreground">El envío de correos no está configurado en este servidor.</p>}
+          {me.role === "ADMIN" ? (
+            <form action={setBirthdayEmails.bind(null, !emails.enabled)}>
+              <Button type="submit" variant={emails.enabled ? "outline" : "default"} size="sm" disabled={!emails.enabled && !emails.mailConfigured}>
+                {emails.enabled ? "Apagar los saludos" : "Activar los saludos"}
+              </Button>
+            </form>
+          ) : (
+            <p className="text-muted-foreground">Solo un administrador puede activarlos o apagarlos.</p>
           )}
         </CardContent>
       </Card>

@@ -81,6 +81,11 @@ public class Patient {
 
     private Instant whatsappConsentAt;
 
+    /** Autorizó recibir el saludo de cumpleaños por correo. */
+    private boolean birthdayEmailConsent;
+
+    private Instant birthdayEmailConsentAt;
+
     @NotAudited
     private String searchKey;
 

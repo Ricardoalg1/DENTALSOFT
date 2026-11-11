@@ -6,6 +6,20 @@ export type VersionEntry = { version: string; date: string; title: string; chang
 
 export const VERSIONS: VersionEntry[] = [
   {
+    version: "1.7",
+    date: "2026-11-10",
+    title: "Visor de radiografías DICOM y saludos de cumpleaños",
+    changes: [
+      "Visor DICOM 2D en los archivos del paciente: brillo y contraste, zoom, mover, lupa, girar, voltear, invertir y captura en PNG.",
+      "Series DICOM en ZIP (tomografías, sets de radiografías) de hasta 90 MB: el visor las ordena por posición y se recorren con la rueda, las flechas, el deslizador, miniaturas o en reproducción continua.",
+      "Mediciones: distancia, ángulo, ángulo entre rectas, regiones con área y valores (HU en tomografía), flechas con nota y calibración manual con un objeto de tamaño conocido.",
+      "Ajustes de imagen: ventanas de tomografía (hueso, tejido blando, pulmón, cerebro), ventana automática, tonos medios, nitidez, suavizado, ecualización y mapas de color.",
+      "Se aceptan DICOM sin comprimir o en JPEG sin pérdida; las imágenes se procesan en el navegador y no se interpretan.",
+      "Saludo de cumpleaños por correo a nombre de la clínica: se activa en Seguimiento y solo llega a pacientes que lo autorizaron en su ficha, con enlace para darse de baja.",
+      "Equipo muestra cuántos usuarios activos permite el plan y avisa cuando ya no hay cupo.",
+    ],
+  },
+  {
     version: "1.6",
     date: "2026-11-08",
     title: "Dictado por voz con inteligencia artificial",

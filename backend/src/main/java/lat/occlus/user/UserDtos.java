@@ -32,6 +32,9 @@ public final class UserDtos {
         }
     }
 
+    /** Cupo de usuarios: activos frente al máximo del plan (null = sin límite). */
+    public record UserQuota(long active, Integer max) {}
+
     /** Profesional que atiende en la agenda. */
     public record ProfessionalResponse(UUID id, String fullName) {}
 }

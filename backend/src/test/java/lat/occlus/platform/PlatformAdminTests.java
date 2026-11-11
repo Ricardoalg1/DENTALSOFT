@@ -264,6 +264,8 @@ class PlatformAdminTests {
                 .andReturn().getResponse().getContentAsString();
         newUser(c.token(), "ASSISTANT").andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("hasta 2 usuarios")));
+        call(get("/api/users/quota"), c.token()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.active").value(2)).andExpect(jsonPath("$.max").value(2));
 
         // Desactivar a uno libera el cupo; reactivarlo cuando ya no cabe falla.
         String secondId = JsonPath.read(second, "$.id");

@@ -38,6 +38,11 @@ public class UserService {
         return users.findByClinicIdOrderByFullName(clinicId).stream().map(UserResponse::from).toList();
     }
 
+    @Transactional(readOnly = true)
+    public UserDtos.UserQuota quota(UUID clinicId) {
+        return new UserDtos.UserQuota(users.countByClinicIdAndActiveTrue(clinicId), limits.max(clinicId));
+    }
+
     /**
      * Sin @Transactional a propósito: la verificación de correo corre en su propia transacción
      * en modo sistema (el correo es único entre TODAS las clínicas) y luego se guarda el usuario,

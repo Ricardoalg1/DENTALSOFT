@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { errorMessage, keepValues, type FormState } from "@/lib/forms";
 
 const createUserSchema = z.object({
@@ -27,7 +28,13 @@ export async function createUser(_: FormState, formData: FormData): Promise<Form
 }
 
 export async function setUserActive(userId: string, active: boolean) {
-  await api(`/api/users/${userId}`, { method: "PATCH", body: JSON.stringify({ active }) });
+  try {
+    await api(`/api/users/${userId}`, { method: "PATCH", body: JSON.stringify({ active }) });
+  } catch (e) {
+    // Reactivar a alguien cuando el plan ya no tiene cupo: la página muestra el aviso del límite.
+    if (active && e instanceof ApiError && e.status === 409) redirect("/app/equipo?limite=1");
+    throw e;
+  }
   revalidatePath("/app/equipo");
 }
 

@@ -2,6 +2,8 @@ package lat.occlus.clinical;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -20,6 +22,7 @@ import lat.occlus.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -29,6 +32,7 @@ public class PatientFileService {
     private final PatientFileRepository files;
     private final FileStorage storage;
     private final ClinicalAccess access;
+    private final TransactionTemplate tx;
 
     @Transactional(readOnly = true)
     public List<FileResponse> list(UUID clinicId, UUID patientId) {
@@ -40,24 +44,77 @@ public class PatientFileService {
                 f.getContentType(), f.getSizeBytes(), f.getCreatedAt(), users.get(f.getUploadedBy()))).toList();
     }
 
-    /** Sube radiografías, fotos o documentos (JPG, PNG, WEBP o PDF). */
-    @Transactional
+    /** Tope para cada archivo suelto; las series DICOM en ZIP tienen el suyo (90 MB). */
+    static final long MAX_FILE_BYTES = 15L * 1024 * 1024;
+
+    /**
+     * Sube radiografías, fotos o documentos (JPG, PNG, WEBP, PDF o DICOM), o una serie DICOM en ZIP.
+     * Sin transacción alrededor: un ZIP grande tarda unos segundos en revisarse y no debe retener una
+     * conexión a la base de datos mientras tanto (el RLS se aplica igual al pedir la conexión).
+     */
     public FileResponse upload(AuthUser me, UUID patientId, MultipartFile upload, FileCategory category, String title) {
         if (category == FileCategory.SIGNATURE) throw new BadRequestException("Categoría no válida");
         if (upload == null || upload.isEmpty()) throw new BadRequestException("Selecciona un archivo");
-        byte[] content;
-        try {
-            content = upload.getBytes();
+        String name = title == null || title.isBlank() ? baseName(upload.getOriginalFilename()) : title.trim();
+        byte[] head;
+        try (var in = upload.getInputStream()) {
+            head = in.readNBytes(4);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        var type = FileType.detect(content)
-                .orElseThrow(() -> new BadRequestException("Formato no permitido: usa JPG, PNG, WEBP o PDF"));
-        String name = title == null || title.isBlank() ? baseName(upload.getOriginalFilename()) : title.trim();
-        var saved = store(me, patientId, content, type, category, name, upload.getOriginalFilename());
+        PatientFile saved = DicomSeriesArchive.isZip(head)
+                ? storeSeries(me, patientId, upload, category, name)
+                : tx.execute(status -> {
+                    if (upload.getSize() > MAX_FILE_BYTES) throw new BadRequestException("El archivo supera 15 MB");
+                    byte[] content;
+                    try {
+                        content = upload.getBytes();
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                    var type = FileType.detect(content).orElseThrow(() -> new BadRequestException(
+                            "Formato no permitido: usa JPG, PNG, WEBP, PDF, DICOM o un ZIP con imágenes DICOM"));
+                    return store(me, patientId, content, type, category, name, upload.getOriginalFilename());
+                });
         return new FileResponse(saved.getId(), saved.getCategory(), saved.getTitle(), saved.getOriginalFilename(),
                 saved.getContentType(), saved.getSizeBytes(), saved.getCreatedAt(),
                 access.userRefs(List.of(me.userId())).get(me.userId()));
+    }
+
+    /** Serie DICOM en ZIP: se depura en un archivo temporal y se sube desde el disco. */
+    private PatientFile storeSeries(AuthUser me, UUID patientId, MultipartFile upload, FileCategory category, String title) {
+        if (upload.getSize() > DicomSeriesArchive.MAX_ZIP_BYTES) throw new BadRequestException("El ZIP supera 90 MB");
+        access.requirePatient(me.clinicId(), patientId);
+        Path temp = null;
+        String key = null;
+        try {
+            temp = Files.createTempFile("occlus-serie-", ".zip");
+            DicomSeriesArchive.Result result;
+            try (var in = upload.getInputStream()) {
+                result = DicomSeriesArchive.repack(in, temp);
+            }
+            var type = FileType.DICOM_SERIES;
+            UUID id = UUID.randomUUID();
+            key = "clinics/%s/patients/%s/%s.%s".formatted(me.clinicId(), patientId, id, type.extension);
+            storage.put(key, temp, type.contentType);
+            String storedKey = key;
+            return tx.execute(status -> record(me, patientId, storedKey, type, category,
+                    title, upload.getOriginalFilename(), result.sizeBytes(), result.sha256()));
+        } catch (IOException e) {
+            if (key != null) storage.deleteQuietly(key);
+            throw new UncheckedIOException(e);
+        } catch (RuntimeException e) {
+            if (key != null) storage.deleteQuietly(key);
+            throw e;
+        } finally {
+            if (temp != null) {
+                try {
+                    Files.deleteIfExists(temp);
+                } catch (IOException ignored) {
+                    // El sistema limpia los temporales; no vale la pena fallar la subida por esto.
+                }
+            }
+        }
     }
 
     public enum ImportOutcome { CREATED, DUPLICATE, INVALID_TYPE }
@@ -88,22 +145,27 @@ public class PatientFileService {
         String key = "clinics/%s/patients/%s/%s.%s".formatted(me.clinicId(), patientId, id, type.extension);
         storage.put(key, content, type.contentType);
         try {
-            var f = new PatientFile();
-            f.setClinicId(me.clinicId());
-            f.setPatientId(patientId);
-            f.setCategory(category);
-            f.setTitle(truncate(title, 150));
-            f.setOriginalFilename(originalFilename == null ? null : truncate(originalFilename, 255));
-            f.setContentType(type.contentType);
-            f.setSizeBytes(content.length);
-            f.setSha256(sha256(content));
-            f.setStorageKey(key);
-            f.setUploadedBy(me.userId());
-            return files.saveAndFlush(f);
+            return record(me, patientId, key, type, category, title, originalFilename, content.length, sha256(content));
         } catch (RuntimeException e) {
             storage.deleteQuietly(key);
             throw e;
         }
+    }
+
+    private PatientFile record(AuthUser me, UUID patientId, String key, FileType type, FileCategory category,
+                               String title, String originalFilename, long size, String sha256) {
+        var f = new PatientFile();
+        f.setClinicId(me.clinicId());
+        f.setPatientId(patientId);
+        f.setCategory(category);
+        f.setTitle(truncate(title, 150));
+        f.setOriginalFilename(originalFilename == null ? null : truncate(originalFilename, 255));
+        f.setContentType(type.contentType);
+        f.setSizeBytes(size);
+        f.setSha256(sha256);
+        f.setStorageKey(key);
+        f.setUploadedBy(me.userId());
+        return files.saveAndFlush(f);
     }
 
     @Transactional(readOnly = true)
