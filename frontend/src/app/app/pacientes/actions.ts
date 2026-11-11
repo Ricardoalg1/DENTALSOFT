@@ -55,6 +55,7 @@ const patientSchema = z.object({
   guardianRelationship: optional(40),
   notes: optional(1000),
   whatsappConsent: z.enum(["on", "off"]).transform((v) => v === "on"),
+  birthdayEmailConsent: z.enum(["on", "off"]).transform((v) => v === "on"),
   // Checkbox: solo viene en el formulario de edición.
   active: z
     .enum(["on", "off"])
@@ -67,6 +68,7 @@ function parse(formData: FormData) {
   if (formData.has("activePresent"))
     raw.active = formData.get("active") === "on" ? "on" : "off";
   raw.whatsappConsent = formData.get("whatsappConsent") === "on" ? "on" : "off";
+  raw.birthdayEmailConsent = formData.get("birthdayEmailConsent") === "on" ? "on" : "off";
   return patientSchema.safeParse(raw);
 }
 

@@ -136,6 +136,8 @@ export type Patient = {
   active: boolean;
   whatsappConsent: boolean;
   whatsappConsentAt: string | null;
+  birthdayEmailConsent: boolean;
+  birthdayEmailConsentAt: string | null;
   createdAt: string;
   updatedAt: string;
 };

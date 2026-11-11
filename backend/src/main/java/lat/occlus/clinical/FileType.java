@@ -12,7 +12,14 @@ enum FileType {
     JPEG("image/jpeg", "jpg"),
     PNG("image/png", "png"),
     WEBP("image/webp", "webp"),
-    PDF("application/pdf", "pdf");
+    PDF("application/pdf", "pdf"),
+    /** DICOM (Parte 10): 128 bytes de preámbulo y luego «DICM». Se ve con el visor de la aplicación. */
+    DICOM("application/dicom", "dcm"),
+    /**
+     * Serie DICOM (varias imágenes, p. ej. una tomografía) en un ZIP depurado por {@link DicomSeriesArchive}.
+     * No lo devuelve {@link #detect}: un ZIP solo se acepta si trae imágenes DICOM.
+     */
+    DICOM_SERIES("application/zip", "zip");
 
     final String contentType;
     final String extension;
@@ -27,6 +34,7 @@ enum FileType {
         if (startsWith(b, 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A)) return Optional.of(PNG);
         if (b.length >= 12 && ascii(b, 0, 4).equals("RIFF") && ascii(b, 8, 12).equals("WEBP")) return Optional.of(WEBP);
         if (ascii(b, 0, Math.min(b.length, 5)).equals("%PDF-")) return Optional.of(PDF);
+        if (ascii(b, 128, 132).equals("DICM")) return Optional.of(DICOM);
         return Optional.empty();
     }
 

@@ -39,7 +39,9 @@ public final class PatientDtos {
             @Size(max = 1000) String notes,
             Boolean active,
             /** null = no cambia. */
-            Boolean whatsappConsent) {}
+            Boolean whatsappConsent,
+            /** null = no cambia. */
+            Boolean birthdayEmailConsent) {}
 
     /** Fila del listado. */
     public record PatientSummary(
@@ -54,6 +56,7 @@ public final class PatientDtos {
             Regime regime, String insurer, String occupation,
             String guardianName, String guardianPhone, String guardianRelationship,
             String notes, boolean active, boolean whatsappConsent, Instant whatsappConsentAt,
+            boolean birthdayEmailConsent, Instant birthdayEmailConsentAt,
             Instant createdAt, Instant updatedAt) {}
 
     /** Una versión del historial: quién, cuándo, qué tipo de cambio y qué campos cambiaron. */

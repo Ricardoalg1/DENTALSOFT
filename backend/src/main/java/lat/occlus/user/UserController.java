@@ -35,6 +35,12 @@ public class UserController {
         return service.list(AuthUser.from(jwt).clinicId());
     }
 
+    /** Usuarios activos y máximo del plan (null = sin límite), para mostrar el cupo en Equipo. */
+    @GetMapping("/quota")
+    UserDtos.UserQuota quota(@AuthenticationPrincipal Jwt jwt) {
+        return service.quota(AuthUser.from(jwt).clinicId());
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     UserResponse create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreateUserRequest req) {
