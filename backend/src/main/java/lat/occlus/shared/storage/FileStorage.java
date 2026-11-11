@@ -26,6 +26,11 @@ public class FileStorage {
                 RequestBody.fromBytes(content));
     }
 
+    /** Sube un archivo del disco sin cargarlo entero en memoria (series DICOM grandes). */
+    public void put(String key, java.nio.file.Path file, String contentType) {
+        s3.putObject(b -> b.bucket(props.bucket()).key(key).contentType(contentType), RequestBody.fromFile(file));
+    }
+
     public ResponseInputStream<GetObjectResponse> get(String key) {
         return s3.getObject(b -> b.bucket(props.bucket()).key(key));
     }

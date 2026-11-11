@@ -15,5 +15,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, UUID> {
 
     Optional<AppUser> findByIdAndClinicId(UUID id, UUID clinicId);
 
+    long countByClinicIdAndActiveTrue(UUID clinicId);
+
     List<AppUser> findByClinicIdAndProfessionalTrueAndActiveTrueOrderByFullName(UUID clinicId);
 }

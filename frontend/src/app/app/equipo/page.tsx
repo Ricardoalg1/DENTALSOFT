@@ -19,7 +19,12 @@ export default async function TeamPage({ searchParams }: PageProps<"/app/equipo"
   }
   const query = await searchParams;
   const q = typeof query.q === "string" ? query.q.trim().slice(0, 160) : "";
-  const allUsers = await api<User[]>("/api/users");
+  const [allUsers, quota] = await Promise.all([
+    api<User[]>("/api/users"),
+    api<{ active: number; max: number | null }>("/api/users/quota"),
+  ]);
+  const full = quota.max !== null && quota.active >= quota.max;
+  const limitNotice = query.limite === "1" && full;
   const users = allUsers.filter(user => `${user.fullName} ${user.email} ${ROLE_LABELS[user.role]}`.toLocaleLowerCase("es").includes(q.toLocaleLowerCase("es")));
 
   return (
@@ -27,7 +32,17 @@ export default async function TeamPage({ searchParams }: PageProps<"/app/equipo"
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Equipo</h1>
         <p className="text-muted-foreground">Usuarios con acceso a tu clínica y su rol.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {quota.max === null
+            ? `${quota.active} usuarios activos · tu plan no tiene límite de usuarios.`
+            : `${quota.active} de ${quota.max} usuarios activos de tu plan.`}
+        </p>
       </div>
+      {limitNotice && (
+        <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          No se pudo activar: tu plan permite hasta {quota.max} usuarios activos. Desactiva a alguien o solicita un plan mayor.
+        </p>
+      )}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(300px,1fr)]">
         <Card>
           <CardContent className="overflow-x-auto">
@@ -85,7 +100,14 @@ export default async function TeamPage({ searchParams }: PageProps<"/app/equipo"
             <CardTitle>Nuevo usuario</CardTitle>
           </CardHeader>
           <CardContent>
-            <CreateUserForm />
+            {full ? (
+              <p className="text-sm text-muted-foreground">
+                Tu plan permite hasta {quota.max} usuarios activos y ya están todos en uso. Desactiva a alguien o
+                pide un plan mayor al equipo de Occlus.
+              </p>
+            ) : (
+              <CreateUserForm />
+            )}
           </CardContent>
         </Card>
       </div>

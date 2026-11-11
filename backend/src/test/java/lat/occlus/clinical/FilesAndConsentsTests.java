@@ -81,12 +81,71 @@ class FilesAndConsentsTests {
         // Un script disfrazado de imagen se rechaza.
         upload(token, "<script>alert(1)</script>".getBytes(), "foto.png", "PHOTO", null)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail").value("Formato no permitido: usa JPG, PNG, WEBP o PDF"));
+                .andExpect(jsonPath("$.detail").value("Formato no permitido: usa JPG, PNG, WEBP, PDF, DICOM o un ZIP con imágenes DICOM"));
         // Un PDF real con nombre raro se acepta como PDF.
         upload(token, "%PDF-1.7\n%test".getBytes(), "documento.bin", "DOCUMENT", null)
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.contentType").value("application/pdf"))
                 .andExpect(jsonPath("$.title").value("documento"));
+        // DICOM: 128 bytes de preámbulo y «DICM», aunque el archivo no tenga extensión.
+        byte[] dicom = new byte[200];
+        System.arraycopy("DICM".getBytes(java.nio.charset.StandardCharsets.US_ASCII), 0, dicom, 128, 4);
+        upload(token, dicom, "IMG0001", "RADIOGRAPH", "Periapical")
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.contentType").value("application/dicom"));
+    }
+
+    @Test
+    void dicomSeriesZipKeepsOnlyDicomImages() throws Exception {
+        byte[] dicom = new byte[300];
+        System.arraycopy("DICM".getBytes(java.nio.charset.StandardCharsets.US_ASCII), 0, dicom, 128, 4);
+        var bytes = new java.io.ByteArrayOutputStream();
+        try (var zip = new java.util.zip.ZipOutputStream(bytes)) {
+            for (var name : new String[] {"ESTUDIO/SERIE1/IM0001", "ESTUDIO/SERIE1/IM0002", "DICOMDIR", "visor/Viewer.exe", "../../fuera.dcm"}) {
+                zip.putNextEntry(new java.util.zip.ZipEntry(name));
+                zip.write(name.endsWith(".exe") || name.equals("DICOMDIR") ? "MZ no es DICOM".getBytes() : dicom);
+                zip.closeEntry();
+            }
+        }
+        String id = JsonPath.read(upload(token, bytes.toByteArray(), "tomografia.zip", "RADIOGRAPH", null)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.contentType").value("application/zip"))
+                .andExpect(jsonPath("$.title").value("tomografia"))
+                .andReturn().getResponse().getContentAsString(), "$.id");
+
+        byte[] stored = mvc.perform(get("/api/files/" + id + "/content").header("Authorization", bearer(token)))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "application/zip"))
+                .andReturn().getResponse().getContentAsByteArray();
+        var names = new java.util.ArrayList<String>();
+        try (var zip = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(stored))) {
+            java.util.zip.ZipEntry e;
+            while ((e = zip.getNextEntry()) != null) {
+                names.add(e.getName());
+                assertThat(zip.readAllBytes()).isEqualTo(dicom);
+            }
+        }
+        // Sin el visor ejecutable ni DICOMDIR, y con nombres propios (sin rutas que salgan de la carpeta).
+        assertThat(names).containsExactly("0001.dcm", "0002.dcm", "0003.dcm");
+
+        var noDicom = new java.io.ByteArrayOutputStream();
+        try (var zip = new java.util.zip.ZipOutputStream(noDicom)) {
+            zip.putNextEntry(new java.util.zip.ZipEntry("leeme.txt"));
+            zip.write("hola".getBytes());
+            zip.closeEntry();
+        }
+        upload(token, noDicom.toByteArray(), "fotos.zip", "RADIOGRAPH", null)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("El ZIP no trae imágenes DICOM"));
+        upload(token, new byte[] {'P', 'K', 3, 4, 1, 2, 3}, "roto.zip", "RADIOGRAPH", null)
+                .andExpect(status().isBadRequest());
+
+        // Un archivo suelto sigue limitado a 15 MB aunque el servidor acepte ZIP de hasta 90 MB.
+        byte[] big = new byte[16 * 1024 * 1024];
+        System.arraycopy(PNG, 0, big, 0, PNG.length);
+        upload(token, big, "enorme.png", "PHOTO", null)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("El archivo supera 15 MB"));
     }
 
     @Test
