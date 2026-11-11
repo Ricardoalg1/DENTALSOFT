@@ -31,6 +31,8 @@ public final class Email {
     private String buttonUrl;
     private final List<String> notes = new ArrayList<>();
     private String footer = "Este es un mensaje automático de Occlus.";
+    private String unsubscribeLabel;
+    private String unsubscribeUrl;
 
     private Email(String heading) {
         this.heading = heading;
@@ -73,6 +75,13 @@ public final class Email {
         return this;
     }
 
+    /** Enlace pequeño en el pie para dejar de recibir este tipo de correo. */
+    public Email unsubscribe(String label, String url) {
+        unsubscribeLabel = label;
+        unsubscribeUrl = url;
+        return this;
+    }
+
     public Email footer(String text) {
         footer = text;
         return this;
@@ -88,7 +97,9 @@ public final class Email {
         if (!details.isEmpty()) out.append('\n');
         if (buttonUrl != null) out.append(buttonLabel).append(":\n").append(buttonUrl).append("\n\n");
         notes.forEach(n -> out.append(n).append("\n\n"));
-        return out.append("— ").append(footer).toString();
+        out.append("— ").append(footer);
+        if (unsubscribeUrl != null) out.append("\n\n").append(unsubscribeLabel).append(": ").append(unsubscribeUrl);
+        return out.toString();
     }
 
     /** Una sola línea, para las plantillas de WhatsApp: Meta no admite saltos de línea en sus parámetros. */
@@ -144,8 +155,14 @@ public final class Email {
                 + "<tr><td style=\"height:6px;background:" + PRIMARY + ";font-size:0;line-height:0\">&nbsp;</td></tr>"
                 + "<tr><td align=\"center\" style=\"padding:26px 28px 6px\">" + brand + "</td></tr>"
                 + "<tr><td style=\"padding:18px 28px 14px\">" + body + "</td></tr>"
-                + "<tr><td style=\"padding:16px 28px 22px;background:" + PAGE + ";border-top:1px solid " + BORDER + ";font-size:12px;line-height:1.5;color:" + MUTED + "\">" + esc(footer) + "</td></tr>"
+                + "<tr><td style=\"padding:16px 28px 22px;background:" + PAGE + ";border-top:1px solid " + BORDER + ";font-size:12px;line-height:1.5;color:" + MUTED + "\">" + esc(footer) + unsubscribeHtml() + "</td></tr>"
                 + "</table></td></tr></table></body></html>";
+    }
+
+    private String unsubscribeHtml() {
+        if (unsubscribeUrl == null) return "";
+        return "<br><br><a href=\"" + esc(unsubscribeUrl) + "\" style=\"color:" + MUTED + ";text-decoration:underline\">"
+                + esc(unsubscribeLabel) + "</a>";
     }
 
     private static String esc(String s) {

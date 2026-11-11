@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       { key: "Referrer-Policy", value: "no-referrer" },
       { key: "X-Frame-Options", value: "DENY" },
     ];
-    return ["/ingresar", "/ingresar/verificar", "/recuperar", "/restablecer", "/reservar/:slug", "/mi-cita"].map((source) => ({ source, headers }));
+    return ["/ingresar", "/ingresar/verificar", "/recuperar", "/restablecer", "/reservar/:slug", "/mi-cita", "/baja-cumpleanos"].map((source) => ({ source, headers }));
   },
 };
 

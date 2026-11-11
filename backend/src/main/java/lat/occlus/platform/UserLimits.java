@@ -16,6 +16,11 @@ public class UserLimits {
     private final JdbcTemplate db;
     private final Entitlements entitlements;
 
+    /** Máximo de usuarios activos del plan de la clínica; null si no tiene límite. */
+    public Integer max(UUID clinicId) {
+        return entitlements.find(clinicId).map(Subscription::maxUsers).orElse(null);
+    }
+
     /**
      * Debe llamarse dentro de la misma transacción que crea o reactiva al usuario. El candado
      * (por clínica, se libera al terminar la transacción) hace que dos altas simultáneas no puedan
@@ -24,7 +29,7 @@ public class UserLimits {
     @Transactional(propagation = Propagation.MANDATORY)
     public void lockAndCheck(UUID clinicId, int adding) {
         db.queryForList("select pg_advisory_xact_lock(hashtextextended(?, 0))", "users:" + clinicId);
-        Integer max = entitlements.find(clinicId).map(Subscription::maxUsers).orElse(null);
+        Integer max = max(clinicId);
         if (max == null) return;
         long active = db.queryForObject("select count(*) from app_user where clinic_id = ? and active", Long.class, clinicId);
         if (active + adding > max) {

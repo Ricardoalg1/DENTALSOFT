@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { FileText, Trash2 } from "lucide-react";
+import { FileText, Layers, ScanLine, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { FormError } from "@/components/form-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +21,21 @@ export function FileCard({ patientId, file, canRemove }: { patientId: string; fi
   const [pending, startTransition] = useTransition();
   const src = `/bff/files/${file.id}`;
   const isImage = file.contentType.startsWith("image/");
+  const isDicom = file.contentType === "application/dicom" || file.contentType === "application/zip";
+  const isSeries = file.contentType === "application/zip";
 
   return (
     <li className="grid content-start gap-2 overflow-hidden rounded-xl border">
+      {isDicom ? (
+        <Link href={`/app/pacientes/${patientId}/archivos/${file.id}`} className="block bg-muted" aria-label={`Abrir ${file.title} en el visor`}>
+          <span className="grid aspect-[4/3] place-items-center gap-1 bg-neutral-900 text-neutral-200">
+            <span className="grid justify-items-center gap-1">
+              {isSeries ? <Layers className="size-10" aria-hidden /> : <ScanLine className="size-10" aria-hidden />}
+              <span className="text-xs font-medium tracking-wide">{isSeries ? "Serie DICOM" : "DICOM"} · Abrir en el visor</span>
+            </span>
+          </span>
+        </Link>
+      ) : (
       <a href={src} target="_blank" rel="noopener" className="block bg-muted" aria-label={`Abrir ${file.title}`}>
         {isImage ? (
           // eslint-disable-next-line @next/next/no-img-element -- imagen privada servida por el BFF, sin optimizar
@@ -33,6 +46,7 @@ export function FileCard({ patientId, file, canRemove }: { patientId: string; fi
           </span>
         )}
       </a>
+      )}
       <div className="grid gap-1 px-3 pb-3 text-sm">
         <p className="truncate font-medium" title={file.title}>
           {file.title}

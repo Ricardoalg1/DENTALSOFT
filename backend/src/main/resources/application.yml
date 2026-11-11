@@ -20,8 +20,9 @@ spring:
       app_role: ${DB_USER:occlus_app}
   servlet:
     multipart:
-      max-file-size: 15MB
-      max-request-size: 16MB
+      # 90 MB para las series DICOM en ZIP; los demás archivos se limitan a 15 MB en PatientFileService.
+      max-file-size: 90MB
+      max-request-size: 91MB
   devtools:
     restart:
       # Esperar a que javac termine de escribir todas las clases antes de reiniciar en desarrollo

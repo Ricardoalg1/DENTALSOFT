@@ -256,6 +256,28 @@ export function PatientForm({ action, patient, initial, cancelHref }: Props) {
         </p>
       </Section>
 
+      <Section
+        title="Saludo de cumpleaños"
+        description="Si la clínica activó los saludos en Seguimiento, el paciente recibe un correo el día de su cumpleaños. Marca la opción solo si lo autorizó."
+      >
+        <label className="flex items-center gap-2 text-sm sm:col-span-2">
+          <input
+            type="checkbox"
+            name="birthdayEmailConsent"
+            defaultChecked={
+              state?.values
+                ? state.values.birthdayEmailConsent === "on"
+                : (patient?.birthdayEmailConsent ?? false)
+            }
+            className="size-4 accent-primary"
+          />
+          El paciente autorizó recibir un saludo de cumpleaños por correo
+        </label>
+        <p className="text-xs text-muted-foreground sm:col-span-2">
+          Necesita un correo en la ficha. Cada saludo trae un enlace para que el paciente deje de recibirlos.
+        </p>
+      </Section>
+
       <div className="flex flex-wrap items-center gap-3 border-t bg-muted/30 px-6 py-6 sm:px-10">
         <p className="flex w-full items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="size-4 shrink-0" aria-hidden="true" />Revisa la información antes de guardar la ficha.</p>
         <Button type="submit" size="lg" disabled={pending}>

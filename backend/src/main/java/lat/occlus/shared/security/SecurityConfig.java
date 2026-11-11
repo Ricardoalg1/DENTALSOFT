@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/webhooks/whatsapp", "/api/webhooks/wompi", "/api/webhooks/epayco",
                                 "/api/webhooks/mercadopago").permitAll()
                         .requestMatchers("/api/public/booking/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/public/birthday-emails/optout").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST,"/api/public/demo-requests","/api/public/site-events").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())

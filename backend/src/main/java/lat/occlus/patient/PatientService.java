@@ -165,6 +165,10 @@ public class PatientService {
             // Fecha de la autorización (o null si la retira): sirve como soporte ante la SIC.
             p.setWhatsappConsentAt(req.whatsappConsent() ? java.time.Instant.now() : null);
         }
+        if (req.birthdayEmailConsent() != null && req.birthdayEmailConsent() != p.isBirthdayEmailConsent()) {
+            p.setBirthdayEmailConsent(req.birthdayEmailConsent());
+            p.setBirthdayEmailConsentAt(req.birthdayEmailConsent() ? java.time.Instant.now() : null);
+        }
     }
 
     private static PatientResponse toResponse(Patient p) {
@@ -175,6 +179,7 @@ public class PatientService {
                 p.getRegime(), p.getInsurer(), p.getOccupation(),
                 p.getGuardianName(), p.getGuardianPhone(), p.getGuardianRelationship(),
                 p.getNotes(), p.isActive(), p.isWhatsappConsent(), p.getWhatsappConsentAt(),
+                p.isBirthdayEmailConsent(), p.getBirthdayEmailConsentAt(),
                 p.getCreatedAt(), p.getUpdatedAt());
     }
 
@@ -204,6 +209,7 @@ public class PatientService {
         AUDITED_FIELDS.put("Notas", Patient::getNotes);
         AUDITED_FIELDS.put("Activo", p -> p.isActive() ? "Sí" : "No");
         AUDITED_FIELDS.put("Autoriza WhatsApp", p -> p.isWhatsappConsent() ? "Sí" : "No");
+        AUDITED_FIELDS.put("Autoriza correo de cumpleaños", p -> p.isBirthdayEmailConsent() ? "Sí" : "No");
     }
 
     private static Map<String, String> auditedValues(Patient p) {

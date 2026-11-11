@@ -31,7 +31,8 @@ class EntitlementCoverageTests {
     /** Núcleo: siempre disponible mientras la suscripción dé acceso (se valida su estado, no un módulo). */
     private static final Set<Class<?>> CORE = Set.of(PatientController.class, AppointmentController.class,
             ScheduleController.class, SiteController.class, UserController.class, ProfessionalController.class,
-            AnnouncementController.class, OutreachController.class, DocumentBrandingController.class,
+            AnnouncementController.class, OutreachController.class, lat.occlus.patient.BirthdayEmailController.class,
+            DocumentBrandingController.class,
             lat.occlus.biosafety.BiosafetyController.class, lat.occlus.migration.MigrationController.class,
             lat.occlus.messaging.AppointmentInviteController.class, lat.occlus.booking.BookingAdminController.class,
             lat.occlus.dictation.DictationController.class);
